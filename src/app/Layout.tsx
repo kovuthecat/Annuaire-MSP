@@ -3,19 +3,18 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { colors } from '../theme/tokens'
 import { useAuth } from '../features/auth/AuthProvider'
+import { useSelection } from './SelectionProvider'
 import type { Member } from '../types/db'
 
 /**
  * Barre du haut — reproduit la maquette (design/maquettes/.../MSP Annuaire.dc.html, lignes 43-62).
- * Composant présentational : la sélection d'impression arrive en props (pas de state global ici),
- * cf. plans/P1/S1.md T2. Pill "Fiche détail" volontairement omise (artefact de démo, cf.
+ * La sélection d'impression est lue depuis `SelectionProvider` (état client transitoire partagé,
+ * cf. plans/P1/S3.md T6) — pas de props, tout écran peut cocher des contacts pour l'impression.
+ * Pill "Fiche détail" volontairement omise (artefact de démo, cf.
  * ARCHITECTURE.md §Écarts maquette ↔ architecture #4 — en prod la fiche s'ouvre en cliquant un contact).
  * Pastille profil (cf. plans/P1/S7.md T10) : initiales du membre + menu « Mon profil » / « Se
  * déconnecter » (la maquette ne montrait qu'un lien statique vers /connexion).
  */
-interface LayoutProps {
-  selectedCount?: number
-}
 
 const topBarStyle: CSSProperties = {
   display: 'flex',
@@ -185,8 +184,9 @@ function ProfileMenu() {
   )
 }
 
-export default function Layout({ selectedCount = 0 }: LayoutProps) {
+export default function Layout() {
   const matchModifier = useMatch('/contact/:id/modifier')
+  const { count: selectedCount } = useSelection()
 
   return (
     <div>
