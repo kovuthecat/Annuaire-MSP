@@ -1,0 +1,72 @@
+/* Global styles — Annuaire MSP. Design system : cf. src/theme/tokens.ts + ARCHITECTURE.md §Maquette. */
+
+:root {
+  --color-bg: #efece5;
+  --color-white: #ffffff;
+  --color-border-light: #efe9dc;
+  --color-border: #e6e2d8;
+
+  --color-text-primary: #1c2024;
+  --color-text-body: #3d443f;
+  --color-text-secondary: #8b8578;
+  --color-text-muted: #a39c8e;
+  --color-text-faint: #c2bcae;
+
+  --color-brand-teal: #0f9f8e;
+  --color-brand-blue: #1f7fd6;
+  --gradient-primary: linear-gradient(90deg, #0f9f8e, #1f7fd6);
+  --gradient-primary-diagonal: linear-gradient(135deg, #0f9f8e, #1f7fd6);
+
+  --color-secteur1-fg: #0f9f8e;
+  --color-secteur1-bg: #e4f5f2;
+  --color-secteur2-fg: #7a6ec9;
+  --color-secteur2-bg: #eeecfb;
+  --color-ame-fg: #b8894a;
+  --color-ame-bg: #fbf0e0;
+  --color-vad-fg: #1f7fd6;
+  --color-vad-bg: #e7f1fc;
+  --color-newpatients-fg: #3aa876;
+  --color-newpatients-bg: #e9f7ef;
+
+  --color-comment-reco: #3aa876;
+  --color-comment-reco-bg: #e9f7ef;
+  --color-comment-alerte: #d3843d;
+  --color-comment-alerte-bg: #fbf0e0;
+  --color-comment-spec: #7a6ec9;
+  --color-comment-spec-bg: #eeecfb;
+  --color-comment-info: #1f7fd6;
+  --color-comment-info-bg: #e7f1fc;
+
+  --color-patient-bg: #f4f9f8;
+  --color-patient-border: #dcf0eb;
+  --color-pro-bg: #fbf5ea;
+  --color-pro-border: #f2e4c8;
+
+  --radius-sm: 8px;
+  --radius-md: 9px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-xxl: 14px;
+  --radius-round: 16px;
+  --radius-pill: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-brand-blue);
+}
+
+a:hover {
+  color: var(--color-brand-teal);
+}
