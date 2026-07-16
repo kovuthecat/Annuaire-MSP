@@ -8,9 +8,12 @@ import '@fontsource/plus-jakarta-sans/700.css'
 import '@fontsource/plus-jakarta-sans/800.css'
 import './theme/global.css'
 import { router } from './app/router'
+import { DirectoryProvider } from './data/DirectoryProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <DirectoryProvider>
+      <RouterProvider router={router} />
+    </DirectoryProvider>
   </StrictMode>,
 )
