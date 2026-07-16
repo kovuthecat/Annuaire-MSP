@@ -1,12 +1,17 @@
 import type { CSSProperties } from 'react'
-import { Link, NavLink, Outlet, useMatch } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { colors } from '../theme/tokens'
+import { useAuth } from '../features/auth/AuthProvider'
+import type { Member } from '../types/db'
 
 /**
  * Barre du haut — reproduit la maquette (design/maquettes/.../MSP Annuaire.dc.html, lignes 43-62).
  * Composant présentational : la sélection d'impression arrive en props (pas de state global ici),
  * cf. plans/P1/S1.md T2. Pill "Fiche détail" volontairement omise (artefact de démo, cf.
  * ARCHITECTURE.md §Écarts maquette ↔ architecture #4 — en prod la fiche s'ouvre en cliquant un contact).
+ * Pastille profil (cf. plans/P1/S7.md T10) : initiales du membre + menu « Mon profil » / « Se
+ * déconnecter » (la maquette ne montrait qu'un lien statique vers /connexion).
  */
 interface LayoutProps {
   selectedCount?: number
@@ -106,6 +111,80 @@ const profilePastilleStyle: CSSProperties = {
   textDecoration: 'none',
 }
 
+const profileMenuWrapperStyle: CSSProperties = {
+  position: 'relative',
+}
+
+const profileMenuStyle: CSSProperties = {
+  position: 'absolute',
+  top: 34,
+  right: 0,
+  zIndex: 30,
+  minWidth: 170,
+  background: '#fff',
+  border: `1px solid ${colors.borderLight}`,
+  borderRadius: 12,
+  boxShadow: '0 6px 20px rgba(0,0,0,.14)',
+  padding: 6,
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+const profileMenuItemStyle: CSSProperties = {
+  padding: '9px 12px',
+  borderRadius: 8,
+  font: '600 12px "Plus Jakarta Sans"',
+  color: colors.text.body,
+  textDecoration: 'none',
+  cursor: 'pointer',
+  background: 'transparent',
+  border: 'none',
+  textAlign: 'left',
+}
+
+/** "Prénom Nom" → "PN" ; à défaut initiale de l'email ; à défaut "?" (cf. T10 §Étapes 4). */
+function initialsFor(member: Member | null, email: string | null | undefined): string {
+  const p = member?.prenom?.trim()?.[0]
+  const n = member?.nom?.trim()?.[0]
+  const combined = `${p ?? ''}${n ?? ''}`.toUpperCase()
+  if (combined) return combined
+  return email ? email[0]!.toUpperCase() : '?'
+}
+
+function ProfileMenu() {
+  const { member, session, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+
+  const handleSignOut = async () => {
+    setOpen(false)
+    await signOut()
+    navigate('/connexion')
+  }
+
+  return (
+    <div style={profileMenuWrapperStyle} onMouseLeave={() => setOpen(false)}>
+      <div
+        onClick={() => setOpen((v) => !v)}
+        title="Mon profil / déconnexion"
+        style={profilePastilleStyle}
+      >
+        {initialsFor(member, session?.user.email)}
+      </div>
+      {open && (
+        <div style={profileMenuStyle}>
+          <Link to="/membres" style={profileMenuItemStyle} onClick={() => setOpen(false)}>
+            Mon profil
+          </Link>
+          <button type="button" onClick={handleSignOut} style={profileMenuItemStyle}>
+            Se déconnecter
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Layout({ selectedCount = 0 }: LayoutProps) {
   const matchModifier = useMatch('/contact/:id/modifier')
 
@@ -141,7 +220,7 @@ export default function Layout({ selectedCount = 0 }: LayoutProps) {
           <Link to="/nouveau" style={addLinkStyle}>
             + Ajouter
           </Link>
-          <Link to="/connexion" title="Mon profil / déconnexion" style={profilePastilleStyle} />
+          <ProfileMenu />
         </div>
       </div>
 
