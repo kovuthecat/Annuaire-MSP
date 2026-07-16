@@ -190,6 +190,50 @@ La valeur de l'annuaire tient à sa complétude ; l'enrichissement web est faisa
 
 ---
 
+## 2026-07-16 — Décisions issues de la maquette (commentaires, types de contact)
+
+### Décision
+- **Info pratique** = 4ᵉ type de commentaire avec **sa propre icône** (bleu `#1f7fd6`), même traitement
+  que reco/alerte/spécificité sur la liste **et** la fiche (icône + compteur + popover au survol/tap).
+- **Types de contact** : **4 groupes** en surface (Praticien · Structure/établissement ·
+  Laboratoire/imagerie · Autre ressource) **+ un sous-type fin optionnel en base** (hôpital, centre de
+  santé, structure médico-sociale, transport, réseau/CPTS…) pour filtrer/organiser plus tard.
+- **Terminologie** : le type négatif s'appelle **« Alerte »** (= avis négatif / mise en garde).
+
+### Contexte
+Retour de la maquette Claude Design : elle surface 3 icônes (reco/alerte/spéc) et 4 boutons de type.
+
+### Raison du choix
+Cohérence d'affichage (4 icônes, rien ne passe inaperçu) ; taxonomie souple sans alourdir la saisie.
+
+### Conséquences
+Modèle : `comment.type ∈ {reco, alerte, spec, info}` ; `contact.type ∈ {praticien, structure, labo,
+autre}` + `contact.sous_type` optionnel. Le composant d'icônes de commentaire gère **4** types.
+
+---
+
+## 2026-07-16 — Recherche et filtres côté client (MVP)
+
+### Décision
+La recherche et les filtres s'exécutent **côté client** sur le jeu de fiches chargé (le dataset entier,
+commentaires inclus, est chargé à l'ouverture), plutôt qu'en full-text Postgres.
+
+### Contexte
+Quelques centaines de fiches, ~10 utilisateurs. La recherche doit inclure le **texte des commentaires**.
+
+### Alternatives envisagées
+- Full-text Postgres (tsvector) + recherche serveur : plus lourd, inutile à cette échelle.
+
+### Raison du choix
+Simplicité maximale ; recherche tolérante (accents/casse) et recherche dans les commentaires triviales
+en JS ; latence nulle. À réévaluer si le volume explose.
+
+### Conséquences
+Un chargement initial (fiches + commentaires agrégés + « ma liste »), filtrage en mémoire. Impact IA :
+pas de couche FTS à maintenir ; logique de recherche isolée et testable (fonction pure).
+
+---
+
 ## Archives
 
 > Une ligne par décision caduque : `YYYY-MM-DD — Titre — remplacée par <décision/date>`.

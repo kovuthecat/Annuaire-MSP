@@ -203,9 +203,9 @@ Claude Design** pour dessiner la maquette écran par écran.
 
 1. **Types de contact** : la maquette regroupe en **4 boutons** (Praticien · Structure/établissement ·
    Laboratoire/imagerie · Autre ressource) au lieu de la liste fine (9) de « Données affichées ».
-   → décision : 4 groupes en surface + sous-type fin optionnel en base (cf. `DECISIONS.md`).
-2. **Commentaire « Info pratique »** : saisissable (4ᵉ type, bleu) mais **sans icône** sur liste/fiche
-   dans la maquette → où l'afficher ? (décision à consigner).
+   → **tranché** : 4 groupes en surface + `sous_type` fin optionnel en base (cf. `DECISIONS.md`).
+2. **Commentaire « Info pratique »** : → **tranché** — **4ᵉ icône** (bleu `#1f7fd6`) sur liste **et**
+   fiche, comme reco/alerte/spécificité (survol/popover). Cf. `DECISIONS.md`.
 3. **Terminologie** : « **Alerte** » (maquette) = « avis négatif / mise en garde » (archi) → on retient
    **Alerte** partout.
 4. **Barre de nav** : les pills incluent « Fiche détail » = **artefact de démo** ; en prod la fiche
