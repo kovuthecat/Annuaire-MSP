@@ -42,6 +42,8 @@ export interface Contact {
   tel_secretariat: string | null
   doctolib: string | null
   site_web: string | null
+  /** Mail public de prise de RDV (rdv@…) — communicable au patient, ≠ email_avis (canal pro). */
+  email_rdv: string | null
 
   // Coordonnées PRO (confidentielles — jamais imprimées)
   ligne_directe: string | null

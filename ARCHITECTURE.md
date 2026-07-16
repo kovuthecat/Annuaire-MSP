@@ -61,7 +61,8 @@ Claude Design** pour dessiner la maquette écran par écran.
   - **En-tête** : nom, profession/spécialité (ou type de structure), badges (secteur, VAD, AME/CMU,
     prend de nouveaux patients, éventuel « à vérifier »), tags.
   - **Bloc « Pour le patient »** (coords patient) — clairement libellé comme communicable : adresse(s),
-    téléphone secrétariat, prise de RDV (bouton Doctolib / lien), site web.
+    téléphone secrétariat, prise de RDV (bouton Doctolib / lien), **email de RDV** public (`email_rdv`,
+    à ne pas confondre avec `email_avis` qui est un canal pro confidentiel), site web.
   - **Bloc « Réservé aux pros »** (coords pro) — **visuellement distinct** (teinte différente + icône
     cadenas), avec mention « ne pas communiquer au patient » : ligne directe médecins, bip, portable
     perso, fax, email d'avis / MSSanté, consignes type « préciser être adressé par la CPTS ».
@@ -133,7 +134,7 @@ Claude Design** pour dessiner la maquette écran par écran.
   structure médico-sociale · laboratoire · imagerie · transport · ressource admin/réseau · autre) ;
   nom (personne ou structure) ; civilité, prénom (si praticien) ; profession/spécialité ; orientation
   libre (« spé endométriose ») ; établissement ; adresse(s) ; arrondissement/secteur ;
-  **coords patient** (secrétariat, Doctolib/lien, site) ; **coords pro** (ligne médecins, bip,
+  **coords patient** (secrétariat, Doctolib/lien, site, **email de RDV** public) ; **coords pro** (ligne médecins, bip,
   portable, fax, email d'avis/MSSanté) ; prend de nouveaux patients (oui/non/liste/inconnu) ; délai ;
   VAD (oui/non) ; secteur conventionnement (1/2/centre/non conv.) ; tarif indicatif ; accepte AME/CMU
   (oui/non/inconnu) ; PMR ; langues ; télé-expertise ; tags (multi) ;

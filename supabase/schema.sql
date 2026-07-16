@@ -71,6 +71,8 @@ create table if not exists public.contacts (
   tel_secretariat text,
   doctolib        text,
   site_web        text,
+  email_rdv       text,                       -- mail public de prise de RDV (rdv@ghpsj.fr…)
+                                              -- ≠ email_avis, qui est un canal pro confidentiel
 
   -- Coordonnées PRO (confidentielles — jamais imprimées)
   ligne_directe text,
@@ -111,8 +113,9 @@ create table if not exists public.contacts (
   source_checked_at timestamptz
 );
 
--- Ajout idempotent des colonnes de provenance pour une base déjà créée
+-- Ajout idempotent des colonnes récentes pour une base déjà créée
 -- (create table if not exists ne les ajouterait pas).
+alter table public.contacts add column if not exists email_rdv         text;
 alter table public.contacts add column if not exists source_url        text;
 alter table public.contacts add column if not exists source_type       text;
 alter table public.contacts add column if not exists source_checked_at timestamptz;
