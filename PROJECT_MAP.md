@@ -7,7 +7,7 @@ Carte synthétique du projet. **À compléter au scaffolding** (pas encore de co
 - **Type** : web app (Vite + React + TS) à données partagées via Supabase (Postgres + Auth + RLS).
 - **Grandes zones** : annuaire (recherche/filtres), fiche (détail), édition, commentaires, ma-liste,
   impression, membres, auth.
-- **Flux principal** : connexion (lien magique) → annuaire → fiche → adopter/commenter, ou
+- **Flux principal** : connexion (email + mot de passe) → annuaire → fiche → adopter/commenter, ou
   sélection multiple → impression liste patient.
 - **Contrainte structurante** : accès réservé aux membres (RLS) ; étanchéité coords patient / coords pro.
 
@@ -18,7 +18,7 @@ Carte synthétique du projet. **À compléter au scaffolding** (pas encore de co
 ```text
 src/
   features/
-    auth/          # connexion lien magique, session
+    auth/          # connexion email + mot de passe, session persistée
     annuaire/      # liste, recherche, filtres, tags, bascule mes/tous
     fiche/         # détail : coords patient/pro, icônes de commentaires, badges
     edition/       # formulaire ajout/édition + détection de doublon

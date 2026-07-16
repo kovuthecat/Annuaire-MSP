@@ -12,7 +12,7 @@ Claude Design** pour dessiner la maquette écran par écran.
   collectivement, avec recherche rapide et impression de listes propres pour les patients.
 - **Fonctionnalités MVP** : annuaire recherche/filtres/tags · fiche flexible praticien **ou** structure
   · séparation coords patient / coords pro · ajout-édition collaboratif · « mes contacts » (créées +
-  adoptées) vs tous · commentaires typés signés · impression liste patient · connexion par lien magique.
+  adoptées) vs tous · commentaires typés signés · impression liste patient · connexion email + mot de passe.
 - **Plateformes cibles** : **web responsive — desktop d'abord** (usage principal au cabinet), **mobile
   pleinement utilisable** (consultation en visite à domicile). Pas d'app native.
 - **Priorité n°1** : ergonomie et **adoption**. La recherche et l'ajout doivent être quasi instantanés.
@@ -23,13 +23,14 @@ Claude Design** pour dessiner la maquette écran par écran.
 
 > Un bloc par écran — matière première de la maquette.
 
-### Écran 1 — Connexion (lien magique)
+### Écran 1 — Connexion (email + mot de passe)
 
 - **Rôle** : authentifier un membre de la MSP avec une friction minimale.
-- **Contenu** : nom/logo de l'outil ; mention « Réservé aux membres de la MSP » ; champ email ; bouton
-  « Recevoir mon lien de connexion ». Après envoi : écran « Consultez vos emails, cliquez sur le lien ».
-- **Actions** : saisir email → recevoir un lien par email → connexion. La session reste ouverte
-  longtemps (on ne se reconnecte quasiment jamais).
+- **Contenu** : nom/logo de l'outil ; mention « Réservé aux membres de la MSP » ; champ **email** ;
+  champ **mot de passe** ; bouton « Se connecter ». Lien discret « Mot de passe oublié ? » (le référent
+  réinitialise). *(≠ maquette, qui montrait un lien magique — changé pour éviter la limite d'emails Supabase.)*
+- **Actions** : saisir email + mot de passe → connexion. **La session reste ouverte sur le poste**
+  (persistée + rafraîchie automatiquement) → on ne se reconnecte quasiment jamais.
 
 ### Écran 2 — Annuaire (accueil, écran central)
 
@@ -113,7 +114,7 @@ Claude Design** pour dessiner la maquette écran par écran.
 
 - **Rôle** : gérer qui accède à l'outil.
 - **Contenu** : liste des membres (nom, profession, email) ; bouton **« Inviter un membre »** (email →
-  lien magique) ; marquage « référent » optionnel ; édition de son propre profil.
+  crée le compte + mot de passe initial) ; marquage « référent » optionnel ; édition de son propre profil.
 - **Actions** : inviter un membre, modifier son profil.
 
 ## Navigation & parcours
@@ -164,9 +165,9 @@ Claude Design** pour dessiner la maquette écran par écran.
 - **Features** : `annuaire` (liste/recherche/filtres) · `fiche` (détail, coords patient/pro, infos
   pratiques) · `edition` (formulaire ajout/édition + détection de doublon) · `commentaires` (typés) ·
   `ma-liste` (adoption, bascule mes/tous) · `impression` (sélection + feuille patient) · `membres`
-  (invitations, profil) · `auth` (lien magique).
+  (invitations, profil) · `auth` (email + mot de passe).
 - **État / persistance** : Supabase (Postgres + **RLS** restreignant l'accès aux membres authentifiés).
-  Auth via Supabase magic link. La sélection d'impression est un **état client transitoire**.
+  Auth via Supabase email + mot de passe (session persistée). La sélection d'impression est un **état client transitoire**.
 - Arbitrages structurants → `DECISIONS.md`.
 
 ---
@@ -193,7 +194,7 @@ Claude Design** pour dessiner la maquette écran par écran.
   **Info pratique** bleu `#1f7fd6`. Affichage : icône + compteur, popover au survol (desktop) / tap.
 - **Coordonnées** : bloc **patient** sur fond vert (`#f4f9f8`), bloc **pro** sur fond ambre (`#fbf5ea`)
   avec icône cadenas + « Réservé aux pros — ne pas communiquer au patient ».
-- **Écrans** : Connexion (lien magique) · Annuaire (recherche mentionnant « un commentaire » + toggle
+- **Écrans** : Connexion (email + mot de passe) · Annuaire (recherche mentionnant « un commentaire » + toggle
   Mes contacts/Tous + chips de filtres + lignes) · Fiche (2 blocs coords + rangée d'icônes commentaires
   + « Signaler à vérifier ») · Ajout/Modif (carte « Essentiel » requise + `<details>` repliables +
   détection de doublon + barre d'enregistrement collante) · Sélection & impression (panneau gauche +
@@ -212,3 +213,5 @@ Claude Design** pour dessiner la maquette écran par écran.
    s'ouvre en cliquant un contact (pas d'entrée de menu).
 5. **Filtres** : la maquette montre quelques chips (Secteur 1, VAD, AME/CMU, +Nouveaux patients,
    Arrondissement) ; **profession/spécialité et tags** à ajouter au câblage (panneau de filtres complet).
+6. **Connexion** : la maquette montre un **lien magique** ; on câble **email + mot de passe** (session
+   persistée) — la limite d'emails Supabase (~2/h) rend le magique peu fiable. Cf. `DECISIONS.md` §Auth.

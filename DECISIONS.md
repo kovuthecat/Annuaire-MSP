@@ -25,7 +25,7 @@ une base commune en ligne, de l'auth et des règles d'accès. Stack déjà rodé
 - Backend maison : surdimensionné pour ~10 utilisateurs.
 
 ### Raison du choix
-Supabase fournit Postgres, Auth (lien magique) et **Row-Level Security** clés en main ; compatible avec
+Supabase fournit Postgres, Auth (email/mot de passe) et **Row-Level Security** clés en main ; compatible avec
 le savoir-faire existant. Vercel = déploiement connu.
 
 ### Conséquences
@@ -130,21 +130,30 @@ accès restreint aux membres. Le jeu de types est extensible (référentiel).
 
 ---
 
-## 2026-07-16 — Auth : lien magique, comptes provisionnés
+## 2026-07-16 — Auth : email + mot de passe, session persistante (remplace « lien magique »)
 
 ### Décision
-**Comptes individuels** via **lien magique** (Supabase Auth), **session longue**, comptes créés à
-l'avance par un référent (ou invitation par un membre).
+**Comptes individuels email + mot de passe** (Supabase `signInWithPassword`), **session persistée sur
+le poste** (`persistSession` + `autoRefreshToken` : on se connecte une fois par appareil et on y reste).
+Comptes **créés à l'avance par un référent** (Auth → Users → Add user, « Auto Confirm », mot de passe
+initial) ; chacun peut changer son mot de passe dans l'app (`updateUser`).
 
 ### Contexte
-« Comptes individuels mais aussi simple que possible » : il faut l'attribution (commentaires, mes
-contacts) sans imposer un mot de passe à retenir.
+Le lien magique (intention initiale) dépend de l'email ; l'envoi intégré Supabase est **fortement limité
+(~2/h)** → risque de blocage pour 10 membres. Le login par mot de passe **n'envoie aucun email**.
+
+### Alternatives envisagées
+- **Lien magique** : élégant mais bloqué par la limite d'emails (sauf SMTP custom).
+- **SMTP custom** (Resend…) pour garder le magique / le reset : possible plus tard, non requis au MVP.
 
 ### Raison du choix
-Zéro mot de passe + session persistante = friction quasi nulle tout en gardant l'identité.
+Fiabilité (aucun email au login) + friction faible grâce à la session persistante ; attribution
+(commentaires, « ma liste ») préservée.
 
 ### Conséquences
-Provisionnement des membres (écran Membres). Accès strictement réservé aux comptes de la MSP (RLS).
+Écran connexion = email + mot de passe (**écart maquette** qui montrait le lien magique). Mot de passe
+oublié : réinitialisé par le référent au dashboard (ou SMTP custom plus tard). Poste partagé : se
+déconnecter / profils navigateur. **Schéma SQL inchangé** (trigger + RLS identiques).
 
 ---
 

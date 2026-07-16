@@ -3,8 +3,8 @@
 ## Objectif d'ensemble
 
 Implémenter les écrans de la maquette (`design/maquettes/design-annuaire-msp/`, design system dans
-`ARCHITECTURE.md` §Maquette) en Vite + React + TS, branchés sur Supabase (Postgres + Auth lien magique
-+ RLS). Le design est fixé : **on câble sur la maquette, on ne redessine pas**.
+`ARCHITECTURE.md` §Maquette) en Vite + React + TS, branchés sur Supabase (Postgres + Auth email/mot de
+passe + RLS). Le design est fixé : **on câble sur la maquette, on ne redessine pas**.
 
 ## Décisions de cadrage (valables pour tout le plan)
 
@@ -28,7 +28,7 @@ Implémenter les écrans de la maquette (`design/maquettes/design-annuaire-msp/`
 | S4 | T7 | Écran Fiche détail (coords patient/pro, 4 icônes commentaires, actions) | Sonnet | medium | S1, S2 | `src/features/fiche/` | [ ] |
 | S5 | T8 | Écran Ajout/Modif (essentiel, type+sous-type, sections, coords, tags, commentaires, doublon) | Sonnet | high | S1, S2 | `src/features/edition/` | [ ] |
 | S6 | T9 | Écran Sélection & impression (panneau, options, feuille patient, CSS print/PDF) | Sonnet | medium | S1, S2 | `src/features/impression/` | [ ] |
-| S7 | T10 | Auth lien magique + garde de route + Membres (liste, invitation) | Sonnet | high | S2 | `src/features/auth/`, `src/features/membres/`, `src/app/` | [ ] |
+| S7 | T10 | Auth email + mot de passe (session persistée) + garde de route + Membres (liste, invitation) | Sonnet | high | S2 | `src/features/auth/`, `src/features/membres/`, `src/app/` | [ ] |
 
 > S2–S7 : détail rédigé **juste avant leur vague** (S2 une fois les identifiants Supabase en main — le
 > schéma les précise). L'index fait foi pour le périmètre et l'ordonnancement.

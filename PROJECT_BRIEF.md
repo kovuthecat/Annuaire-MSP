@@ -36,7 +36,7 @@ permettre d'**imprimer une liste d'adressage propre pour un patient**. Priorité
    **contenu est inclus dans la recherche**.
 6. **Impression / PDF d'une liste patient** : sélection multiple → feuille propre (en-tête MSP,
    **coords patient uniquement**, **sans commentaires**).
-7. **Comptes individuels par lien magique** (session longue), comptes provisionnés par un référent.
+7. **Comptes individuels email + mot de passe** (session persistée sur le poste), comptes provisionnés par un référent.
 
 ## Hors périmètre v1
 
@@ -52,7 +52,7 @@ permettre d'**imprimer une liste d'adressage propre pour un patient**. Priorité
 - Frontend : **Vite + React + TypeScript**.
 - Backend : **Supabase** (Postgres géré + Auth + Row-Level Security).
 - Base de données : Postgres (Supabase).
-- Authentification : Supabase Auth — **lien magique**, comptes provisionnés par un référent.
+- Authentification : Supabase Auth — **email + mot de passe** (session persistée), comptes provisionnés par un référent.
 - Hébergement : **Vercel** (front) + Supabase (données).
 - Autres services : —
 
@@ -97,7 +97,7 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 - [ ] Mes contacts (créées + adoptées)
 - [ ] Commentaires typés, signés, datés
 - [ ] Impression / PDF liste patient
-- [ ] Auth lien magique + provisionnement des membres
+- [ ] Auth email + mot de passe (session persistée) + provisionnement des membres
 
 ### Version 1
 

@@ -208,9 +208,11 @@ create policy list_entries_delete on public.list_entries
 
 -- ============================================================================
 -- APRÈS EXÉCUTION :
---  1. Auth → Providers → Email : activer « Magic Link », désactiver l'inscription
---     publique (« Allow new users to sign up ») pour rester en groupe fermé.
---  2. Inviter les membres : Auth → Users → Invite (crée le compte + la fiche membre).
+--  1. Auth → Providers → Email : activer « Email + Password » ; DÉSACTIVER « Confirm email »
+--     et « Allow new users to sign up » (groupe fermé, comptes provisionnés). Pas de Magic Link.
+--  2. Créer les membres : Auth → Users → Add user (email + mot de passe initial + « Auto Confirm »).
+--     Le trigger crée la fiche membre. Chacun changera son mot de passe dans l'app.
+--     (L'envoi d'emails intégré étant limité à ~2/h, on n'y a pas recours pour le login.)
 --  3. Se désigner référent :  update public.members set role='referent'
 --                             where email='ton.email@msp-menilmontant.fr';
 -- ============================================================================

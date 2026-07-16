@@ -18,4 +18,4 @@ scaffolding et câblage. Voir `STATUS.md`.
 
 ## Stack cible
 
-Vite + React + TypeScript · Supabase (Postgres + Auth lien magique + RLS) · Vercel.
+Vite + React + TypeScript · Supabase (Postgres + Auth email/mot de passe + RLS) · Vercel.
