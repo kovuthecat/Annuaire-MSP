@@ -16,4 +16,4 @@ statut : ` ` à faire · `~` en cours · `x` fait
 - [x] T-002 — Scaffold Vite + React + TS (page « en construction »), GitHub + Vercel branchés · modèle: —, effort: — · plan: —
 - [ ] T-003 — Schéma Supabase + politiques RLS + client (contact, commentaire, ma-liste, membre) · modèle: Opus/Sonnet, effort: high · plan: —
 - [ ] T-004 — Câblage des écrans sur la maquette (annuaire, fiche, édition, impression) · modèle: Sonnet, effort: medium/high · plan: —
-- [ ] T-005 — Migration assistée des carnets → fiches structurées (**volume réel ≫ échantillons**, script one-shot relu) · modèle: Sonnet, effort: high · plan: —
+- [ ] T-005 — Migration des carnets → fiches : parse + **enrichissement web** des contacts incomplets (annuaire santé Ameli, Doctolib), dédoublonnage, relecture humaine (**volume réel ≫ échantillons**) · modèle: Opus/Sonnet, effort: high · plan: —

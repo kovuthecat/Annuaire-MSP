@@ -72,6 +72,9 @@ Spécifique au projet :
 ## Risques connus
 
 - **Dédoublonnage à l'import** : mêmes correspondants sous orthographes variées, sans RPPS.
+- **Enrichissement web** : contacts souvent réduits à un nom → complétés par recherche web ; risque
+  d'homonymes (Paris) → ne compléter qu'en cas de **match fiable** (annuaire santé Ameli), sinon
+  marquer « à vérifier ». Jamais deviner (adressage médical).
 - **Fraîcheur des données** dans le temps (fiches obsolètes) → édition collaborative + statut « à vérifier ».
 - **RGPD** : fiches et commentaires nomment des tiers (professionnels) → accès restreint aux membres,
   modération sociale de l'équipe.
@@ -98,7 +101,7 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 
 ### Version 1
 
-- [ ] Import assisté des carnets existants → fiches structurées (migration one-shot relue)
+- [ ] Import assisté des carnets : parse + **enrichissement web** des contacts incomplets, relu (migration one-shot)
 - [ ] Affinage des filtres et de la recherche à l'usage
 - [ ] Détection de doublons à la saisie
 
