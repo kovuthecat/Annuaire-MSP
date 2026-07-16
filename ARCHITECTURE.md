@@ -1,0 +1,167 @@
+# ARCHITECTURE.md — Annuaire MSP
+
+Écrans, navigation, données, découpage technique. **C'est ce fichier qu'on envoie tel quel à
+Claude Design** pour dessiner la maquette écran par écran.
+
+> **Auto-suffisant** : Claude Design ne voit QUE ce fichier. Tout le nécessaire est recopié ici.
+
+## Rappel produit (recopié du brief)
+
+- **Objectif** : répertoire partagé de correspondants et ressources d'adressage d'une maison de santé
+  (MSP, Paris 20e, ~10 membres). Remplacer les carnets hétérogènes par une base commune enrichie
+  collectivement, avec recherche rapide et impression de listes propres pour les patients.
+- **Fonctionnalités MVP** : annuaire recherche/filtres/tags · fiche flexible praticien **ou** structure
+  · séparation coords patient / coords pro · ajout-édition collaboratif · « mes contacts » (créées +
+  adoptées) vs tous · commentaires typés signés · impression liste patient · connexion par lien magique.
+- **Plateformes cibles** : **web responsive — desktop d'abord** (usage principal au cabinet), **mobile
+  pleinement utilisable** (consultation en visite à domicile). Pas d'app native.
+- **Priorité n°1** : ergonomie et **adoption**. La recherche et l'ajout doivent être quasi instantanés.
+- **Ton visuel** : sobre, professionnel, rassurant (santé) ; dense mais scannable ; accessible
+  (contraste, tailles de police confortables). Pas de couleur « notation » agressive.
+
+## Écrans & vues
+
+> Un bloc par écran — matière première de la maquette.
+
+### Écran 1 — Connexion (lien magique)
+
+- **Rôle** : authentifier un membre de la MSP avec une friction minimale.
+- **Contenu** : nom/logo de l'outil ; mention « Réservé aux membres de la MSP » ; champ email ; bouton
+  « Recevoir mon lien de connexion ». Après envoi : écran « Consultez vos emails, cliquez sur le lien ».
+- **Actions** : saisir email → recevoir un lien par email → connexion. La session reste ouverte
+  longtemps (on ne se reconnecte quasiment jamais).
+
+### Écran 2 — Annuaire (accueil, écran central)
+
+- **Rôle** : retrouver en quelques secondes un correspondant ou une ressource. **C'est l'écran clé.**
+- **Contenu** :
+  - **Barre de recherche proéminente** en haut (recherche tolérante accents/casse/fautes ; porte sur
+    nom, spécialité, structure, ville, tags).
+  - **Bascule « Mes contacts / Tous »** bien visible (segmented control).
+  - **Filtres** (colonne latérale sur desktop, panneau repliable sur mobile) : type de contact ·
+    profession/spécialité · secteur/arrondissement · prend de nouveaux patients · visites à domicile
+    (VAD) · accepte AME/CMU · secteur conventionnement (1/2) · mots-clés (tags).
+  - **Résultats** en liste de lignes/cartes compactes et scannables. Chaque item : nom (Dr ou
+    structure), profession/spécialité ou type, secteur/arrondissement, **badges** (secteur 1/2, VAD,
+    AME/CMU, prend nouveaux patients), un **téléphone patient cliquable**, une **étoile « dans ma
+    liste »** (toggle), une **case à cocher « sélection impression »**.
+  - **Tri** (pertinence / nom / arrondissement) · compteur de résultats · bouton **« + Ajouter un contact »**.
+  - **Barre de sélection d'impression** qui apparaît dès qu'au moins une case est cochée :
+    « N sélectionné·s → Imprimer la liste ».
+- **Actions** : rechercher, filtrer, basculer mes/tous, ouvrir une fiche, ajouter/retirer de ma liste,
+  cocher pour impression, ajouter un contact.
+- **Mobile** : recherche + résultats prioritaires ; filtres dans un panneau ; barre de sélection en bas.
+
+### Écran 3 — Fiche détail
+
+- **Rôle** : toute l'information sur un correspondant/ressource + l'expérience partagée de l'équipe.
+- **Contenu** :
+  - **En-tête** : nom, profession/spécialité (ou type de structure), badges (secteur, VAD, AME/CMU,
+    prend de nouveaux patients, éventuel « à vérifier »), tags.
+  - **Bloc « Pour le patient »** (coords patient) — clairement libellé comme communicable : adresse(s),
+    téléphone secrétariat, prise de RDV (bouton Doctolib / lien), site web.
+  - **Bloc « Réservé aux pros »** (coords pro) — **visuellement distinct** (teinte différente + icône
+    cadenas), avec mention « ne pas communiquer au patient » : ligne directe médecins, bip, portable
+    perso, fax, email d'avis / MSSanté, consignes type « préciser être adressé par la CPTS ».
+  - **Adressage & accès** : délai indicatif, secteur conventionnement, tarif indicatif, langues, accès
+    PMR, télé-expertise/avis rapide.
+  - **Infos pratiques** : texte libre (mode d'emploi, protocole d'accès, particularités).
+  - **Commentaires** : liste anti-chronologique ; chacun porte un **badge de type** (recommandation /
+    spécificité / mise en garde), l'**auteur** et la **date** ; formulaire d'ajout (choix du type + texte).
+  - **Méta** : créé par/le, modifié par/le.
+- **Actions (barre)** : « Ajouter à ma liste » (toggle) · « Ajouter à la sélection d'impression » ·
+  « Modifier » · « Signaler à vérifier ». Copier un numéro, ouvrir Doctolib, commenter.
+
+### Écran 4 — Ajouter / Modifier une fiche
+
+- **Rôle** : créer ou mettre à jour une fiche ; saisie rapide, enrichissement progressif.
+- **Contenu** (formulaire à **sections repliables**) :
+  - **Essentiel** (seuls champs vraiment requis, visibles d'emblée) : type de contact · nom ·
+    profession/spécialité · au moins un moyen de contact.
+  - **Lieu** : établissement/structure, adresse(s), arrondissement/secteur.
+  - **Coordonnées patient** / **Coordonnées pro** : deux sous-sections distinctes, chaque coordonnée
+    avec son libellé (secrétariat, Doctolib… vs ligne médecins, bip, portable, fax, email d'avis).
+  - **Adressage & accès** : prend de nouveaux patients (oui/non/liste d'attente/inconnu), délai, VAD,
+    secteur conventionnement, tarif, accepte AME/CMU, PMR, langues, télé-expertise.
+  - **Infos pratiques** (texte libre) · **Tags** (multi, avec autocomplétion sur tags existants) ·
+    RPPS/ADELI (facultatif).
+  - Boutons **Enregistrer / Annuler**. En édition : « dernière modification par X le … ».
+- **Détail clé** : à la saisie d'un nom proche d'une fiche existante, **proposer d'ouvrir la fiche
+  existante** plutôt que d'en créer une en double.
+
+### Écran 5 — Sélection & impression (liste patient)
+
+- **Rôle** : produire une feuille d'adressage propre à remettre au patient.
+- **Contenu** :
+  - **Panneau de sélection** : contacts cochés, **réordonnables** et retirables.
+  - **Options** : en-tête MSP (logo + nom + adresse de la MSP) ; « Établi le … » ; champ libre
+    optionnel « Pour : [prénom du patient] » (non enregistré) ; note libre en bas de page.
+  - **Aperçu de la feuille** : par contact, **uniquement les infos patient** (nom, spécialité,
+    adresse, téléphone patient, modalité de RDV / Doctolib), éventuellement groupées par spécialité.
+    **Aucun commentaire, aucune coordonnée pro.**
+  - Boutons **Imprimer** / **Exporter en PDF**.
+- **Actions** : réordonner, retirer, régler les options, imprimer/PDF.
+
+### Écran 6 — Membres (léger)
+
+- **Rôle** : gérer qui accède à l'outil.
+- **Contenu** : liste des membres (nom, profession, email) ; bouton **« Inviter un membre »** (email →
+  lien magique) ; marquage « référent » optionnel ; édition de son propre profil.
+- **Actions** : inviter un membre, modifier son profil.
+
+## Navigation & parcours
+
+- **Écran d'entrée** : Annuaire (après connexion).
+- **Flux principal** : Annuaire → (recherche/filtre) → Fiche détail → (adopter / commenter / sélectionner).
+- **Flux impression** : Annuaire → cocher plusieurs contacts → Sélection & impression → PDF/impression.
+- **Navigation secondaire** : barre supérieure persistante — accueil/logo, recherche, bascule mes/tous,
+  « + Ajouter », **sélection d'impression avec compteur**, menu compte/membres.
+
+## Données affichées
+
+> Entités et champs visibles à l'UI (pas le schéma complet).
+
+- **Contact / Ressource** : type (praticien · établissement/service hospitalier · centre de santé ·
+  structure médico-sociale · laboratoire · imagerie · transport · ressource admin/réseau · autre) ;
+  nom (personne ou structure) ; civilité, prénom (si praticien) ; profession/spécialité ; orientation
+  libre (« spé endométriose ») ; établissement ; adresse(s) ; arrondissement/secteur ;
+  **coords patient** (secrétariat, Doctolib/lien, site) ; **coords pro** (ligne médecins, bip,
+  portable, fax, email d'avis/MSSanté) ; prend de nouveaux patients (oui/non/liste/inconnu) ; délai ;
+  VAD (oui/non) ; secteur conventionnement (1/2/centre/non conv.) ; tarif indicatif ; accepte AME/CMU
+  (oui/non/inconnu) ; PMR ; langues ; télé-expertise ; infos pratiques (texte) ; tags (multi) ;
+  statut (actif / à vérifier / ne prend plus) ; créé & modifié par/le ; « dans ma liste » (indicateur) ;
+  sélection impression (état transitoire).
+- **Commentaire** : type (recommandation / spécificité / mise en garde) ; auteur ; date ; texte.
+- **Membre** : nom ; profession ; email ; rôle (membre / référent).
+
+## Contraintes UI
+
+- **Recherche instantanée et tolérante** (accents, casse, fautes légères) = priorité absolue.
+- **Desktop-first**, **responsive mobile complet** (visite à domicile).
+- **Distinction visuelle forte coords patient ↔ coords pro** (couleur + icône cadenas) ; les coords pro
+  ne doivent jamais apparaître sur la feuille patient.
+- **Ajout d'une fiche à friction minimale** : peu de champs requis, sections repliables.
+- Densité maîtrisée : badges lisibles, listes scannables ; commentaires distingués par un badge discret.
+- Ton sobre, professionnel, rassurant ; accessible.
+
+---
+
+## Découpage technique
+
+> Sans effet sur la maquette — fixe la structure du code (feature-first : `CONVENTIONS.md`).
+
+- **Features** : `annuaire` (liste/recherche/filtres) · `fiche` (détail, coords patient/pro, infos
+  pratiques) · `edition` (formulaire ajout/édition + détection de doublon) · `commentaires` (typés) ·
+  `ma-liste` (adoption, bascule mes/tous) · `impression` (sélection + feuille patient) · `membres`
+  (invitations, profil) · `auth` (lien magique).
+- **État / persistance** : Supabase (Postgres + **RLS** restreignant l'accès aux membres authentifiés).
+  Auth via Supabase magic link. La sélection d'impression est un **état client transitoire**.
+- Arbitrages structurants → `DECISIONS.md`.
+
+---
+
+## Maquette UI
+
+- **Statut** : [x] à dessiner · [ ] dessinée · [ ] câblée
+- **Exports** : `design/maquettes/` (un fichier par écran, HTML ou PNG).
+- **Écarts maquette ↔ architecture** : <à remplir au retour de Claude Design>.
