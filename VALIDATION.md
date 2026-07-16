@@ -29,6 +29,24 @@
 - [ ] Police Plus Jakarta Sans partout, fond beige `#efece5`.
 - [ ] Mobile : la barre ne déborde pas horizontalement.
 
+## Annuaire — écran central (recherche, filtres, sélection)
+
+> La base étant vide au démarrage, prévoir quelques contacts de test (avec commentaires des 4 types,
+> `secteur_conv`, `vad`, `ame_cmu`, `tags`, `tel_secretariat`) pour juger les points ci-dessous.
+
+- [ ] Rendu d'une ligne conforme aux 2 PNG de référence (`design/.../project/uploads/pasted-...png`) :
+      avatar, nom/profession/arrondissement, badges, icônes de commentaires, téléphone, étoile.
+- [ ] Popover au survol (desktop) et au tap (mobile) d'une icône de commentaire.
+- [ ] Chips Secteur 1 / VAD / AME-CMU / + Nouveaux patients : couleur pleine à l'activation.
+- [ ] Sélecteurs Arrondissement / Profession / Tag filtrent correctement.
+- [ ] Bascule Mes contacts / Tous : style actif (fond blanc + ombre) vs inactif conforme.
+- [ ] Compteur de résultats + tri (Pertinence / Nom A→Z / Arrondissement) fonctionnent.
+- [ ] Case à cocher d'une ligne → indicateur « N sélectionné(s) → Imprimer » dans la barre du haut.
+- [ ] Clic sur une ligne → navigue vers `/contact/:id` (stub tant que S4 n'est pas fait).
+- [ ] Étoile (StarToggle) → adopte/retire de « Mes contacts » (persiste après rechargement).
+- [ ] État base vide, état recherche sans résultat : messages + boutons de sortie utiles.
+- [ ] Responsive mobile : recherche/toggle/chips en colonne, ligne de contact reste lisible.
+
 ## Membres
 
 - [ ] Liste des membres : avatar à initiales, nom, `profession · email`, badge « Référent » sur ton compte.
@@ -39,4 +57,4 @@
 
 ## Écrans encore non câblés (normal à ce stade)
 
-Annuaire, Fiche détail, Ajouter/Modifier, Sélection & impression affichent « Écran … — à câbler ».
+Fiche détail, Ajouter/Modifier, Sélection & impression affichent « Écran … — à câbler ».

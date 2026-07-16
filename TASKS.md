@@ -14,6 +14,6 @@ statut : ` ` à faire · `~` en cours · `x` fait
 
 - [ ] T-001 — Maquette UI (Claude Design, humain) à partir d'`ARCHITECTURE.md` → `design/maquettes/` · modèle: — (humain), effort: — · plan: —
 - [x] T-002 — Scaffold Vite + React + TS (page « en construction »), GitHub + Vercel branchés · modèle: —, effort: — · plan: —
-- [ ] T-003 — Schéma Supabase + politiques RLS + client (contact, commentaire, ma-liste, membre) · modèle: Opus/Sonnet, effort: high · plan: → plans/P1/ (S2)
-- [ ] T-004 — Câblage des écrans sur la maquette (fondations + annuaire, fiche, édition, impression, membres, auth) · modèle: Sonnet, effort: medium/high · plan: → plans/P1/ (S1, S3-S7)
+- [x] T-003 — Schéma Supabase + politiques RLS + client (contact, commentaire, ma-liste, membre) · modèle: Opus/Sonnet, effort: high · plan: → plans/P1/ (S2)
+- [~] T-004 — Câblage des écrans sur la maquette (fondations + annuaire, fiche, édition, impression, membres, auth) · modèle: Sonnet, effort: medium/high · plan: → plans/P1/ (S1 x, S2 x, S3 x, S4 —, S5 —, S6 —, S7 x)
 - [ ] T-005 — Migration des carnets → fiches : parse + **enrichissement web** des contacts incomplets (annuaire santé Ameli, Doctolib), dédoublonnage, relecture humaine (**volume réel ≫ échantillons**) · modèle: Opus/Sonnet, effort: high · plan: —
