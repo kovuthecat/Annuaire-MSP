@@ -25,13 +25,15 @@ permettre d'**imprimer une liste d'adressage propre pour un patient**. Priorité
    accepte AME/CMU, secteur conventionnement) + **mots-clés transversaux** + bascule **mes contacts / tous**.
 2. **Fiche flexible** : un contact peut être un praticien **ou** une structure/ressource (type de
    contact). Séparation **coordonnées patient** (imprimables) / **coordonnées pro** (confidentielles,
-   jamais imprimées) + **infos pratiques** (texte libre) + tags.
+   jamais imprimées) + tags.
 3. **Ajout / édition collaborative** : tout membre peut créer et corriger une fiche ; **très peu de
    champs obligatoires** ; historique « créé/modifié par ».
 4. **« Mes contacts »** = fiches créées **ou adoptées** par le membre (une seule fiche par pro, pas de
    doublon) ; bascule avec « tous les contacts ».
-5. **Commentaires typés** (recommandation / spécificité / mise en garde), **signés et datés**,
-   visibles par tous les membres.
+5. **Commentaires typés** (recommandation, avis négatif, spécificité, info pratique… — extensible),
+   **signés et datés**, visibles par tous ; **repliés derrière des icônes par type** sur la fiche et
+   dans les résultats (on repère recos / avis négatifs d'un coup d'œil, survol/tap pour lire) ; leur
+   **contenu est inclus dans la recherche**.
 6. **Impression / PDF d'une liste patient** : sélection multiple → feuille propre (en-tête MSP,
    **coords patient uniquement**, **sans commentaires**).
 7. **Comptes individuels par lien magique** (session longue), comptes provisionnés par un référent.

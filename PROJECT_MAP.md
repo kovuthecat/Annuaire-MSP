@@ -20,9 +20,9 @@ src/
   features/
     auth/          # connexion lien magique, session
     annuaire/      # liste, recherche, filtres, tags, bascule mes/tous
-    fiche/         # détail : coords patient/pro, infos pratiques, badges
+    fiche/         # détail : coords patient/pro, icônes de commentaires, badges
     edition/       # formulaire ajout/édition + détection de doublon
-    commentaires/  # commentaires typés (recommandation/spécificité/mise en garde)
+    commentaires/  # commentaires typés à icônes (reco / avis négatif / spécificité / info pratique)
     ma-liste/      # adoption d'une fiche, indicateur "dans ma liste"
     impression/    # sélection + feuille patient (coords patient seules)
     membres/       # invitations, profil, référent

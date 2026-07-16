@@ -5,26 +5,24 @@ reste sans le recopier.
 
 ## Commandes
 
-> **Provisoire** — à confirmer/compléter au scaffolding (T-002). Stack cible : Vite + React + TS + Supabase.
+Stack : Vite + React + TS (Supabase à brancher à T-003). Lint/tests non encore configurés.
 
 ```bash
 # Dev / serveur local
 npm run dev
 
-# Build
+# Build (typecheck + bundle) — c'est ce que Vercel exécute
 npm run build
 
-# Typecheck
+# Typecheck seul
 npm run typecheck   # (tsc --noEmit)
 
-# Lint / format
-npm run lint
-
-# Tests (si suite présente)
-npm run test
+# Aperçu du build de prod
+npm run preview
 ```
 
-- Variables d'environnement : `.env.local` (clés Supabase) — voir `.env.example`.
+- Variables d'environnement : `.env.local` (clés Supabase) — voir `.env.example`. Sur Vercel :
+  Project Settings → Environment Variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
 - Ne jamais committer de secret (`.env*`, clés, tokens).
 
 @C:\Users\kovu\SynologyDrive\Thibault\Projets\Templates\CLAUDE-BASE.md

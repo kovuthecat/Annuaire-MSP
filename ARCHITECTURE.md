@@ -36,15 +36,16 @@ Claude Design** pour dessiner la maquette écran par écran.
 - **Rôle** : retrouver en quelques secondes un correspondant ou une ressource. **C'est l'écran clé.**
 - **Contenu** :
   - **Barre de recherche proéminente** en haut (recherche tolérante accents/casse/fautes ; porte sur
-    nom, spécialité, structure, ville, tags).
+    nom, spécialité, structure, ville, tags **et le contenu des commentaires** — l'info y est parfois notée).
   - **Bascule « Mes contacts / Tous »** bien visible (segmented control).
   - **Filtres** (colonne latérale sur desktop, panneau repliable sur mobile) : type de contact ·
     profession/spécialité · secteur/arrondissement · prend de nouveaux patients · visites à domicile
     (VAD) · accepte AME/CMU · secteur conventionnement (1/2) · mots-clés (tags).
   - **Résultats** en liste de lignes/cartes compactes et scannables. Chaque item : nom (Dr ou
     structure), profession/spécialité ou type, secteur/arrondissement, **badges** (secteur 1/2, VAD,
-    AME/CMU, prend nouveaux patients), un **téléphone patient cliquable**, une **étoile « dans ma
-    liste »** (toggle), une **case à cocher « sélection impression »**.
+    AME/CMU, prend nouveaux patients), les **icônes de commentaire par type** (uniquement les types
+    présents — ex. 👍 reco, ⚠️ avis négatif — pour repérer d'un coup d'œil), un **téléphone patient
+    cliquable**, une **étoile « dans ma liste »** (toggle), une **case à cocher « sélection impression »**.
   - **Tri** (pertinence / nom / arrondissement) · compteur de résultats · bouton **« + Ajouter un contact »**.
   - **Barre de sélection d'impression** qui apparaît dès qu'au moins une case est cochée :
     « N sélectionné·s → Imprimer la liste ».
@@ -65,9 +66,15 @@ Claude Design** pour dessiner la maquette écran par écran.
     perso, fax, email d'avis / MSSanté, consignes type « préciser être adressé par la CPTS ».
   - **Adressage & accès** : délai indicatif, secteur conventionnement, tarif indicatif, langues, accès
     PMR, télé-expertise/avis rapide.
-  - **Infos pratiques** : texte libre (mode d'emploi, protocole d'accès, particularités).
-  - **Commentaires** : liste anti-chronologique ; chacun porte un **badge de type** (recommandation /
-    spécificité / mise en garde), l'**auteur** et la **date** ; formulaire d'ajout (choix du type + texte).
+  - **Commentaires typés, repliés derrière des icônes** : chaque commentaire a un **type**
+    (Recommandation · Avis négatif / mise en garde · Spécificité · Info pratique — liste extensible),
+    un **auteur** et une **date**. La fiche affiche une **rangée d'icônes, une par type, uniquement
+    pour les types présents** (avec compteur) : on voit immédiatement si le pro a des recommandations
+    (icône verte) ou des avis négatifs (icône rouge) **sans noyer la fiche**. **Survol (desktop) /
+    tap (mobile)** sur une icône → **popover** listant les commentaires de ce type (texte, auteur, date).
+    Ajout d'un commentaire : choisir le type + saisir le texte (formulaire compact).
+    *Les « infos pratiques » (mode d'emploi, protocole d'accès) sont un type de commentaire, pas un
+    champ séparé — elles restent ainsi datées, signées et cherchables.*
   - **Méta** : créé par/le, modifié par/le.
 - **Actions (barre)** : « Ajouter à ma liste » (toggle) · « Ajouter à la sélection d'impression » ·
   « Modifier » · « Signaler à vérifier ». Copier un numéro, ouvrir Doctolib, commenter.
@@ -83,8 +90,8 @@ Claude Design** pour dessiner la maquette écran par écran.
     avec son libellé (secrétariat, Doctolib… vs ligne médecins, bip, portable, fax, email d'avis).
   - **Adressage & accès** : prend de nouveaux patients (oui/non/liste d'attente/inconnu), délai, VAD,
     secteur conventionnement, tarif, accepte AME/CMU, PMR, langues, télé-expertise.
-  - **Infos pratiques** (texte libre) · **Tags** (multi, avec autocomplétion sur tags existants) ·
-    RPPS/ADELI (facultatif).
+  - **Tags** (multi, avec autocomplétion sur tags existants) · RPPS/ADELI (facultatif).
+    *(Les infos pratiques et les avis se saisissent en **commentaires typés** depuis la fiche, pas ici.)*
   - Boutons **Enregistrer / Annuler**. En édition : « dernière modification par X le … ».
 - **Détail clé** : à la saisie d'un nom proche d'une fiche existante, **proposer d'ouvrir la fiche
   existante** plutôt que d'en créer une en double.
@@ -128,10 +135,11 @@ Claude Design** pour dessiner la maquette écran par écran.
   **coords patient** (secrétariat, Doctolib/lien, site) ; **coords pro** (ligne médecins, bip,
   portable, fax, email d'avis/MSSanté) ; prend de nouveaux patients (oui/non/liste/inconnu) ; délai ;
   VAD (oui/non) ; secteur conventionnement (1/2/centre/non conv.) ; tarif indicatif ; accepte AME/CMU
-  (oui/non/inconnu) ; PMR ; langues ; télé-expertise ; infos pratiques (texte) ; tags (multi) ;
+  (oui/non/inconnu) ; PMR ; langues ; télé-expertise ; tags (multi) ;
   statut (actif / à vérifier / ne prend plus) ; créé & modifié par/le ; « dans ma liste » (indicateur) ;
-  sélection impression (état transitoire).
-- **Commentaire** : type (recommandation / spécificité / mise en garde) ; auteur ; date ; texte.
+  sélection impression (état transitoire) ; icônes de commentaire présentes (dérivées des commentaires).
+- **Commentaire** : type (recommandation / avis négatif / spécificité / info pratique — extensible) ;
+  auteur ; date ; texte. **Contenu indexé par la recherche.**
 - **Membre** : nom ; profession ; email ; rôle (membre / référent).
 
 ## Contraintes UI
@@ -140,6 +148,9 @@ Claude Design** pour dessiner la maquette écran par écran.
 - **Desktop-first**, **responsive mobile complet** (visite à domicile).
 - **Distinction visuelle forte coords patient ↔ coords pro** (couleur + icône cadenas) ; les coords pro
   ne doivent jamais apparaître sur la feuille patient.
+- **Commentaires repliés derrière des icônes par type** (une par type, seulement si présent, avec
+  compteur ; survol/tap pour révéler) : la fiche signale l'existence d'une reco / d'un avis négatif
+  sans afficher tout le texte. La **recherche** porte aussi sur leur contenu.
 - **Ajout d'une fiche à friction minimale** : peu de champs requis, sections repliables.
 - Densité maîtrisée : badges lisibles, listes scannables ; commentaires distingués par un badge discret.
 - Ton sobre, professionnel, rassurant ; accessible.
