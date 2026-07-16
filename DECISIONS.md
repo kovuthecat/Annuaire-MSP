@@ -194,6 +194,9 @@ La valeur de l'annuaire tient à sa complétude ; l'enrichissement web est faisa
 - **Ne jamais deviner** : match unique et fiable → on complète ; nom ambigu / homonymes (fréquents à
   Paris) → **laissé « à vérifier »** pour relecture humaine, pas rempli au hasard.
 - Fiche enrichie automatiquement → **statut « à vérifier »** + provenance notée, jusqu'à confirmation d'un membre.
+  Provenance = colonnes `source_url` · `source_type` (`doctolib|annuaire_sante|site_officiel|carnet_membre|autre`)
+  · `source_checked_at` sur `contacts` : d'où vient la donnée et quand elle a été vérifiée → point d'entrée
+  d'une future fonction « revérifier la fiche » (index `contacts_checked_idx`, `nulls first`).
 - Pipeline = parse → enrichir (avec niveau de confiance) → dédoublonner → relire → charger. Mécanique
   fine décidée à **T-005** ; l'app garde une saisie manuelle simple + détection de doublon.
 

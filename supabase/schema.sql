@@ -100,8 +100,32 @@ create table if not exists public.contacts (
   created_by    uuid references public.members (id) on delete set null default auth.uid(),
   created_at    timestamptz not null default now(),
   updated_by    uuid references public.members (id) on delete set null,
-  updated_at    timestamptz not null default now()
+  updated_at    timestamptz not null default now(),
+
+  -- Provenance : d'où viennent les coordonnées, pour pouvoir les réactualiser plus tard.
+  -- source_url pointe vers la page consultée (profil Doctolib, annuaire santé, site de la
+  -- structure) — c'est le point d'entrée d'une future fonction « vérifier la fiche ».
+  source_url        text,
+  source_type       text check (source_type in
+                      ('doctolib','annuaire_sante','site_officiel','carnet_membre','autre')),
+  source_checked_at timestamptz
 );
+
+-- Ajout idempotent des colonnes de provenance pour une base déjà créée
+-- (create table if not exists ne les ajouterait pas).
+alter table public.contacts add column if not exists source_url        text;
+alter table public.contacts add column if not exists source_type       text;
+alter table public.contacts add column if not exists source_checked_at timestamptz;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'contacts_source_type_check') then
+    alter table public.contacts add constraint contacts_source_type_check
+      check (source_type in
+        ('doctolib','annuaire_sante','site_officiel','carnet_membre','autre'));
+  end if;
+end;
+$$;
 
 -- updated_at / updated_by automatiques à chaque modification.
 create or replace function public.set_updated()
@@ -123,6 +147,8 @@ create trigger contacts_set_updated
 create index if not exists contacts_type_idx on public.contacts (type);
 create index if not exists contacts_arr_idx  on public.contacts (arrondissement);
 create index if not exists contacts_tags_idx on public.contacts using gin (tags);
+-- Sert la future revue « fiches les plus anciennes à revérifier » (nulls = jamais vérifiées).
+create index if not exists contacts_checked_idx on public.contacts (source_checked_at nulls first);
 
 -- ---------------------------------------------------------------------------
 -- 3. COMMENTAIRES (typés, signés, datés)
