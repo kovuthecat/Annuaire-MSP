@@ -159,11 +159,23 @@ create index if not exists contacts_checked_idx on public.contacts (source_check
 create table if not exists public.comments (
   id         uuid primary key default gen_random_uuid(),
   contact_id uuid not null references public.contacts (id) on delete cascade,
-  author_id  uuid not null references public.members (id) on delete cascade default auth.uid(),
+  -- author_id NULL = « Extrait de l'ancien répertoire » : commentaires repris du
+  -- répertoire partagé historique (xlsx), dont l'auteur réel est inconnu. On ne les
+  -- attribue à aucun médecin — une reco vaut par qui la porte. L'app doit afficher
+  -- « Extrait de l'ancien répertoire » quand author_id est null.
+  -- Les commentaires saisis dans l'app restent signés : la policy comments_insert
+  -- impose author_id = auth.uid(). Seul l'import (hors RLS) écrit des null.
+  author_id  uuid references public.members (id) on delete cascade default auth.uid(),
   type       text not null check (type in ('reco','alerte','spec','info')),
   texte      text not null,
   created_at timestamptz not null default now()
 );
+
+-- Idempotent : rendre author_id nullable sur une base déjà créée.
+alter table public.comments alter column author_id drop not null;
+
+comment on column public.comments.author_id is
+  'NULL = « Extrait de l''ancien répertoire » (import xlsx historique, auteur inconnu).';
 
 create index if not exists comments_contact_idx on public.comments (contact_id);
 
@@ -223,6 +235,17 @@ create policy comments_update_own on public.comments
 drop policy if exists comments_delete_own on public.comments;
 create policy comments_delete_own on public.comments
   for delete using (author_id = auth.uid());
+
+-- Commentaires « Extrait de l'ancien répertoire » (author_id null) : sans auteur, ils
+-- ne matcheraient aucune policy « own » et seraient donc ineffaçables. Comme les fiches
+-- (éditables par tout membre, cf. DECISIONS.md), on les rend curables collectivement.
+drop policy if exists comments_update_legacy on public.comments;
+create policy comments_update_legacy on public.comments
+  for update using (author_id is null and public.is_member())
+  with check (public.is_member());
+drop policy if exists comments_delete_legacy on public.comments;
+create policy comments_delete_legacy on public.comments
+  for delete using (author_id is null and public.is_member());
 
 -- LIST_ENTRIES : chacun ne gère que sa propre liste.
 drop policy if exists list_entries_select on public.list_entries;
