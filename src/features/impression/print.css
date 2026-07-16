@@ -1,0 +1,31 @@
+/*
+ * CSS d'impression scopé à l'écran Sélection & impression (plans/P1/S6.md T9 §Hors périmètre —
+ * ne pas ajouter de règles globales dans src/theme/global.css). Importé uniquement par
+ * ImpressionPage.tsx.
+ *
+ * Approche : à l'impression, tout est masqué puis seule la feuille d'aperçu
+ * (`.impression-sheet`) est révélée — cela masque la barre du haut (Layout, hors périmètre) et le
+ * panneau d'options sans les modifier.
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .impression-sheet,
+  .impression-sheet * {
+    visibility: visible;
+  }
+
+  .impression-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}
