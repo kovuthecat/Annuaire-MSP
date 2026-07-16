@@ -173,42 +173,6 @@ Claude Design** pour dessiner la maquette écran par écran.
 
 ## Maquette UI
 
-- **Statut** : [ ] à dessiner · [x] **dessinée** (Claude Design, 2026-07-16) · [ ] câblée
-- **Exports** : `design/maquettes/design-annuaire-msp/` — écran principal (tous les écrans via états) :
-  `project/MSP Annuaire.dc.html` ; variante `project/MSP Annuaire - Options.dc.html` ; logo
-  `project/uploads/Logo MSP Ménilmontant couleur.jpg` ; aperçus PNG des lignes d'annuaire.
-  **Le câblage recrée le rendu fidèlement** (les `.dc.html` sont des prototypes, pas du code de prod).
-
-### Design system (extrait des maquettes — référence de câblage)
-
-- **Police** : Plus Jakarta Sans (400→800). **Fond app** : `#efece5` (beige chaud). Cartes `#fff`,
-  bordures `#efe9dc`/`#e6e2d8`, radius 12–16 px, ombres très douces.
-- **Dégradé primaire** : `#0f9f8e` (teal) → `#1f7fd6` (bleu) — barre du haut, boutons principaux,
-  avatars. Liens `#1f7fd6` (hover `#0f9f8e`).
-- **Couleurs sémantiques** : Secteur 1 vert (`#0f9f8e` / fond `#e4f5f2`) · Secteur 2 violet (`#7a6ec9`
-  / `#eeecfb`) · AME/CMU ambre (`#b8894a` / `#fbf0e0`) · VAD bleu (`#1f7fd6` / `#e7f1fc`) · Prend
-  nouveaux patients vert (`#3aa876` / `#e9f7ef`).
-- **Commentaires — 4 types** : **Recommandation** pastille verte `#3aa876` · **Alerte** (= avis
-  négatif / mise en garde) triangle orange `#d3843d` · **Spécificité** losange violet `#7a6ec9` ·
-  **Info pratique** bleu `#1f7fd6`. Affichage : icône + compteur, popover au survol (desktop) / tap.
-- **Coordonnées** : bloc **patient** sur fond vert (`#f4f9f8`), bloc **pro** sur fond ambre (`#fbf5ea`)
-  avec icône cadenas + « Réservé aux pros — ne pas communiquer au patient ».
-- **Écrans** : Connexion (lien magique) · Annuaire (recherche mentionnant « un commentaire » + toggle
-  Mes contacts/Tous + chips de filtres + lignes) · Fiche (2 blocs coords + rangée d'icônes commentaires
-  + « Signaler à vérifier ») · Ajout/Modif (carte « Essentiel » requise + `<details>` repliables +
-  détection de doublon + barre d'enregistrement collante) · Sélection & impression (panneau gauche +
-  aperçu feuille patient, en-tête MSP, sans commentaires ni coords pro) · Membres (liste + inviter).
-
-### Écarts maquette ↔ architecture (à câbler / trancher)
-
-1. **Types de contact** : la maquette regroupe en **4 boutons** (Praticien · Structure/établissement ·
-   Laboratoire/imagerie · Autre ressource) au lieu de la liste fine (9) de « Données affichées ».
-   → décision : 4 groupes en surface + sous-type fin optionnel en base (cf. `DECISIONS.md`).
-2. **Commentaire « Info pratique »** : saisissable (4ᵉ type, bleu) mais **sans icône** sur liste/fiche
-   dans la maquette → où l'afficher ? (décision à consigner).
-3. **Terminologie** : « **Alerte** » (maquette) = « avis négatif / mise en garde » (archi) → on retient
-   **Alerte** partout.
-4. **Barre de nav** : les pills incluent « Fiche détail » = **artefact de démo** ; en prod la fiche
-   s'ouvre en cliquant un contact (pas d'entrée de menu).
-5. **Filtres** : la maquette montre quelques chips (Secteur 1, VAD, AME/CMU, +Nouveaux patients,
-   Arrondissement) ; **profession/spécialité et tags** à ajouter au câblage (panneau de filtres complet).
+- **Statut** : [x] à dessiner · [ ] dessinée · [ ] câblée
+- **Exports** : `design/maquettes/` (un fichier par écran, HTML ou PNG).
+- **Écarts maquette ↔ architecture** : <à remplir au retour de Claude Design>.

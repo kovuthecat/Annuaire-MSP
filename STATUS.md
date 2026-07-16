@@ -4,9 +4,10 @@
 
 ## Phase actuelle
 
-**Phase 0 — Cadrage.** Réflexion produit (`PROJECT_BRIEF.md`) et architecture (`ARCHITECTURE.md`)
-faites. Squelette Vite + React + TS en place (page « en construction »), GitHub + Vercel branchés.
-Prochaine étape : **maquette UI par Claude Design** (envoyer `ARCHITECTURE.md` tel quel), puis câblage.
+**Phase 0 — Cadrage.** Réflexion produit + architecture faites. Squelette Vite + React + TS en place,
+GitHub + Vercel branchés. **Maquette Claude Design reçue** (`design/maquettes/design-annuaire-msp/`,
+design system consigné dans `ARCHITECTURE.md` §Maquette). Prochaine étape : créer **Supabase**, puis
+cadrer le plan **P1 (câblage)** sur la maquette.
 
 ## Ce qui fonctionne
 

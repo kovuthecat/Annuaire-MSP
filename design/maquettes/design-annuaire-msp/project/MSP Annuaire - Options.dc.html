@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efece5;font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.dv-turn{padding:40px 44px 56px;border-bottom:1px solid rgba(0,0,0,.08)}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.dv-tid{font:700 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:700 14px/1.2 'Plus Jakarta Sans',sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px}
+.dv-oid{font:700 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.4 'Plus Jakarta Sans',sans-serif;color:rgba(0,0,0,.55);max-width:640px}
+.dv-card{width:900px;max-width:900px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden}
+.dv-next{margin:24px 0 0;font:12px/1.6 'Plus Jakarta Sans',sans-serif;color:rgba(0,0,0,.5);max-width:900px}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Variations autour de <a class="dv-oid" href="#1a">1a</a></span></div>
+<div class="dv-opts">
+
+<!-- 2a — filtres en colonne -->
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Filtres en colonne latérale visible en permanence</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="display:flex;align-items:center;gap:16px;padding:14px 24px;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);color:#fff">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font:800 13px/1 'Plus Jakarta Sans'">M</div>
+    <div style="font:700 14px/1 'Plus Jakarta Sans'">MSP Ménilmontant · Annuaire</div>
+    <div style="margin-left:auto;font:500 12px/1 'Plus Jakarta Sans'">+ Ajouter un contact</div>
+  </div>
+  <div style="display:flex;background:#fbfaf7">
+    <div style="width:170px;flex:none;padding:18px 16px;border-right:1px solid #efe9dc">
+      <div style="font:700 10px 'Plus Jakarta Sans';color:#a39c8e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Filtres</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font:600 11.5px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:6px 10px;border-radius:8px">Secteur 1</span>
+        <span style="font:600 11.5px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:6px 10px;border-radius:8px">VAD</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578;padding:6px 10px">AME/CMU</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578;padding:6px 10px">Nouveaux patients</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578;padding:6px 10px">Arrondissement</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578;padding:6px 10px">Tags</span>
+      </div>
+    </div>
+    <div style="flex:1;padding:18px 20px">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+        <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e2d8;border-radius:12px;padding:11px 14px">
+          <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9a9488" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9a9488" stroke-width="1.6"></line></svg>
+          <span style="color:#9a9488;font-size:13px">Rechercher…</span>
+        </div>
+        <div style="display:flex;background:#f1ede4;border-radius:10px;padding:3px">
+          <div style="padding:7px 14px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);font:600 12px 'Plus Jakarta Sans';color:#1a3d5c">Mes contacts</div>
+          <div style="padding:7px 14px;border-radius:8px;font:600 12px 'Plus Jakarta Sans';color:#a39c8e">Tous</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:12px">
+          <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+          <div style="flex:1">
+            <div style="font:700 13px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+            <div style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Généraliste · 20e</div>
+          </div>
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:3px 8px;border-radius:20px">S1</span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 XX XX</span>
+          <div style="width:16px;height:16px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:12px">
+          <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1f7fd6,#0f9f8e);flex:none"></div>
+          <div style="flex:1">
+            <div style="font:700 13px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</div>
+            <div style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Structure · 20e</div>
+          </div>
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#b8894a;background:#fbf0e0;padding:3px 8px;border-radius:20px">AME</span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 YY YY</span>
+          <div style="width:16px;height:16px;border-radius:50%;background:#1f7fd6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 2b — densité tableau -->
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Même univers visuel, densité tableau (plus de lignes visibles)</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="display:flex;align-items:center;gap:16px;padding:14px 24px;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);color:#fff">
+    <div style="font:700 14px/1 'Plus Jakarta Sans'">MSP Ménilmontant · Annuaire</div>
+    <div style="margin-left:auto;font:500 12px/1 'Plus Jakarta Sans'">+ Ajouter un contact</div>
+  </div>
+  <div style="padding:18px 24px;background:#fbfaf7">
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e2d8;border-radius:10px;padding:9px 13px">
+        <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9a9488" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9a9488" stroke-width="1.6"></line></svg>
+        <span style="color:#9a9488;font-size:12.5px">Rechercher…</span>
+      </div>
+      <div style="display:flex;background:#f1ede4;border-radius:9px;padding:3px">
+        <div style="padding:6px 12px;border-radius:7px;background:#fff;font:600 11.5px 'Plus Jakarta Sans';color:#1a3d5c">Mes contacts</div>
+        <div style="padding:6px 12px;border-radius:7px;font:600 11.5px 'Plus Jakarta Sans';color:#a39c8e">Tous</div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #efe9dc;border-radius:12px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 50px 50px 30px 90px 20px;gap:10px;padding:8px 14px;background:#f6f3ea;font:700 9.5px 'Plus Jakarta Sans';color:#a39c8e;text-transform:uppercase;letter-spacing:.03em">
+        <span></span><span>Nom</span><span>Profession</span><span>Sect.</span><span>VAD</span><span>Avis</span><span>Tél. patient</span><span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 50px 50px 30px 90px 20px;gap:10px;padding:9px 14px;align-items:center;border-top:1px solid #f6f3ea">
+        <input type="checkbox" style="accent-color:#1f7fd6">
+        <span style="font:700 12px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Généraliste</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:2px 6px;border-radius:6px;width:fit-content">S1</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:2px 6px;border-radius:6px;width:fit-content">Oui</span>
+        <div style="width:8px;height:8px;border-radius:50%;background:#3aa876"></div>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 XX</span>
+        <div style="width:16px;height:16px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 50px 50px 30px 90px 20px;gap:10px;padding:9px 14px;align-items:center;border-top:1px solid #f6f3ea">
+        <input type="checkbox" style="accent-color:#1f7fd6">
+        <span style="font:700 12px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Structure</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#b8894a;background:#fbf0e0;padding:2px 6px;border-radius:6px;width:fit-content">AME</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#8b8578;background:#f1ede4;padding:2px 6px;border-radius:6px;width:fit-content">Non</span>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #d3843d"></div>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 YY</span>
+        <div style="width:16px;height:16px;border-radius:50%;background:#1f7fd6"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 50px 50px 30px 90px 20px;gap:10px;padding:9px 14px;align-items:center;border-top:1px solid #f6f3ea">
+        <input type="checkbox" style="accent-color:#1f7fd6">
+        <span style="font:700 12px 'Plus Jakarta Sans';color:#1c2024">Dr Samuel Weill</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Cardiologue</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#7a6ec9;background:#eeecfb;padding:2px 6px;border-radius:6px;width:fit-content">S2</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#8b8578;background:#f1ede4;padding:2px 6px;border-radius:6px;width:fit-content">Non</span>
+        <span></span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 47 20 ZZ</span>
+        <div style="width:16px;height:16px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 50px 50px 30px 90px 20px;gap:10px;padding:9px 14px;align-items:center;border-top:1px solid #f6f3ea">
+        <input type="checkbox" style="accent-color:#1f7fd6">
+        <span style="font:700 12px 'Plus Jakarta Sans';color:#1c2024">Laboratoire Gambetta</span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Laboratoire</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#8b8578;background:#f1ede4;padding:2px 6px;border-radius:6px;width:fit-content">—</span>
+        <span style="font:600 10px 'Plus Jakarta Sans';color:#8b8578;background:#f1ede4;padding:2px 6px;border-radius:6px;width:fit-content">Non</span>
+        <span></span>
+        <span style="font:500 11.5px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 12 QQ</span>
+        <div style="width:16px;height:16px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 2c — commentaires en icônes seules -->
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Badges réduits à l'essentiel, commentaires en icônes seules (moins de pastilles colorées)</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="display:flex;align-items:center;gap:16px;padding:14px 24px;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);color:#fff">
+    <div style="font:700 14px/1 'Plus Jakarta Sans'">MSP Ménilmontant · Annuaire</div>
+    <div style="margin-left:auto;font:500 12px/1 'Plus Jakarta Sans'">+ Ajouter un contact</div>
+  </div>
+  <div style="padding:20px 24px;background:#fbfaf7">
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e2d8;border-radius:12px;padding:11px 14px">
+        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9a9488" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9a9488" stroke-width="1.6"></line></svg>
+        <span style="color:#9a9488;font-size:13px">Rechercher…</span>
+      </div>
+      <div style="display:flex;background:#f1ede4;border-radius:10px;padding:3px">
+        <div style="padding:7px 14px;border-radius:8px;background:#fff;font:600 12px 'Plus Jakarta Sans';color:#1a3d5c">Mes contacts</div>
+        <div style="padding:7px 14px;border-radius:8px;font:600 12px 'Plus Jakarta Sans';color:#a39c8e">Tous</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Généraliste · 20e · Secteur 1 · VAD</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <svg width="16" height="16" viewBox="0 0 16 16" title="2 recommandations"><circle cx="8" cy="8" r="7" fill="none" stroke="#3aa876" stroke-width="1.4"></circle><path d="M5 8l2 2 4-4.5" fill="none" stroke="#3aa876" stroke-width="1.4"></path></svg>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 XX XX</span>
+        <div style="width:18px;height:18px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1f7fd6,#0f9f8e);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Structure · 20e · AME/CMU</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <svg width="16" height="16" viewBox="0 0 16 16" title="avis négatif"><circle cx="8" cy="8" r="7" fill="none" stroke="#d3843d" stroke-width="1.4"></circle><line x1="8" y1="5" x2="8" y2="9" stroke="#d3843d" stroke-width="1.4"></line><circle cx="8" cy="11.2" r=".9" fill="#d3843d"></circle></svg>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 YY YY</span>
+        <div style="width:18px;height:18px;border-radius:50%;background:#1f7fd6"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Dr Samuel Weill</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Cardiologue · 11e · Secteur 2</div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 47 20 ZZ ZZ</span>
+        <div style="width:18px;height:18px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 2d — version mobile -->
+<div class="dv-opt" id="2d">
+<div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Adaptation mobile — recherche + résultats prioritaires, filtres en panneau</div>
+<div class="dv-card" style="width:380px;max-width:380px;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);color:#fff">
+    <div style="font:700 13px/1 'Plus Jakarta Sans'">MSP Ménilmontant</div>
+    <div style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font:800 14px">+</div>
+  </div>
+  <div style="padding:14px 16px;background:#fbfaf7">
+    <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e2d8;border-radius:12px;padding:11px 14px;margin-bottom:10px">
+      <svg width="15" height="15" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9a9488" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9a9488" stroke-width="1.6"></line></svg>
+      <span style="color:#9a9488;font-size:13px">Rechercher…</span>
+      <svg style="margin-left:auto" width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="1.6" fill="#9a9488"></rect><rect x="4" y="8" width="8" height="1.6" fill="#9a9488"></rect><rect x="6" y="12" width="4" height="1.6" fill="#9a9488"></rect></svg>
+    </div>
+    <div style="display:flex;background:#f1ede4;border-radius:10px;padding:3px;margin-bottom:12px">
+      <div style="flex:1;text-align:center;padding:7px 0;border-radius:8px;background:#fff;font:600 12px 'Plus Jakarta Sans';color:#1a3d5c">Mes contacts</div>
+      <div style="flex:1;text-align:center;padding:7px 0;border-radius:8px;font:600 12px 'Plus Jakarta Sans';color:#a39c8e">Tous</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:13px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+          <div style="flex:1">
+            <div style="font:700 13px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+            <div style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Généraliste · 20e</div>
+          </div>
+          <div style="width:18px;height:18px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:3px 8px;border-radius:20px">Secteur 1</span>
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:3px 8px;border-radius:20px">VAD</span>
+          <span style="margin-left:auto;font:600 11px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">Appeler</span>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:13px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1f7fd6,#0f9f8e);flex:none"></div>
+          <div style="flex:1">
+            <div style="font:700 13px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</div>
+            <div style="font:500 11.5px 'Plus Jakarta Sans';color:#8b8578">Structure · 20e</div>
+          </div>
+          <div style="width:18px;height:18px;border-radius:50%;background:#1f7fd6"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#b8894a;background:#fbf0e0;padding:3px 8px;border-radius:20px">AME/CMU</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;background:#1f7fd6;color:#fff;border-radius:12px;padding:11px;text-align:center;font:700 12.5px 'Plus Jakarta Sans'">1 sélectionné → Imprimer la liste</div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Essaie : « garde <a class="dv-oid" href="#2a">2a</a> mais mélange avec la densité de <a class="dv-oid" href="#2b">2b</a> » · « applique la fiche détail au style de <a class="dv-oid" href="#2c">2c</a> » · « pousse <a class="dv-oid" href="#2d">2d</a> sur les autres écrans mobile »</p>
+</section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Annuaire MSP Ménilmontant — 4 directions visuelles</span></div>
+<div class="dv-opts">
+
+<!-- ============ OPTION 1a — Épuré / dégradé logo / pastel / aéré ============ -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Épuré &amp; aéré — dégradé du logo, badges pastel, cartes espacées</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif">
+  <!-- top bar -->
+  <div style="display:flex;align-items:center;gap:16px;padding:14px 24px;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);color:#fff">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font:800 13px/1 'Plus Jakarta Sans'">M</div>
+    <div style="font:700 14px/1 'Plus Jakarta Sans'">MSP Ménilmontant · Annuaire</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font:500 12px/1 'Plus Jakarta Sans'">
+      <span>+ Ajouter un contact</span>
+      <div style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font:700 11px">CD</div>
+    </div>
+  </div>
+  <div style="padding:20px 24px;background:#fbfaf7">
+    <!-- search + toggle -->
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e2d8;border-radius:12px;padding:11px 14px;box-shadow:0 1px 2px rgba(0,0,0,.03)">
+        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9a9488" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9a9488" stroke-width="1.6"></line></svg>
+        <span style="color:#9a9488;font-size:13px">Rechercher un nom, une spécialité, un tag…</span>
+      </div>
+      <div style="display:flex;background:#f1ede4;border-radius:10px;padding:3px">
+        <div style="padding:7px 14px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);font:600 12px 'Plus Jakarta Sans';color:#1a3d5c">Mes contacts</div>
+        <div style="padding:7px 14px;border-radius:8px;font:600 12px 'Plus Jakarta Sans';color:#a39c8e">Tous</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font:500 11px 'Plus Jakarta Sans';color:#a39c8e;padding:5px 10px">Filtres :</span>
+      <span style="font:600 11px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:5px 10px;border-radius:8px">Secteur 1</span>
+      <span style="font:600 11px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:5px 10px;border-radius:8px">VAD</span>
+      <span style="font:500 11px 'Plus Jakarta Sans';color:#a39c8e;background:#f1ede4;padding:5px 10px;border-radius:8px">+ Nouveaux patients</span>
+      <span style="margin-left:auto;font:500 11px 'Plus Jakarta Sans';color:#a39c8e">12 résultats · Pertinence ▾</span>
+    </div>
+    <!-- result cards -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Médecin généraliste · 20e arr.</div>
+        </div>
+        <span style="font:600 10.5px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:4px 9px;border-radius:20px">Secteur 1</span>
+        <span style="font:600 10.5px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:4px 9px;border-radius:20px">VAD</span>
+        <div style="display:flex;gap:5px">
+          <div style="width:9px;height:9px;border-radius:50%;background:#3aa876" title="2 recommandations"></div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 XX XX</span>
+        <div style="width:18px;height:18px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1f7fd6,#0f9f8e);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Cabinet Kinésithérapie Belleville</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Structure · Kinésithérapie · 20e arr.</div>
+        </div>
+        <span style="font:600 10.5px 'Plus Jakarta Sans';color:#b8894a;background:#fbf0e0;padding:4px 9px;border-radius:20px">AME/CMU</span>
+        <div style="display:flex;gap:5px">
+          <div style="width:9px;height:9px;border-radius:50%;background:#3aa876" title="reco"></div>
+          <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #d3843d" title="avis"></div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 43 58 YY YY</span>
+        <div style="width:18px;height:18px;border-radius:50%;background:#1f7fd6"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #efe9dc;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:#1f7fd6">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+        <div style="flex:1">
+          <div style="font:700 13.5px 'Plus Jakarta Sans';color:#1c2024">Dr Samuel Weill</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#8b8578">Cardiologue · 11e arr.</div>
+        </div>
+        <span style="font:600 10.5px 'Plus Jakarta Sans';color:#7a6ec9;background:#eeecfb;padding:4px 9px;border-radius:20px">Secteur 2</span>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1f7fd6;text-decoration:underline">01 47 20 ZZ ZZ</span>
+        <div style="width:18px;height:18px;border-radius:50%;border:1.6px solid #ddd6c4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="dv-card" style="margin-top:2px">
+  <div style="padding:22px 26px;background:#fff">
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0f9f8e,#1f7fd6);flex:none"></div>
+      <div style="flex:1">
+        <div style="font:800 18px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#8b8578;margin-top:2px">Médecin généraliste · Cabinet Fontaine — 20e arr.</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#0f9f8e;background:#e4f5f2;padding:4px 9px;border-radius:20px">Secteur 1</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#1f7fd6;background:#e7f1fc;padding:4px 9px;border-radius:20px">VAD</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#3aa876;background:#e9f7ef;padding:4px 9px;border-radius:20px">Prend nouveaux patients</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#1f7fd6;border:1px solid #d7e7fa;padding:7px 12px;border-radius:9px">★ Ma liste</span>
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#fff;background:linear-gradient(90deg,#0f9f8e,#1f7fd6);padding:7px 12px;border-radius:9px">Modifier</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div style="background:#f4f9f8;border:1px solid #dcf0eb;border-radius:12px;padding:14px 16px">
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#0f9f8e;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Pour le patient</div>
+        <div style="font:500 12.5px/1.7 'Plus Jakarta Sans';color:#3d443f">12 rue des Panoyaux, 75020 · Secrétariat 01 43 58 XX XX<br>Doctolib : dr-aline-fontaine</div>
+      </div>
+      <div style="background:#fbf5ea;border:1px solid #f2e4c8;border-radius:12px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="5" width="8" height="6" rx="1.5" fill="#b8894a"></rect><path d="M4 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="#b8894a" stroke-width="1.3"></path></svg>
+          <span style="font:700 11px 'Plus Jakarta Sans';color:#b8894a;text-transform:uppercase;letter-spacing:.04em">Réservé aux pros</span>
+        </div>
+        <div style="font:500 12.5px/1.7 'Plus Jakarta Sans';color:#3d443f">Ligne directe : 06 XX XX XX XX · Email avis : a.fontaine@mssante.fr<br>Préciser : adressé par la CPTS</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid #f1ede4">
+      <span style="font:600 11px 'Plus Jakarta Sans';color:#8b8578">Commentaires :</span>
+      <div style="display:flex;align-items:center;gap:5px;background:#e9f7ef;padding:4px 9px;border-radius:20px"><div style="width:8px;height:8px;border-radius:50%;background:#3aa876"></div><span style="font:600 11px 'Plus Jakarta Sans';color:#3aa876">2</span></div>
+      <div style="display:flex;align-items:center;gap:5px;background:#fbf0e0;padding:4px 9px;border-radius:20px"><div style="width:0;height:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;border-bottom:8px solid #d3843d"></div><span style="font:600 11px 'Plus Jakarta Sans';color:#d3843d">1</span></div>
+      <span style="margin-left:auto;font:500 11px 'Plus Jakarta Sans';color:#c2bcae">Modifié par S. Weill le 02/07</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ OPTION 1b — Outil métier / bleu seul / gris / dense ============ -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Outil métier — bleu MSP seul, badges gris + icônes, liste dense type tableau</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="display:flex;align-items:center;gap:14px;padding:12px 22px;background:#123a63;color:#fff">
+    <div style="font:800 13px 'Plus Jakarta Sans'">MSP MÉNILMONTANT</div>
+    <div style="font:500 12px 'Plus Jakarta Sans';color:#a9c1de">Annuaire</div>
+    <div style="margin-left:auto;display:flex;gap:16px;font:600 11.5px 'Plus Jakarta Sans'">
+      <span>Sélection (0)</span><span>+ Ajouter</span><span>Membres</span>
+    </div>
+  </div>
+  <div style="display:flex">
+    <div style="width:150px;flex:none;background:#f4f5f6;border-right:1px solid #e3e5e8;padding:16px 14px">
+      <div style="font:700 10px 'Plus Jakarta Sans';color:#8a9099;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Filtres</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font:500 11.5px 'Plus Jakarta Sans';color:#3c4249">
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" style="accent-color:#123a63">Type de contact</label>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" checked style="accent-color:#123a63">Secteur 1</label>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" style="accent-color:#123a63">VAD</label>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" style="accent-color:#123a63">AME/CMU</label>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" style="accent-color:#123a63">Nouveaux patients</label>
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" style="accent-color:#123a63">Arrondissement</label>
+      </div>
+    </div>
+    <div style="flex:1;padding:16px 18px">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+        <div style="flex:1;display:flex;align-items:center;gap:7px;border:1px solid #cfd4da;border-radius:6px;padding:8px 11px">
+          <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#8a9099" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#8a9099" stroke-width="1.6"></line></svg>
+          <span style="color:#8a9099;font-size:12.5px">Rechercher…</span>
+        </div>
+        <div style="display:flex;border:1px solid #cfd4da;border-radius:6px;overflow:hidden">
+          <div style="padding:7px 12px;background:#123a63;color:#fff;font:600 11.5px 'Plus Jakarta Sans'">Mes contacts</div>
+          <div style="padding:7px 12px;color:#5a6068;font:600 11.5px 'Plus Jakarta Sans'">Tous</div>
+        </div>
+      </div>
+      <div style="border:1px solid #e3e5e8;border-radius:6px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 60px 60px 40px 90px 22px;gap:8px;padding:7px 12px;background:#f4f5f6;font:700 10px 'Plus Jakarta Sans';color:#8a9099;text-transform:uppercase;letter-spacing:.03em">
+          <span></span><span>Nom</span><span>Profession</span><span>Sect.</span><span>VAD</span><span>Avis</span><span>Tél. patient</span><span></span>
+        </div>
+        <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 60px 60px 40px 90px 22px;gap:8px;padding:9px 12px;border-top:1px solid #eef0f2;align-items:center">
+          <input type="checkbox" style="accent-color:#123a63">
+          <span style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#5a6068">Généraliste</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">S1</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">Oui</span>
+          <div style="width:8px;height:8px;border-radius:50%;background:#5a6068"></div>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#123a63;text-decoration:underline">01 43 58 XX</span>
+          <div style="width:16px;height:16px;border-radius:50%;border:1.5px solid #cfd4da"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 60px 60px 40px 90px 22px;gap:8px;padding:9px 12px;border-top:1px solid #eef0f2;align-items:center">
+          <input type="checkbox" style="accent-color:#123a63">
+          <span style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#5a6068">Structure</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">—</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">Non</span>
+          <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:7px solid #b6542e"></div>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#123a63;text-decoration:underline">01 43 58 YY</span>
+          <div style="width:16px;height:16px;border-radius:50%;background:#123a63"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:20px 1.6fr 1fr 60px 60px 40px 90px 22px;gap:8px;padding:9px 12px;border-top:1px solid #eef0f2;align-items:center">
+          <input type="checkbox" style="accent-color:#123a63">
+          <span style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Dr Samuel Weill</span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#5a6068">Cardiologue</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">S2</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:2px 6px;border-radius:4px;width:fit-content">Non</span>
+          <span></span>
+          <span style="font:500 11.5px 'Plus Jakarta Sans';color:#123a63;text-decoration:underline">01 47 20 ZZ</span>
+          <div style="width:16px;height:16px;border-radius:50%;border:1.5px solid #cfd4da"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="dv-card" style="margin-top:2px">
+  <div style="padding:20px 22px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid #e3e5e8;margin-bottom:14px">
+      <div>
+        <div style="font:800 17px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+        <div style="font:500 12px 'Plus Jakarta Sans';color:#5a6068">Médecin généraliste · Cabinet Fontaine — 20e arr.</div>
+        <div style="display:flex;gap:6px;margin-top:7px">
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:3px 7px;border-radius:4px">SECTEUR 1</span>
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:3px 7px;border-radius:4px">VAD</span>
+          <span style="font:600 10px 'Plus Jakarta Sans';color:#5a6068;background:#eef0f2;padding:3px 7px;border-radius:4px">NOUVEAUX PATIENTS</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#123a63;border:1px solid #cfd4da;padding:7px 12px;border-radius:6px">Ma liste</span>
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#fff;background:#123a63;padding:7px 12px;border-radius:6px">Modifier</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e3e5e8;border-radius:6px;overflow:hidden">
+      <div style="padding:13px 15px;border-right:1px solid #e3e5e8">
+        <div style="font:700 10px 'Plus Jakarta Sans';color:#5a6068;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Pour le patient</div>
+        <div style="font:500 12px/1.7 'Plus Jakarta Sans';color:#3c4249">12 rue des Panoyaux, 75020<br>Secrétariat 01 43 58 XX XX · Doctolib</div>
+      </div>
+      <div style="padding:13px 15px;background:#f8f8f8">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px">
+          <svg width="11" height="11" viewBox="0 0 12 12"><rect x="2" y="5" width="8" height="6" rx="1" fill="#5a6068"></rect><path d="M4 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="#5a6068" stroke-width="1.2"></path></svg>
+          <span style="font:700 10px 'Plus Jakarta Sans';color:#5a6068;text-transform:uppercase;letter-spacing:.05em">Réservé aux pros</span>
+        </div>
+        <div style="font:500 12px/1.7 'Plus Jakarta Sans';color:#3c4249">Ligne directe 06 XX XX XX XX<br>Email avis : a.fontaine@mssante.fr</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+      <span style="font:600 11px 'Plus Jakarta Sans';color:#8a9099">Commentaires</span>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:7px;height:7px;border-radius:50%;background:#5a6068"></div><span style="font:600 11px 'Plus Jakarta Sans';color:#5a6068">2</span></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:7px solid #5a6068"></div><span style="font:600 11px 'Plus Jakarta Sans';color:#5a6068">1</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ OPTION 1c — Chaleureux / turquoise+chaud / icônes / densité moyenne ============ -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Chaleureux &amp; humain — turquoise + neutre chaud, icônes rondes, densité moyenne</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif;background:#fbf6ee">
+  <div style="display:flex;align-items:center;gap:14px;padding:16px 24px">
+    <div style="width:30px;height:30px;border-radius:50%;background:#1a9b85;display:flex;align-items:center;justify-content:center;color:#fff;font:800 13px 'Plus Jakarta Sans'">M</div>
+    <div style="font:700 14px 'Plus Jakarta Sans';color:#2b2620">MSP Ménilmontant</div>
+    <div style="margin-left:auto;font:600 12px 'Plus Jakarta Sans';color:#c1734a">+ Ajouter un contact</div>
+  </div>
+  <div style="padding:0 24px 20px">
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border-radius:16px;padding:12px 16px">
+        <svg width="15" height="15" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#b3a998" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#b3a998" stroke-width="1.6"></line></svg>
+        <span style="color:#b3a998;font-size:13px">Un nom, une spécialité, un quartier…</span>
+      </div>
+      <div style="display:flex;background:#fff;border-radius:16px;padding:4px">
+        <div style="padding:8px 16px;border-radius:12px;background:#1a9b85;color:#fff;font:600 12px 'Plus Jakarta Sans'">Mes contacts</div>
+        <div style="padding:8px 16px;border-radius:12px;color:#a89d89;font:600 12px 'Plus Jakarta Sans'">Tous</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="background:#fff;border-radius:18px;padding:15px 18px;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#1a9b85;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:700 13px 'Plus Jakarta Sans'">AF</div>
+        <div style="flex:1">
+          <div style="font:700 14px 'Plus Jakarta Sans';color:#2b2620">Dr Aline Fontaine</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#a89d89">Généraliste · 20e · secteur 1</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="width:24px;height:24px;border-radius:50%;background:#e6f4f0;display:flex;align-items:center;justify-content:center" title="visite à domicile">
+            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l4-3.5L10 6v5H2V6z" fill="none" stroke="#1a9b85" stroke-width="1.3"></path></svg>
+          </div>
+          <div style="width:24px;height:24px;border-radius:50%;background:#e9f7ef;display:flex;align-items:center;justify-content:center" title="2 recommandations">
+            <div style="width:9px;height:9px;border-radius:50%;background:#3aa876"></div>
+          </div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1a9b85">01 43 58 XX XX</span>
+        <div style="width:20px;height:20px;border-radius:50%;border:1.6px solid #e3dccb"></div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:15px 18px;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#c1734a;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:700 12px 'Plus Jakarta Sans'">KB</div>
+        <div style="flex:1">
+          <div style="font:700 14px 'Plus Jakarta Sans';color:#2b2620">Kiné Belleville</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#a89d89">Structure · Kinésithérapie · 20e</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="width:24px;height:24px;border-radius:50%;background:#fdeee1;display:flex;align-items:center;justify-content:center" title="avis négatif">
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #c1734a"></div>
+          </div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1a9b85">01 43 58 YY YY</span>
+        <div style="width:20px;height:20px;border-radius:50%;background:#1a9b85"></div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:15px 18px;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#7a8fb3;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:700 13px 'Plus Jakarta Sans'">SW</div>
+        <div style="flex:1">
+          <div style="font:700 14px 'Plus Jakarta Sans';color:#2b2620">Dr Samuel Weill</div>
+          <div style="font:500 12px 'Plus Jakarta Sans';color:#a89d89">Cardiologue · 11e · secteur 2</div>
+        </div>
+        <span style="font:500 12px 'Plus Jakarta Sans';color:#1a9b85">01 47 20 ZZ ZZ</span>
+        <div style="width:20px;height:20px;border-radius:50%;border:1.6px solid #e3dccb"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="dv-card" style="margin-top:2px;background:#fbf6ee">
+  <div style="padding:22px 26px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div style="width:56px;height:56px;border-radius:50%;background:#1a9b85;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:700 17px 'Plus Jakarta Sans'">AF</div>
+      <div style="flex:1">
+        <div style="font:800 19px 'Plus Jakarta Sans';color:#2b2620">Dr Aline Fontaine</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#a89d89;margin-top:2px">Médecin généraliste · 20e arr.</div>
+      </div>
+      <span style="font:600 12px 'Plus Jakarta Sans';color:#1a9b85;background:#e6f4f0;padding:8px 16px;border-radius:14px">★ Dans ma liste</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:#fff;border-radius:16px;padding:16px 18px">
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#1a9b85;margin-bottom:8px">Pour le patient</div>
+        <div style="font:500 12.5px/1.8 'Plus Jakarta Sans';color:#4a4436">12 rue des Panoyaux, 75020<br>Secrétariat · Doctolib</div>
+      </div>
+      <div style="background:#fdf3e9;border-radius:16px;padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="5" width="8" height="6" rx="1.5" fill="#c1734a"></rect><path d="M4 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="#c1734a" stroke-width="1.3"></path></svg>
+          <span style="font:700 11px 'Plus Jakarta Sans';color:#c1734a">Réservé aux pros</span>
+        </div>
+        <div style="font:500 12.5px/1.8 'Plus Jakarta Sans';color:#4a4436">Ligne directe · Email avis MSSanté</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ OPTION 1d — Novel split view / accents catégorie / dense ============ -->
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Vue fractionnée — liste + fiche côte à côte (type client mail), accents par type de contact</div>
+<div class="dv-card" style="font-family:'Plus Jakarta Sans',sans-serif;display:flex;height:520px">
+  <div style="width:340px;flex:none;border-right:1px solid #eceff2;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid #eceff2">
+      <div style="display:flex;align-items:center;gap:7px;background:#f4f6f8;border-radius:8px;padding:9px 12px;margin-bottom:8px">
+        <svg width="13" height="13" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="#9aa3ad" stroke-width="1.6"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="#9aa3ad" stroke-width="1.6"></line></svg>
+        <span style="color:#9aa3ad;font-size:12px">Rechercher…</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#fff;background:#1c2b3a;padding:5px 10px;border-radius:6px">Mes contacts</span>
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#9aa3ad">Tous</span>
+        <span style="margin-left:auto;font:500 11px 'Plus Jakarta Sans';color:#9aa3ad;align-self:center">1 sélect.</span>
+      </div>
+    </div>
+    <div style="flex:1;overflow:hidden">
+      <div style="padding:12px 16px;background:#eef4ff;border-left:3px solid #2f6fd6;display:flex;gap:10px;align-items:center">
+        <div style="width:6px;height:6px;border-radius:50%;background:#2f6fd6"></div>
+        <div style="flex:1">
+          <div style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+          <div style="font:500 11px 'Plus Jakarta Sans';color:#7c8592">Généraliste · S1 · VAD</div>
+        </div>
+        <input type="checkbox" checked style="accent-color:#2f6fd6">
+      </div>
+      <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;border-top:1px solid #f2f4f6">
+        <div style="width:6px;height:6px;border-radius:50%;background:#c1734a"></div>
+        <div style="flex:1">
+          <div style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Kiné Belleville</div>
+          <div style="font:500 11px 'Plus Jakarta Sans';color:#7c8592">Structure · AME/CMU</div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;border-top:1px solid #f2f4f6">
+        <div style="width:6px;height:6px;border-radius:50%;background:#2f6fd6"></div>
+        <div style="flex:1">
+          <div style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Dr Samuel Weill</div>
+          <div style="font:500 11px 'Plus Jakarta Sans';color:#7c8592">Cardiologue · S2</div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;border-top:1px solid #f2f4f6">
+        <div style="width:6px;height:6px;border-radius:50%;background:#3a9c73"></div>
+        <div style="flex:1">
+          <div style="font:700 12.5px 'Plus Jakarta Sans';color:#1c2024">Laboratoire Gambetta</div>
+          <div style="font:500 11px 'Plus Jakarta Sans';color:#7c8592">Laboratoire · PMR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1;padding:22px 26px;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">
+      <div style="width:8px;align-self:stretch;border-radius:4px;background:#2f6fd6"></div>
+      <div style="flex:1">
+        <div style="font:800 18px 'Plus Jakarta Sans';color:#1c2024">Dr Aline Fontaine</div>
+        <div style="font:500 12.5px 'Plus Jakarta Sans';color:#7c8592;margin-top:2px">Médecin généraliste · 20e arr.</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#2f6fd6;background:#eef4ff;padding:4px 9px;border-radius:6px">SECTEUR 1</span>
+          <span style="font:600 10.5px 'Plus Jakarta Sans';color:#2f6fd6;background:#eef4ff;padding:4px 9px;border-radius:6px">VAD</span>
+        </div>
+      </div>
+      <span style="font:600 11px 'Plus Jakarta Sans';color:#2f6fd6;border:1px solid #cfe0f7;padding:6px 12px;border-radius:7px">Modifier</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:#f6f9fc;border-radius:10px;padding:13px 15px">
+        <div style="font:700 10.5px 'Plus Jakarta Sans';color:#2f6fd6;margin-bottom:6px">POUR LE PATIENT</div>
+        <div style="font:500 12px/1.7 'Plus Jakarta Sans';color:#3c4249">12 rue des Panoyaux, 75020 · Secrétariat 01 43 58 XX XX · Doctolib</div>
+      </div>
+      <div style="background:#fbf1e8;border-radius:10px;padding:13px 15px">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+          <svg width="11" height="11" viewBox="0 0 12 12"><rect x="2" y="5" width="8" height="6" rx="1" fill="#b8703f"></rect><path d="M4 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="#b8703f" stroke-width="1.2"></path></svg>
+          <span style="font:700 10.5px 'Plus Jakarta Sans';color:#b8703f">RÉSERVÉ AUX PROS</span>
+        </div>
+        <div style="font:500 12px/1.7 'Plus Jakarta Sans';color:#3c4249">Ligne directe 06 XX XX XX XX · Email avis MSSanté</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span style="font:600 11px 'Plus Jakarta Sans';color:#7c8592">Commentaires</span>
+        <div style="display:flex;align-items:center;gap:4px;background:#e9f7ef;padding:3px 8px;border-radius:20px"><div style="width:7px;height:7px;border-radius:50%;background:#3aa876"></div><span style="font:600 10.5px 'Plus Jakarta Sans';color:#3aa876">2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Essaie : « approfondis <a class="dv-oid" href="#1a">1a</a> avec la densité tableau de <a class="dv-oid" href="#1b">1b</a> » · « décline <a class="dv-oid" href="#1d">1d</a> en mobile » · « montre l'écran de connexion et d'ajout dans le style de <a class="dv-oid" href="#1c">1c</a> »</p>
+</section>
+
+</x-dc>
+</body>
+</html>
