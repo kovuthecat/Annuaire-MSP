@@ -4,10 +4,10 @@
 
 ## Phase actuelle
 
-**Phase 1 — Câblage (plan `plans/P1/`) en cours.** Supabase créé et branché, schéma + RLS posés.
-Fait et commité : **S1** (fondations UI), **S2** (données), **S3** (écran Annuaire), **S7** (auth +
-Membres). Restant : **S4** (fiche détail), **S5** (ajout/modif — plan écrit, implémentation en cours),
-**S6** (sélection & impression) — cf. `plans/P1/index.md`.
+**Phase 1 — Câblage (plan `plans/P1/`) terminée côté code.** Les 7 sessions (S1-S7) sont faites :
+fondations UI, données Supabase, Annuaire, Fiche détail, Ajout/Modif, Sélection & impression, Auth +
+Membres. `npm run build` / `npm run typecheck` passent à 0 erreur sur l'état combiné. Reste : validation
+visuelle humaine (`VALIDATION.md`) et push.
 
 ## Ce qui fonctionne
 
@@ -18,13 +18,19 @@ Membres). Restant : **S4** (fiche détail), **S5** (ajout/modif — plan écrit,
 - Auth email + mot de passe (session persistée), garde de route, écran Membres (profil, mot de passe).
 - Écran Annuaire : recherche/filtres côté client, bascule mes/tous, sélection pour impression, icônes
   de commentaires.
+- Écran Fiche détail : coords patient/pro étanches, commentaires typés, actions (ma liste, sélection
+  impression, modifier, signaler à vérifier).
+- Écran Ajout/Modifier : saisie essentielle rapide, sections repliables, détection de doublon,
+  commentaires en brouillon (création) ou immédiats (édition).
+- Écran Sélection & impression : panneau réordonnable, options, feuille patient (aucune coordonnée pro
+  ni commentaire), impression/export PDF via `window.print()`.
 
 ## Ce qui casse / n'est pas testé
 
-- Écrans Fiche détail, Ajout/Modif, Sélection & impression encore des stubs (« à câbler »).
-- Validation visuelle des écrans livrés (S1/S2/S3/S7) pas encore faite par un humain — checklist dans
-  `VALIDATION.md`.
+- Validation visuelle des 7 écrans pas encore faite par un humain — checklist dans `VALIDATION.md`.
 - Lint/tests non configurés.
+- Un diff non commité traîne sur `supabase/schema.sql` (colonne `comments.origine`, hors périmètre P1,
+  lié à T-005) — à vérifier avec Thibault avant tout commit.
 
 ## Bugs connus
 

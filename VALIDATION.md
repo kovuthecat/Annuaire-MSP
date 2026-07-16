@@ -47,6 +47,43 @@
 - [ ] État base vide, état recherche sans résultat : messages + boutons de sortie utiles.
 - [ ] Responsive mobile : recherche/toggle/chips en colonne, ligne de contact reste lisible.
 
+## Fiche détail (`/contact/:id`)
+
+> Checklist complète : `plans/P1/S4.md` §Bilan de session.
+
+- [ ] En-tête (avatar, identité, badges, tags), « À vérifier » si `statut === 'a_verifier'`.
+- [ ] Bloc patient (vert) vs bloc pro (ambre, cadenas) : **étanchéité** — `email_rdv` seulement côté
+      patient, `email_avis` seulement côté pro, jamais mélangés.
+- [ ] Barre d'actions : ma liste (étoile persistante), sélection impression (reflète la barre du haut),
+      Modifier (→ `/contact/:id/modifier`), Signaler à vérifier (devient « Marquée à vérifier »).
+- [ ] Commentaires (icônes détaillées + popover), ajout immédiat (4 types), commentaire sans auteur →
+      « Extrait de l'ancien répertoire ».
+- [ ] États : chargement, erreur, fiche introuvable (id invalide) → retour annuaire.
+
+## Ajouter / Modifier (`/nouveau`, `/contact/:id/modifier`)
+
+> Checklist complète : `plans/P1/S5.md` §Bilan de session.
+
+- [ ] Carte « Essentiel » requise d'emblée ; saisir un nom proche d'une fiche existante → encart
+      doublon actionnable (lien « ouvrir »).
+- [ ] Sections repliables (Lieu, Adressage & accès, Coordonnées patient/pro, Tags, Commentaires).
+- [ ] Tags : ajout/retrait par puce + autocomplétion sur les tags existants.
+- [ ] Validation bloquante si type/nom/profession/(création) moyen de contact manquant.
+- [ ] Création → retour annuaire, fiche + commentaires en brouillon bien présents ensuite.
+- [ ] Édition : formulaire préchargé, pas de champ « moyen de contact », commentaire ajouté visible
+      immédiatement sans clignotement de l'écran.
+
+## Sélection & impression (`/impression`)
+
+> Checklist complète : `plans/P1/S6.md` §Bilan de session.
+
+- [ ] Panneau de sélection réordonnable (↑/↓) et retirable ; pilote l'aperçu en direct.
+- [ ] **Feuille sans aucune coordonnée pro ni commentaire**, même sur un contact qui en a.
+- [ ] Options (en-tête MSP, « Pour : … » non persisté, note libre) reflétées sur l'aperçu.
+- [ ] Imprimer / Export PDF (`window.print()`) : seule la feuille est visible dans l'aperçu avant
+      impression (barre du haut et panneau masqués).
+- [ ] État vide (aucune sélection) → message + retour annuaire.
+
 ## Membres
 
 - [ ] Liste des membres : avatar à initiales, nom, `profession · email`, badge « Référent » sur ton compte.
@@ -54,7 +91,3 @@
       *Important : sans nom, tes commentaires s'afficheront avec ton email.*
 - [ ] Changement de mot de passe effectif (se déconnecter puis se reconnecter avec le nouveau).
 - [ ] « + Inviter un membre » visible **uniquement en référent** → encart explicatif, aucun appel réseau.
-
-## Écrans encore non câblés (normal à ce stade)
-
-Fiche détail, Ajouter/Modifier, Sélection & impression affichent « Écran … — à câbler ».

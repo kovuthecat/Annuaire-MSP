@@ -25,9 +25,9 @@ passe + RLS). Le design est fixé : **on câble sur la maquette, on ne redessine
 | [S1](S1.md) | T1-T3 | Fondations UI : deps, theme/fonts, routing+layout, composants partagés | Sonnet | high | — | `package.json`, `index.html`, `src/theme/`, `src/components/`, `src/app/`, `src/App.tsx`, `src/main.tsx` | [x] |
 | [S2](S2.md) | T4-T5 | Données : schéma Supabase + RLS + client + types + hooks d'accès | Opus/Sonnet | high | Supabase créé | `supabase/`, `src/lib/supabase.ts`, `src/types/`, `src/data/` | [x] |
 | [S3](S3.md) | T6 | Écran Annuaire (recherche client, filtres, mes/tous, sélection, icônes) | Sonnet | high | S1, S2 | `src/features/annuaire/` | [x] |
-| S4 | T7 | Écran Fiche détail (coords patient/pro, 4 icônes commentaires, actions) | Sonnet | medium | S1, S2 | `src/features/fiche/` | [ ] |
-| [S5](S5.md) | T8 | Écran Ajout/Modif (essentiel, type+sous-type, sections, coords, tags, commentaires, doublon) | Sonnet | high | S1, S2 | `src/features/edition/` | [ ] |
-| S6 | T9 | Écran Sélection & impression (panneau, options, feuille patient, CSS print/PDF) | Sonnet | medium | S1, S2 | `src/features/impression/` | [ ] |
+| [S4](S4.md) | T7 | Écran Fiche détail (coords patient/pro, 4 icônes commentaires, actions) | Sonnet | medium | S1, S2, S3 | `src/features/fiche/` | [x] |
+| [S5](S5.md) | T8 | Écran Ajout/Modif (essentiel, type+sous-type, sections, coords, tags, commentaires, doublon) | Sonnet | high | S1, S2 | `src/features/edition/` | [x] |
+| [S6](S6.md) | T9 | Écran Sélection & impression (panneau, options, feuille patient, CSS print/PDF) | Sonnet | medium | S1, S2, S3 | `src/features/impression/` | [x] |
 | [S7](S7.md) | T10 | Auth email + mot de passe (session persistée) + garde de route + Membres (liste, invitation) | Sonnet | high | S2 | `src/features/auth/`, `src/features/membres/`, `src/app/` | [x] |
 
 > S2–S7 : détail rédigé **juste avant leur vague** (S2 une fois les identifiants Supabase en main — le
