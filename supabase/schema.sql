@@ -1,0 +1,216 @@
+-- ============================================================================
+-- Annuaire MSP — schéma Supabase (Postgres) + RLS
+-- À exécuter dans Supabase → SQL Editor → Run. Ré-exécutable sans casse.
+-- Modèle : DECISIONS.md · ARCHITECTURE.md §Données affichées.
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 1. MEMBRES (liés aux comptes auth Supabase)
+-- ---------------------------------------------------------------------------
+create table if not exists public.members (
+  id         uuid primary key references auth.users (id) on delete cascade,
+  email      text,
+  nom        text,
+  prenom     text,
+  profession text,
+  role       text not null default 'membre' check (role in ('membre','referent')),
+  created_at timestamptz not null default now()
+);
+
+-- À la création d'un compte auth, on crée automatiquement sa fiche membre.
+-- (Provisionnement = inviter l'utilisateur dans Supabase → Auth → Users.)
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.members (id, email)
+  values (new.id, new.email)
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Test d'appartenance (security definer => évite la récursion RLS sur members).
+create or replace function public.is_member()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (select 1 from public.members where id = auth.uid());
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 2. CONTACTS (fiche flexible : praticien OU structure/ressource)
+-- ---------------------------------------------------------------------------
+create table if not exists public.contacts (
+  id            uuid primary key default gen_random_uuid(),
+  type          text not null default 'praticien'
+                  check (type in ('praticien','structure','labo','autre')),
+  sous_type     text,                         -- fin, optionnel (hôpital, centre de santé, CPTS…)
+  civilite      text,                         -- Dr / Pr / M. / Mme
+  nom           text not null,
+  prenom        text,
+  profession    text,                         -- spécialité
+  orientation   text,                         -- « spé endométriose »
+  etablissement text,
+  adresse       text,
+  arrondissement text,
+  secteur_conv  text check (secteur_conv in ('1','2','centre','non_conv')),
+
+  -- Coordonnées PATIENT (imprimables)
+  tel_secretariat text,
+  doctolib        text,
+  site_web        text,
+
+  -- Coordonnées PRO (confidentielles — jamais imprimées)
+  ligne_directe text,
+  bip           text,
+  portable      text,
+  fax           text,
+  email_avis    text,
+  mssante       text,
+  consignes_pro text,                         -- « préciser : adressé par la CPTS »…
+
+  -- Adressage / accès
+  prend_nouveaux text not null default 'inconnu'
+                  check (prend_nouveaux in ('oui','non','liste_attente','inconnu')),
+  delai         text,
+  vad           boolean not null default false,
+  ame_cmu       boolean not null default false,
+  pmr           boolean not null default false,
+  langues       text,
+  tele_expertise text,
+  tarif         text,
+
+  -- Méta
+  tags          text[] not null default '{}',
+  statut        text not null default 'actif'
+                  check (statut in ('actif','a_verifier','ne_prend_plus')),
+  rpps          text,
+  created_by    uuid references public.members (id) on delete set null default auth.uid(),
+  created_at    timestamptz not null default now(),
+  updated_by    uuid references public.members (id) on delete set null,
+  updated_at    timestamptz not null default now()
+);
+
+-- updated_at / updated_by automatiques à chaque modification.
+create or replace function public.set_updated()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  new.updated_by := auth.uid();
+  return new;
+end;
+$$;
+
+drop trigger if exists contacts_set_updated on public.contacts;
+create trigger contacts_set_updated
+  before update on public.contacts
+  for each row execute function public.set_updated();
+
+create index if not exists contacts_type_idx on public.contacts (type);
+create index if not exists contacts_arr_idx  on public.contacts (arrondissement);
+create index if not exists contacts_tags_idx on public.contacts using gin (tags);
+
+-- ---------------------------------------------------------------------------
+-- 3. COMMENTAIRES (typés, signés, datés)
+-- ---------------------------------------------------------------------------
+create table if not exists public.comments (
+  id         uuid primary key default gen_random_uuid(),
+  contact_id uuid not null references public.contacts (id) on delete cascade,
+  author_id  uuid not null references public.members (id) on delete cascade default auth.uid(),
+  type       text not null check (type in ('reco','alerte','spec','info')),
+  texte      text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists comments_contact_idx on public.comments (contact_id);
+
+-- ---------------------------------------------------------------------------
+-- 4. « MA LISTE » (adoption d'une fiche par un membre)
+--    « Mes contacts » = fiches créées par moi OU présentes dans ma liste.
+-- ---------------------------------------------------------------------------
+create table if not exists public.list_entries (
+  member_id  uuid not null references public.members (id) on delete cascade default auth.uid(),
+  contact_id uuid not null references public.contacts (id) on delete cascade,
+  added_at   timestamptz not null default now(),
+  primary key (member_id, contact_id)
+);
+
+create index if not exists list_entries_contact_idx on public.list_entries (contact_id);
+
+-- ---------------------------------------------------------------------------
+-- 5. RLS — accès réservé aux membres authentifiés
+-- ---------------------------------------------------------------------------
+alter table public.members      enable row level security;
+alter table public.contacts     enable row level security;
+alter table public.comments     enable row level security;
+alter table public.list_entries enable row level security;
+
+-- MEMBERS : les membres se voient entre eux ; chacun édite sa propre fiche.
+drop policy if exists members_select on public.members;
+create policy members_select on public.members
+  for select using (public.is_member());
+drop policy if exists members_update_self on public.members;
+create policy members_update_self on public.members
+  for update using (id = auth.uid()) with check (id = auth.uid());
+
+-- CONTACTS : lecture + création + édition collaborative + suppression par tout membre.
+drop policy if exists contacts_select on public.contacts;
+create policy contacts_select on public.contacts
+  for select using (public.is_member());
+drop policy if exists contacts_insert on public.contacts;
+create policy contacts_insert on public.contacts
+  for insert with check (public.is_member());
+drop policy if exists contacts_update on public.contacts;
+create policy contacts_update on public.contacts
+  for update using (public.is_member()) with check (public.is_member());
+drop policy if exists contacts_delete on public.contacts;
+create policy contacts_delete on public.contacts
+  for delete using (public.is_member());
+
+-- COMMENTS : lecture par tous les membres ; chacun ne modifie/supprime que les siens.
+drop policy if exists comments_select on public.comments;
+create policy comments_select on public.comments
+  for select using (public.is_member());
+drop policy if exists comments_insert on public.comments;
+create policy comments_insert on public.comments
+  for insert with check (public.is_member() and author_id = auth.uid());
+drop policy if exists comments_update_own on public.comments;
+create policy comments_update_own on public.comments
+  for update using (author_id = auth.uid()) with check (author_id = auth.uid());
+drop policy if exists comments_delete_own on public.comments;
+create policy comments_delete_own on public.comments
+  for delete using (author_id = auth.uid());
+
+-- LIST_ENTRIES : chacun ne gère que sa propre liste.
+drop policy if exists list_entries_select on public.list_entries;
+create policy list_entries_select on public.list_entries
+  for select using (member_id = auth.uid());
+drop policy if exists list_entries_insert on public.list_entries;
+create policy list_entries_insert on public.list_entries
+  for insert with check (member_id = auth.uid());
+drop policy if exists list_entries_delete on public.list_entries;
+create policy list_entries_delete on public.list_entries
+  for delete using (member_id = auth.uid());
+
+-- ============================================================================
+-- APRÈS EXÉCUTION :
+--  1. Auth → Providers → Email : activer « Magic Link », désactiver l'inscription
+--     publique (« Allow new users to sign up ») pour rester en groupe fermé.
+--  2. Inviter les membres : Auth → Users → Invite (crée le compte + la fiche membre).
+--  3. Se désigner référent :  update public.members set role='referent'
+--                             where email='ton.email@msp-menilmontant.fr';
+-- ============================================================================
