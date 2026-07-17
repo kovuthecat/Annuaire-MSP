@@ -83,11 +83,35 @@ PROTOCOLE = [
     ("Interdit — avis de patients",
      "Doctolib affiche des avis de patients : ne rien en tirer, ne pas les citer, ne pas "
      "les résumer. Aucune donnée de patient, jamais."),
+    ("activite_constatee — priorité 3, la question « exerce-t-il encore ? »",
+     "Les fiches de priorité 3 sont ABSENTES du fichier national des 550 587 libéraux "
+     "conventionnés, alors que leur profession y est référencée. Vérifié : ce n'est pas "
+     "un bug. Elles ont donc probablement cessé leur activité libérale — et l'annuaire "
+     "enverrait des patients chez elles. Remplir `activite_constatee` avec UNE de ces "
+     "quatre valeurs, dans cet ordre de préférence : "
+     "[creneaux] des créneaux réservables sont affichés → ELLE EXERCE, c'est certain. "
+     "[profil_tenu] pas de créneaux, mais quelqu'un entretient manifestement la page : "
+     "bio, photo, motifs de consultation, tarifs, horaires, « prise de RDV au 01 XX » → "
+     "présomption forte. "
+     "[fiche_squelette] nom + adresse + téléphone et RIEN d'autre → NE PROUVE RIEN. "
+     "[aucune_page] pas de profil Doctolib → NE PROUVE RIEN NON PLUS."),
+    ("⚠️ Le piège de la priorité 3 — lire avant de conclure",
+     "Doctolib fait DEUX choses : des profils tenus par le praticien, ET des fiches "
+     "d'annuaire fabriquées à partir de données publiques, que PERSONNE n'entretient. "
+     "Ces dernières survivent des années à un départ en retraite — exactement comme "
+     "LogicRdv ou allo-medecins. « Une page existe » ne prouve donc RIEN : ce qui date "
+     "une page, c'est de voir que QUELQU'UN L'ENTRETIENT. "
+     "Et symétriquement : ne pas trouver de page ne prouve pas la cessation — beaucoup "
+     "de praticiens en exercice ne sont pas sur Doctolib. Dans les deux cas douteux "
+     "(fiche_squelette, aucune_page) : on CONSTATE, on ne conclut pas. Un humain "
+     "tranchera, ou un membre de la MSP téléphonera."),
     ("mode_rdv", "Relever COMMENT on prend RDV : en_ligne | telephone | patients_adresses "
                  "| teleconsultation (cumulables, séparés par ;). Beaucoup de praticiens "
                  "sont référencés SANS prise de RDV en ligne : c'est une information, pas "
                  "un manque. « N'accepte que les patients adressés » est l'info la plus "
-                 "précieuse de la page pour cette MSP — la relever systématiquement."),
+                 "précieuse de la page pour cette MSP — la relever systématiquement. "
+                 "Un numéro de téléphone proposé sur la page est aussi un signe que "
+                 "quelqu'un la tient : le noter en `activite_constatee: profil_tenu`."),
     ("motifs_consultation — trier",
      "GARDER le clinique : « Pose de stérilet », « Bilan d'infertilité », « Suivi de "
      "grossesse ». JETER l'administratif : « Première consultation », « Consultation de "
@@ -166,9 +190,13 @@ def hors_idf(c):
     a = (c.get("arrondissement") or "").strip()
     return bool(a) and not a.startswith(("75", "92", "93", "94"))
 
-def pronostic(c, etat):
+def pronostic(c, etat, motif=""):
     """Ce qu'on peut raisonnablement espérer trouver sur Doctolib. Advisory, pas normatif."""
     st = (c.get("sous_type") or "").strip()
+    if cessation_candidate(c, etat, motif):
+        return ("EXERCE-T-IL ENCORE ? absent des 550 587 libéraux conventionnés alors que "
+                "sa profession y est référencée. Vérifier `activite_constatee` AVANT tout "
+                "le reste. Ne rien conclure d'une fiche squelettique ni d'une page absente")
     if introuvable(c):
         return ("IDENTIFICATION IMPOSSIBLE : nom seul, sans spécialité ni contact — "
                 "à demander à l'auteur du carnet (%s), pas à chercher"
@@ -191,7 +219,7 @@ def pronostic(c, etat):
         return "structure de soins : souvent référencée"
     return ""
 
-def apport_doctolib(c, etat):
+def apport_doctolib(c, etat, motif=""):
     """Ce que Doctolib apporterait ET que la CNAM ne porte pas.
 
     Le fichier CNAM ne contient NI motif de consultation, NI langue, NI accès PMR, NI
@@ -215,15 +243,39 @@ def apport_doctolib(c, etat):
         manque.append("PMR")
     if not c.get("tarif"):
         manque.append("tarif")
-    p = pronostic(c, etat)
+    p = pronostic(c, etat, motif)
     return " ; ".join(manque) + (" — %s" % p if p else "")
 
-def priorite(c, etat):
+def cessation_candidate(c, etat, motif):
+    """Absent du fichier national alors que sa profession Y EST référencée.
+
+    Vérifié le 2026-07-17 en re-téléchargeant le fichier : ce n'est PAS un bug de
+    jointure. MIRAU, DELAVOIPIERE, GARBARG-CHENON → 0 ligne sur 550 587, alors que le
+    fichier contient bien 812 gynécologues parisiens et que la jointure attrape
+    BELLON SARFATI (idx 196) au palier haut. L'absence est réelle.
+
+    Un libéral conventionné EST dans ce fichier. Son absence signifie donc, par ordre de
+    probabilité : cessation d'activité libérale, passage en salariat, opt-out de
+    l'annuaire public, ou changement de nom.
+
+    ⚠️ POURQUOI CES 39 FICHES ÉCHAPPENT AU CALIBRAGE — le point à comprendre.
+    Le calibrage (118 accords sur 119) ne compare que les fiches PRÉSENTES DANS LES DEUX
+    sources : il est conditionné à la présence. Il établit que les carnets sont exacts sur
+    CE QU'ILS ÉCRIVENT — il ne dit rien sur QUI EXERCE ENCORE. Le vieillissement des
+    carnets se cache précisément dans ces absences, invisibles à la mesure.
+
+    Enjeu : un patient adressé à quelqu'un qui n'exerce plus. Du même ordre que les 142
+    liens faux → vague A, pas B.
+    """
+    return (etat.startswith("non résolue") and motif == "nom absent du fichier"
+            and c.get("type") == "praticien")
+
+def priorite(c, etat, motif=""):
     arr = (c.get("arrondissement") or "").strip()
     # Un nom seul n'est pas un point de départ : ni recherche, ni Doctolib. C'est une
     # question à l'auteur du carnet. 4 fiches, toutes d'Antonin. Jamais supprimées.
     if introuvable(c):
-        return 8
+        return 9
     if lien_reel(c):
         return 1      # risque ACTIF : le lien est en base, il peut être faux
     if placeholder(c):
@@ -231,41 +283,65 @@ def priorite(c, etat):
     # Recentrage Paris : un praticien à Marseille coûte une séance et ne sert personne.
     # En queue, pas supprimé.
     if hors_idf(c):
-        return 7
-    # p3 — LÀ OÙ DOCTOLIB EST LA SEULE SOURCE POSSIBLE.
+        return 8
+    if cessation_candidate(c, etat, motif):
+        return 3      # exerce-t-il encore ? cf. cessation_candidate()
+    # p4 — LÀ OÙ DOCTOLIB EST LA SEULE SOURCE POSSIBLE.
     # `non résolue` : introuvable au fichier alors qu'il devrait y être → seule
     #   l'identification au navigateur peut trancher (Doctolib est un MOTEUR DE RECHERCHE,
     #   là où la CNAM n'était qu'une jointure : un humain retrouve « Machin kiné 20e » là
     #   où aucune clé n'existait).
     # `profession non référencée` : psychologues, ostéopathes, doulas… La CNAM ne pourra
     #   JAMAIS rien pour elles. Leur absence du fichier est un argument POUR les ouvrir,
-    #   pas contre — c'était l'erreur de la version précédente, qui les reléguait en p4-p7.
+    #   pas contre — c'était l'erreur de la version précédente, qui les reléguait en queue.
     if etat.startswith("non résolue") or "profession non référencée" in etat:
-        return 3
+        return 4
     if arr in PROCHE:
-        return 4      # là où la MSP adresse réellement
+        return 5      # là où la MSP adresse réellement
     if c.get("statut") == "a_verifier":
-        return 5
-    if arr.startswith("75") or not arr:
         return 6
-    return 7          # hors territoire
+    if arr.startswith("75") or not arr:
+        return 7
+    return 8          # hors territoire
 
 LIBELLE = {1: "VÉRIFIER un lien Doctolib (risque actif en base)",
            2: "TROUVER un lien Doctolib (gain sûr)",
-           3: "IDENTIFIER / seule source possible (non résolues + professions hors CNAM)",
-           4: "20e + limitrophes", 5: "fiches a_verifier",
-           6: "reste de Paris", 7: "hors Paris — ne pas chercher",
-           8: "nom seul : à demander à l'auteur du carnet, pas à chercher"}
+           3: "EXERCE-T-IL ENCORE ? (absent du fichier national)",
+           4: "IDENTIFIER / seule source possible (non résolues + professions hors CNAM)",
+           5: "20e + limitrophes", 6: "fiches a_verifier",
+           7: "reste de Paris", 8: "hors Paris — ne pas chercher",
+           9: "nom seul : à demander à l'auteur du carnet, pas à chercher"}
 
-VAGUE = {1: "A", 2: "A", 3: "B", 4: "C", 5: "C", 6: "C", 7: "—", 8: "—"}
+VAGUE = {1: "A", 2: "A", 3: "A", 4: "B", 5: "C", 6: "C", 7: "C", 8: "—", 9: "—"}
+
+# `activite_constatee` — le test de cessation (p3), et le seul élément qui DATE une page.
+#
+# ⚠️ Doctolib fait DEUX choses très différentes, et les confondre est le piège :
+#   * des profils tenus par le praticien (agenda, bio, motifs, tarifs) ;
+#   * des FICHES D'ANNUAIRE construites sur données publiques, que personne n'entretient —
+#     exactement de la même nature qu'un LogicRdv ou un allo-medecins, c'est-à-dire
+#     recyclées pendant des années après un départ. « Une page existe » ne prouve RIEN.
+#
+# Ce qui date une page, c'est de voir que QUELQU'UN L'ENTRETIENT.
+ACTIVITE = {
+    "creneaux": "des créneaux réservables sont affichés → EXERCE, certain (auto-datant)",
+    "profil_tenu": ("pas de créneaux mais profil manifestement tenu : bio, photo, motifs "
+                    "de consultation, tarifs, horaires, « prise de RDV au XX XX XX XX » → "
+                    "présomption forte d'activité"),
+    "fiche_squelette": ("nom + adresse + téléphone et rien d'autre → NE PROUVE RIEN : "
+                        "c'est une fiche d'annuaire, pas un profil. Même valeur qu'un "
+                        "agrégateur"),
+    "aucune_page": ("aucun profil Doctolib → NE PROUVE RIEN NON PLUS : beaucoup de "
+                    "praticiens n'y sont pas. L'absence de preuve n'est pas une preuve "
+                    "d'absence"),
+}
 
 COLS = ["idx", "priorite", "vague", "etat_cnam", "motif_non_match", "civilite", "nom",
         "prenom", "profession", "arrondissement", "adresse", "secteur_conv",
         "source_secteur", "statut", "apport_doctolib_attendu", "lien_a_verifier",
-        # --- SAISIE S2 --- (pas de `delai` : cf. apport_doctolib ; pas de
-        # `creneaux_visibles` : la règle qui s'en servait a été annulée, cf. S2 §T3)
-        "etat", "verdict_lien", "doctolib_url_verifiee", "mode_rdv", "prend_nouveaux",
-        "motifs_consultation", "langues", "pmr", "tarif", "note"]
+        # --- SAISIE S2 --- (pas de `delai` : périssable, cf. apport_doctolib)
+        "etat", "verdict_lien", "doctolib_url_verifiee", "activite_constatee", "mode_rdv",
+        "prend_nouveaux", "motifs_consultation", "langues", "pmr", "tarif", "note"]
 
 def main():
     etats = {e["idx"]: e for e in json.load(open(ETATS, encoding="utf-8"))}
@@ -275,10 +351,11 @@ def main():
         i = c["_meta"]["idx"]
         e = etats.get(i, {})
         etat = e.get("etat_jointure", "non traitée")
-        p = priorite(c, etat)
+        motif = e.get("motif", "")
+        p = priorite(c, etat, motif)
         rows.append({
             "idx": i, "priorite": p, "vague": VAGUE[p], "etat_cnam": etat,
-            "motif_non_match": e.get("motif", ""),
+            "motif_non_match": motif,
             "civilite": c.get("civilite") or "", "nom": c.get("nom") or "",
             "prenom": c.get("prenom") or "", "profession": c.get("profession") or "",
             "arrondissement": c.get("arrondissement") or "",
@@ -288,10 +365,10 @@ def main():
                                and c.get("secteur_conv") else
                                ("carnet" if c.get("secteur_conv") else "")),
             "statut": c.get("statut") or "",
-            "apport_doctolib_attendu": apport_doctolib(c, etat),
+            "apport_doctolib_attendu": apport_doctolib(c, etat, motif),
             "lien_a_verifier": c.get("doctolib") if lien_reel(c) else "",
             "etat": "a_faire", "verdict_lien": "", "doctolib_url_verifiee": "",
-            "mode_rdv": "", "prend_nouveaux": "", "motifs_consultation": "", "langues": "",
+            "activite_constatee": "", "mode_rdv": "", "prend_nouveaux": "", "motifs_consultation": "", "langues": "",
             "pmr": "", "tarif": "", "note": ""})
     rows.sort(key=lambda r: (r["priorite"], r["nom"].lower()))
     # utf-8-sig : Google Sheets et Excel lisent les accents correctement à l'import

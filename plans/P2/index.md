@@ -183,10 +183,13 @@ précoce, et la reprise à budget serré a été 6× plus productive que l'achar
 - **Doctolib (S2) : deux vagues, pas un balayage** *(resserré le 2026-07-17)*. La worklist mêle trois
   travaux de valeur très inégale, et les faire d'un bloc coûte **~35 séances au navigateur avec
   Thibault présent** — le coût dominant de P2, et ce n'est pas des tokens, c'est son temps.
-  - **Vague A — 200 fiches, ~10 séances** : les **142** liens jamais ouverts (risque actif : `Dr
+  - **Vague A — 232 fiches, ~12 séances** : les **142** liens jamais ouverts (risque actif : `Dr
     Balmain` prouve qu'un lien peut pointer sur un confrère) + les **58** dont un médecin affirme
-    qu'ils existent (gain sûr).
-  - **Vague B — 493 fiches, ~25 séances : différée, non abandonnée.** De la prospection : rien
+    qu'ils existent (gain sûr) + les **32** « exerce-t-il encore ? » — absents du fichier national
+    des libéraux conventionnés alors que leur profession y est référencée, **13 encore marqués
+    `actif`**. Adresser un patient à quelqu'un qui est parti est un risque du même ordre qu'un
+    lien faux. Vérifié : ce n'est pas un bug de jointure (cf. S2 §T2).
+  - **Vague B — 127 fiches, ~7 séances : différée, non abandonnée.** De la prospection : rien
     n'indique que ces fiches soient sur Doctolib, et **S1 leur a déjà retiré l'essentiel** (secteur,
     adresse, RPPS). Elles restent `a_faire` dans le Sheet ; leur sort se décide **sur le bilan
     chiffré de la vague A**, pas aujourd'hui.
