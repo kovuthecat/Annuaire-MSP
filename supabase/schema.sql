@@ -159,23 +159,49 @@ create index if not exists contacts_checked_idx on public.contacts (source_check
 create table if not exists public.comments (
   id         uuid primary key default gen_random_uuid(),
   contact_id uuid not null references public.contacts (id) on delete cascade,
-  -- author_id NULL = « Extrait de l'ancien répertoire » : commentaires repris du
-  -- répertoire partagé historique (xlsx), dont l'auteur réel est inconnu. On ne les
-  -- attribue à aucun médecin — une reco vaut par qui la porte. L'app doit afficher
-  -- « Extrait de l'ancien répertoire » quand author_id est null.
+  -- author_id NULL = commentaire sans auteur humain ; c'est alors `origine` qui dit d'où
+  -- il vient et sert de signature à l'affichage. On n'attribue à aucun médecin un avis
+  -- qu'il n'a pas écrit — une reco vaut par qui la porte.
   -- Les commentaires saisis dans l'app restent signés : la policy comments_insert
   -- impose author_id = auth.uid(). Seul l'import (hors RLS) écrit des null.
   author_id  uuid references public.members (id) on delete cascade default auth.uid(),
+  -- Signature affichée quand author_id est null :
+  --   'repertoire_partage' -> « Extrait de l'ancien répertoire »
+  --   'enrichissement_web' -> « Trouvé sur le web » (source dans contacts.source_url)
+  --   'signalement_msp'    -> « Signalé par la MSP » : fait connu de l'équipe, transmis à
+  --                           l'import, qu'aucune source web ne confirme encore (le web est
+  --                           souvent en retard sur une fermeture ou un déménagement).
+  origine    text check (origine in
+               ('repertoire_partage','enrichissement_web','signalement_msp')),
   type       text not null check (type in ('reco','alerte','spec','info')),
   texte      text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Un commentaire a soit un auteur humain, soit une origine documentée — jamais aucun des deux.
+  constraint comments_auteur_ou_origine check (author_id is not null or origine is not null)
 );
 
--- Idempotent : rendre author_id nullable sur une base déjà créée.
+-- Idempotent : évolutions pour une base déjà créée.
 alter table public.comments alter column author_id drop not null;
+alter table public.comments add column if not exists origine text;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'comments_origine_check') then
+    alter table public.comments add constraint comments_origine_check
+      check (origine in ('repertoire_partage','enrichissement_web','signalement_msp'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'comments_auteur_ou_origine') then
+    alter table public.comments add constraint comments_auteur_ou_origine
+      check (author_id is not null or origine is not null);
+  end if;
+end;
+$$;
 
 comment on column public.comments.author_id is
-  'NULL = « Extrait de l''ancien répertoire » (import xlsx historique, auteur inconnu).';
+  'NULL = pas d''auteur humain ; la signature à afficher est donnée par `origine`.';
+comment on column public.comments.origine is
+  'Provenance d''un commentaire non signé : repertoire_partage (xlsx historique) ou '
+  'enrichissement_web (import automatique). NULL pour un commentaire saisi dans l''app.';
 
 create index if not exists comments_contact_idx on public.comments (contact_id);
 

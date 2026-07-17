@@ -25,3 +25,7 @@ Thumbs.db
 
 # Sorties d'audit
 output/
+
+# Python (scripts d'import)
+__pycache__/
+*.pyc

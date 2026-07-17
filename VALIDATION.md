@@ -7,6 +7,56 @@
 > **Comment tester** : sur le déploiement Vercel, ou en local `npm run dev`.
 > **Pré-requis** : avoir rejoué `supabase/schema.sql` et avoir un compte (Auth → Users → Add user).
 
+## Données — seconde passe open data CNAM (P2/S1)
+
+> Cette session ne touche aucun écran : elle change ce que les écrans **affichent**. À vérifier
+> **après avoir rejoué `schema.sql` puis `seed_annuaire.sql`** (le seed est validé au parseur
+> PostgreSQL, mais n'a **jamais** été exécuté sur une vraie base : c'est le premier Run qui éprouve
+> les `check`, les clés étrangères et les policies RLS).
+> Les fiches se retrouvent par leur nom dans la recherche de l'annuaire.
+
+- [ ] **Le seed s'exécute sans erreur** sur la base, et le bloc de contrôle final affiche
+      **1 052 contacts · 1 237 commentaires · 1 018 entrées « mes contacts »**.
+- [ ] **Dr Wolf** (psychiatre, 12e) — l'unique valeur de carnet écrasée de la passe : la fiche affiche
+      **secteur 2**, est en **à vérifier**, et porte une **alerte** citant **les deux** valeurs
+      (« le carnet indiquait secteur 1 … la CNAM indique secteur 2 »). *Si l'alerte n'y est pas, c'est
+      un bug, pas un détail.*
+- [ ] **Dr Echegut** (angiologue, ex-« Etchegut ») — le nom **corrigé** s'affiche, et la graphie
+      fautive du carnet **n'apparaît nulle part** dans l'app. Idem **SCHAAN** (ex-SHAAN),
+      **HANSS** (ex-HANNS), **FAOUZI Touria** (ex-« FAOUZIA TOURIA »).
+      *(Elle reste dans la trace d'audit JSON, `_meta.verbatim_carnet` — non importée en base.)*
+- [ ] **Plus aucune fiche n'affiche la graphie fautive d'un nom corrigé**, sous aucune forme (il y en
+      avait 3 : « Graphie d'origine dans le carnet… », « Fiche identifiée depuis la note d'origine
+      « … » », et une isolée). Vérifiable sur **Dr HAMNY** : le commentaire doit dire
+      « Identification : Dr Illias HAMNY, endocrinologue à la Maison de Santé Pelleport… Le carnet
+      portait une graphie approchante du nom. » — et **ne plus citer « Amny »**.
+- [ ] **Le raisonnement d'identification est resté** : ces fiches sont en « à vérifier » parce que le
+      nom a été corrigé ; le commentaire doit toujours dire **qui** est la personne et **sur quelle
+      source**, sinon il n'y a pas de quoi trancher. À regarder sur **Dr CORTESSE** (urologue) et
+      **Eléonore JUILLARD** (sage-femme), deux identifications données comme « très probables ».
+- [ ] **À l'inverse, ne pas s'alarmer** si un commentaire cite une graphie du carnet **là où le nom
+      affiché est celui du carnet** : ex. **Dr POPESCU** (« Andreea » sur sante.fr contre « Andrea »
+      au carnet — valeur du carnet conservée) et **Dr PETIT** (« Erik »/« Erick »). Là, le
+      commentaire explique pourquoi le carnet a gagné. C'est voulu.
+- [ ] **Dr Legeais** (cardiologue) — arrondissement **75012** (et non 75020), adresse inchangée
+      (« 46 bd de Reuilly »), commentaire expliquant l'incohérence corrigée.
+- [ ] **Dr Daval** (ORL, 12e) — l'adresse du carnet (**125** rue de Charenton) est **toujours
+      affichée**, avec une alerte signalant le **228** déclaré à l'Assurance Maladie. On ne devait
+      **rien** écraser ici : c'est un humain qui tranche.
+- [ ] **Étanchéité, le test qui compte** : ouvrir une fiche riche en coordonnées pro (p. ex.
+      **Dr Bottero**, infectiologie Saint-Antoine, qui porte deux lignes directes) → lancer
+      « Sélection & impression » → **la feuille patient ne montre ni ligne directe, ni bip, ni mail
+      d'avis, ni consigne pro**. La passe n'a écrit que dans des champs patient, mais c'est le
+      rendu imprimé qui fait foi.
+- [ ] **Commentaires sans auteur humain** : les commentaires ajoutés par la passe s'affichent avec
+      leur signature d'origine (« Trouvé sur le web » / « Signalé par la MSP ») et **pas** un auteur
+      vide — cf. `STATUS.md` §« Deux évolutions de schéma pas encore câblées ».
+- [ ] **Centre de santé Haxo** (fiche **Moustin**) : **une seule** alerte de fermeture, pas cinq
+      (bug d'idempotence corrigé — c'est le contrôle de non-régression).
+- [ ] Coup d'œil général : sur 3-4 fiches au hasard, le secteur affiché est cohérent avec ce que
+      Thibault/les médecins savent du praticien. **111 secteurs ont été ajoutés** : si l'un d'eux
+      est manifestement faux, le dire — c'est le signal qu'un appariement a dérapé.
+
 ## Connexion — écran de connexion
 
 - [ ] Carte centrée fidèle à la maquette (≈380 px, radius 20, pastille « M » en dégradé teal→bleu,
