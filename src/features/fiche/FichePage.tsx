@@ -1,13 +1,19 @@
 import type { CSSProperties } from 'react'
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
 import { Avatar, Badge, StarToggle } from '../../components'
 import type { CommentCounts, CommentEntries } from '../../components'
 import { Button } from '../../components/ui'
+import { ProximityMap } from '../../components/Map'
+import type { MapPoint } from '../../components/Map'
 import { colors, radii } from '../../theme/tokens'
 import { COMMENT_TYPES } from '../../types/db'
+import type { ContactWithMeta } from '../../types/db'
+import { MSP_COORDS, coordsOf, formatDistance, haversineKm } from '../proximite/geo'
+import { loadStops, nearestStops } from '../proximite/transit'
+import type { NearbyStop, Stop, TransitMode } from '../proximite/transit'
 import CoordsBlock from './CoordsBlock'
 import AccesBlock from './AccesBlock'
 import CommentBar from './CommentBar'
@@ -143,6 +149,185 @@ const modifierLinkStyle: CSSProperties = {
   textDecoration: 'none',
 }
 
+// ---------------------------------------------------------------------------
+// Carte de la fiche (plans/P3/S3.md T3) — praticien + MSP, distance à la MSP en clair. Pas de
+// coordonnées → invite discrète à compléter l'adresse, jamais de carte vide (cf. §Étapes).
+// ---------------------------------------------------------------------------
+
+const ficheMapSectionStyle: CSSProperties = {
+  marginBottom: 18,
+}
+
+const ficheDistanceStyle: CSSProperties = {
+  font: '600 12px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+  marginTop: 8,
+}
+
+const ficheNoPositionStyle: CSSProperties = {
+  font: '500 12.5px "Plus Jakarta Sans"',
+  color: colors.text.faint,
+  marginBottom: 18,
+}
+
+const ficheMapLoadingStyle: CSSProperties = {
+  height: 220,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: colors.white,
+  border: `1px solid ${colors.borderLight}`,
+  borderRadius: radii.xl,
+  font: '500 12.5px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+}
+
+function FicheMapBlock({ contact }: { contact: ContactWithMeta }) {
+  const coords = coordsOf(contact)
+
+  if (!coords) {
+    return (
+      <div style={ficheNoPositionStyle}>
+        Position à préciser —{' '}
+        <Link to={`/contact/${contact.id}/modifier`} style={guardLinkStyle}>
+          compléter l'adresse
+        </Link>
+      </div>
+    )
+  }
+
+  const points: MapPoint[] = [
+    { id: contact.id, coords, label: contact.nom, kind: 'contact' },
+    { id: 'msp', coords: MSP_COORDS, label: 'MSP', kind: 'msp' },
+  ]
+
+  return (
+    <div style={ficheMapSectionStyle}>
+      <Suspense fallback={<div style={ficheMapLoadingStyle}>Chargement de la carte…</div>}>
+        <ProximityMap points={points} height={220} />
+      </Suspense>
+      <div style={ficheDistanceStyle}>{formatDistance(haversineKm(coords, MSP_COORDS))} de la MSP</div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Transports à proximité (plans/P3/S4.md T3) — sous la carte. Jeu d'arrêts embarqué (IDFM,
+// cf. src/features/proximite/transit.ts), chargé paresseusement pour ne pas alourdir le bundle
+// initial. Pas de coordonnées → bloc absent (pas d'invite, contrairement à la carte).
+// ---------------------------------------------------------------------------
+
+const TRANSIT_MAX_DISTANCE_M = 600
+
+const transitCardStyle: CSSProperties = {
+  background: colors.bg,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radii.xl,
+  padding: '16px 18px',
+  marginBottom: 18,
+}
+
+const transitTitleStyle: CSSProperties = {
+  font: '700 11px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '.04em',
+  marginBottom: 10,
+}
+
+const transitRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 8,
+  padding: '5px 0',
+  font: '500 12.5px "Plus Jakarta Sans"',
+  color: colors.text.body,
+}
+
+const transitPastilleStyle: CSSProperties = {
+  font: '700 10px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+  background: colors.white,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radii.sm,
+  padding: '2px 7px',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+}
+
+const transitLignesStyle: CSSProperties = {
+  fontWeight: 700,
+  color: colors.text.primary,
+}
+
+const transitNomStyle: CSSProperties = {
+  flex: 1,
+}
+
+const transitDistanceStyle: CSSProperties = {
+  color: colors.text.secondary,
+  whiteSpace: 'nowrap',
+}
+
+const transitEmptyStyle: CSSProperties = {
+  font: '500 12.5px "Plus Jakarta Sans"',
+  color: colors.text.faint,
+}
+
+const MODE_LABELS: Record<TransitMode, string> = {
+  metro: 'M',
+  tram: 'T',
+  rer: 'RER',
+  bus: 'Bus',
+  autre: 'Autre',
+}
+
+function TransitRow({ stop }: { stop: NearbyStop }) {
+  return (
+    <div style={transitRowStyle}>
+      <span style={transitPastilleStyle}>{stop.modes.map((m) => MODE_LABELS[m]).join('/')}</span>
+      <span style={transitNomStyle}>
+        <span style={transitLignesStyle}>{stop.lignes.join(', ')}</span> {stop.nom}
+      </span>
+      <span style={transitDistanceStyle}>{formatDistance(stop.distanceM / 1000)}</span>
+    </div>
+  )
+}
+
+function TransitBlock({ contact }: { contact: ContactWithMeta }) {
+  const coords = coordsOf(contact)
+  const [stops, setStops] = useState<Stop[] | null>(null)
+
+  useEffect(() => {
+    if (!coords) return
+    let cancelled = false
+    void loadStops().then((loaded) => {
+      if (!cancelled) setStops(loaded)
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coords?.lat, coords?.lng])
+
+  if (!coords) return null
+
+  const nearby = stops ? nearestStops(coords, stops, { maxDistanceM: TRANSIT_MAX_DISTANCE_M }) : []
+
+  return (
+    <div style={transitCardStyle}>
+      <div style={transitTitleStyle}>Transports à proximité</div>
+      {stops === null ? (
+        <div style={transitEmptyStyle}>Chargement…</div>
+      ) : nearby.length === 0 ? (
+        <div style={transitEmptyStyle}>Aucun arrêt à moins de {TRANSIT_MAX_DISTANCE_M} m</div>
+      ) : (
+        nearby.map((stop) => <TransitRow key={stop.id} stop={stop} />)
+      )}
+    </div>
+  )
+}
+
 export default function FichePage() {
   const { id } = useParams<{ id: string }>()
   const { contacts, loading, error, reload, adoptContact, unadoptContact, updateContact } = useDirectory()
@@ -264,6 +449,8 @@ export default function FichePage() {
         </div>
 
         <CoordsBlock contact={contact} />
+        <FicheMapBlock contact={contact} />
+        <TransitBlock contact={contact} />
         <AccesBlock contact={contact} />
         <CommentBar
           counts={counts}
