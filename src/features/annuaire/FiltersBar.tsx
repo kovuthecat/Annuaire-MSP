@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
+import { useState } from 'react'
 import { colors, radii } from '../../theme/tokens'
+import { useReference } from '../proximite/ReferenceProvider'
 import type { SortOption } from './sort'
 
 /**
@@ -157,6 +159,152 @@ const sortSelectStyle: CSSProperties = {
   color: colors.text.muted,
 }
 
+// ---------------------------------------------------------------------------
+// Sélecteur de référence (plans/P3/S2.md T4 étape 3) — « Distances depuis : MSP ▾ / Autre
+// adresse… ». État transitoire, jamais persisté (RGPD) : rappel discret quand une adresse patient
+// est active.
+// ---------------------------------------------------------------------------
+
+const referenceRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  flexWrap: 'wrap',
+}
+
+const referenceLabelStyle: CSSProperties = {
+  font: '500 11px "Plus Jakarta Sans"',
+  color: colors.text.muted,
+}
+
+const referenceLinkStyle: CSSProperties = {
+  border: 'none',
+  background: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  font: '600 11px "Plus Jakarta Sans"',
+  color: colors.brand.blue,
+  textDecoration: 'underline',
+}
+
+const referenceHintStyle: CSSProperties = {
+  font: '500 10.5px "Plus Jakarta Sans"',
+  color: colors.text.faint,
+}
+
+const referenceInputStyle: CSSProperties = {
+  border: `1px solid ${colors.border}`,
+  borderRadius: radii.sm,
+  padding: '4px 8px',
+  font: '500 11px "Plus Jakarta Sans"',
+  color: colors.text.primary,
+  minWidth: 180,
+}
+
+const referenceButtonStyle: CSSProperties = {
+  border: 'none',
+  borderRadius: radii.sm,
+  padding: '4px 10px',
+  cursor: 'pointer',
+  font: '600 11px "Plus Jakarta Sans"',
+  color: '#fff',
+  background: colors.brand.blue,
+}
+
+const referenceGhostButtonStyle: CSSProperties = {
+  ...referenceLinkStyle,
+  color: colors.text.muted,
+  textDecoration: 'none',
+}
+
+const referenceErrorStyle: CSSProperties = {
+  font: '600 11px "Plus Jakarta Sans"',
+  color: colors.sector.ame.fg,
+}
+
+function ReferenceSelector() {
+  const { reference, isPatientAddress, setPatientAddress, resetToMSP } = useReference()
+  const [editing, setEditing] = useState(false)
+  const [addressInput, setAddressInput] = useState('')
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const startEditing = () => {
+    setEditing(true)
+    setError(null)
+    setAddressInput('')
+  }
+
+  const cancelEditing = () => {
+    setEditing(false)
+    setError(null)
+    setAddressInput('')
+  }
+
+  const handleSubmit = async () => {
+    if (!addressInput.trim()) return
+    setPending(true)
+    setError(null)
+    const ok = await setPatientAddress(addressInput)
+    setPending(false)
+    if (ok) {
+      setEditing(false)
+      setAddressInput('')
+    } else {
+      setError('Adresse introuvable.')
+    }
+  }
+
+  if (editing) {
+    return (
+      <span style={referenceRowStyle}>
+        <input
+          type="text"
+          value={addressInput}
+          onChange={(e) => setAddressInput(e.target.value)}
+          placeholder="Adresse du patient…"
+          style={referenceInputStyle}
+          aria-label="Adresse de référence pour les distances"
+        />
+        <button
+          type="button"
+          onClick={() => void handleSubmit()}
+          disabled={pending}
+          style={referenceButtonStyle}
+        >
+          {pending ? 'Recherche…' : 'Valider'}
+        </button>
+        <button type="button" onClick={cancelEditing} style={referenceGhostButtonStyle}>
+          Annuler
+        </button>
+        {error && <span style={referenceErrorStyle}>{error}</span>}
+      </span>
+    )
+  }
+
+  return (
+    <span style={referenceRowStyle}>
+      <span style={referenceLabelStyle}>
+        Distances depuis :{' '}
+        <strong style={{ color: colors.text.secondary }}>
+          {isPatientAddress ? reference.label : 'MSP'}
+        </strong>
+      </span>
+      <button type="button" onClick={startEditing} style={referenceLinkStyle}>
+        Autre adresse…
+      </button>
+      {isPatientAddress && (
+        <>
+          <button type="button" onClick={resetToMSP} style={referenceLinkStyle}>
+            Revenir à la MSP
+          </button>
+          <span style={referenceHintStyle}>Adresse non enregistrée</span>
+        </>
+      )}
+    </span>
+  )
+}
+
 interface BoolChipProps {
   label: string
   active: boolean
@@ -308,6 +456,8 @@ export default function FiltersBar({
           ))}
         </select>
 
+        <ReferenceSelector />
+
         <span style={resultCountStyle}>
           {resultCount} résultat{resultCount !== 1 ? 's' : ''} · Tri
           <select
@@ -319,6 +469,7 @@ export default function FiltersBar({
             <option value="pertinence">Pertinence</option>
             <option value="nom">Nom (A→Z)</option>
             <option value="arrondissement">Arrondissement</option>
+            <option value="distance">Distance</option>
           </select>
         </span>
       </div>

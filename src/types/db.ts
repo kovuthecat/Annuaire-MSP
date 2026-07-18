@@ -77,6 +77,14 @@ export interface Contact {
   source_url: string | null
   source_type: SourceType | null
   source_checked_at: string | null
+
+  // Géo (plan P3 — S1 schéma, S2 usage) : position dérivée de `adresse`, jamais saisie
+  // directement (géocodage BAN à la saisie ou backfill hors ligne, cf. plans/P3/index.md).
+  latitude: number | null
+  longitude: number | null
+  /** Score de confiance BAN (0..1) — `null` avant tout géocodage. */
+  geocode_score: number | null
+  geocoded_at: string | null
 }
 
 /** public.comments */

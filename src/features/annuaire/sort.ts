@@ -1,12 +1,15 @@
 import { normalize } from '../../data/search'
+import { coordsOf, haversineKm } from '../proximite/geo'
+import type { LatLng } from '../proximite/geo'
 import type { ContactWithMeta } from '../../types/db'
 
 /**
- * Tri de la liste annuaire (maquette l.84 « Tri ▾ », cf. plans/P1/S3.md T6 étape 4).
+ * Tri de la liste annuaire (maquette l.84 « Tri ▾ », cf. plans/P1/S3.md T6 étape 4 ;
+ * option « Distance » ajoutée en plans/P3/S2.md T4).
  * "pertinence" = pas de tri additionnel, on garde l'ordre déjà produit par `filterContacts`
  * (S2, zone verrouillée — cf. plans/P1/S3.md §Si bloqué : le tri ne modifie pas `src/data/search.ts`).
  */
-export type SortOption = 'pertinence' | 'nom' | 'arrondissement'
+export type SortOption = 'pertinence' | 'nom' | 'arrondissement' | 'distance'
 
 /** Extrait la partie numérique d'un arrondissement ("20e" -> 20) ; sinon +Infinity (classé après). */
 function arrondissementRank(value: string | null): number {
@@ -15,12 +18,34 @@ function arrondissementRank(value: string | null): number {
   return match ? Number(match[0]) : Number.POSITIVE_INFINITY
 }
 
-export function sortContacts(contacts: ContactWithMeta[], sort: SortOption): ContactWithMeta[] {
+/**
+ * `reference` n'est utilisé que par le tri "distance" (ignoré sinon) — cf. plans/P3/S2.md T4
+ * étape 2 : « étendre `sortContacts` en lui passant la référence ». Les fiches sans coordonnées
+ * vont toujours en fin de liste (jamais une fausse distance pour trier).
+ */
+export function sortContacts(
+  contacts: ContactWithMeta[],
+  sort: SortOption,
+  reference: LatLng,
+): ContactWithMeta[] {
   if (sort === 'pertinence') return contacts
 
   const sorted = [...contacts]
   if (sort === 'nom') {
     sorted.sort((a, b) => normalize(a.nom).localeCompare(normalize(b.nom)))
+    return sorted
+  }
+  if (sort === 'distance') {
+    sorted.sort((a, b) => {
+      const coordsA = coordsOf(a)
+      const coordsB = coordsOf(b)
+      if (!coordsA && !coordsB) return normalize(a.nom).localeCompare(normalize(b.nom))
+      if (!coordsA) return 1
+      if (!coordsB) return -1
+      const diff = haversineKm(reference, coordsA) - haversineKm(reference, coordsB)
+      if (diff !== 0) return diff
+      return normalize(a.nom).localeCompare(normalize(b.nom))
+    })
     return sorted
   }
   // arrondissement
