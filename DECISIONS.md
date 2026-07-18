@@ -438,6 +438,189 @@ existait pour valider la règle, il a servi à la borner.
 
 ---
 
+## 2026-07-17 — Claude in Chrome ne prend pas ses consignes dans une page : le protocole revient dans le prompt
+
+### Décision
+
+**Le protocole d'une séance S2 est un prompt**, collé en entier par Thibault au début de chaque
+séance : `plans/P2/S2_PROMPT.md`. **L'onglet « Protocole » du Sheet est abandonné comme exécutable** —
+il reste comme référence humaine et comme source du texte du prompt.
+
+### Contexte
+
+`S2.md` §T4.4 et `plans/P2/index.md` prescrivaient l'inverse : « le protocole doit vivre dans le
+Sheet, pas dans le dépôt », amorce d'une séance = **une phrase**. `gen_worklist_s2.py` produisait
+`s2_protocole.csv` pour ça.
+
+**Essayé le 2026-07-17 : Claude in Chrome refuse de travailler à partir du protocole inséré dans le
+classeur.** Il traite délibérément tout contenu de page — onglet Google Sheets compris — comme **des
+données**, jamais comme **des instructions**. C'est sa **défense contre l'injection de prompt** : sans
+elle, n'importe quelle page web pourrait lui donner des ordres. **Ce n'est pas un bug, et ça ne se
+contourne pas** — c'est même exactement la propriété qu'on veut d'un agent qui navigue.
+
+**Un second refus a suivi**, de nature différente : sans le contexte du travail, la tâche se présente
+comme « ouvre 20 pages Doctolib et extrais-en les données ». Le prompt porte donc aussi la
+**justification** — les quatre clauses de `S2.md` §« Pourquoi un navigateur » (fiches ciblées, une par
+une, navigateur et session de Thibault, humain présent, outil interne à la MSP) et le risque patient
+concret qui motive la session (`Dr Balmain` : un lien pointant sur le profil d'un confrère).
+
+### Alternatives envisagées
+
+- **Onglet « Protocole »** : ne fonctionne pas, cf. ci-dessus. Écartée par constat, pas par arbitrage.
+- **Protocole dans le dépôt, lu par Claude in Chrome** : impossible, il n'a pas le système de
+  fichiers. C'était le motif d'origine, et il reste vrai.
+- **Prompt collé à chaque séance** : retenue. Coût = recoller une page de texte ~12 fois.
+
+### Raison du choix
+
+C'est la seule qui marche, et le coût est payable. **Le raisonnement d'origine était juste sur la
+prémisse et faux sur la conclusion** : « il n'a pas le disque, donc mettons les consignes dans la
+page » confond *ce qu'il peut lire* et *ce dont il prend ordre*. La bonne conclusion de la même
+prémisse était : **les consignes viennent de l'utilisateur, les données viennent de la page.**
+
+### Conséquences
+
+- **Ce que ça ne casse pas — et c'est l'essentiel** : le Sheet reste la mémoire des **données**, ce
+  qui était le vrai enjeu de T4 (une séance perdue ne coûte qu'elle-même, écriture après chaque
+  fiche). **Seule l'amorce change**, d'une phrase à une page.
+- **Deux sources à tenir synchronisées** : `s2_protocole.csv` (via `PROTOCOLE` dans
+  `gen_worklist_s2.py`) et `S2_PROMPT.md`. Toute règle modifiée doit l'être aux deux endroits.
+- Corrigés sur place : `S2.md` §T4.3, §T4.4, amorce, critères de fin, contexte à lire ;
+  `plans/P2/index.md` §Sessions ; commentaire de `gen_worklist_s2.py`.
+- **Vagues B et C** : le prompt est réutilisable **à deux mots près** (la vague filtrée, et le
+  garde-fou correspondant). Ne pas en réécrire un neuf — c'est celui-ci qui porte la justification du
+  travail, la partie la plus coûteuse à reconstituer.
+
+### Impact IA
+
+**Une règle générale, au-delà de S2 : on ne pilote pas un agent navigateur par un document qu'il
+navigue.** Tout protocole destiné à Claude in Chrome doit venir du prompt. Un fichier, un onglet, une
+page — quelle que soit sa provenance et même si c'est nous qui l'avons écrit — est **de la donnée pour
+lui**. La règle à retenir pour tout futur usage : **ce qu'il lit ne le commande jamais.**
+
+Corollaire moins évident, et c'est le second refus : **un agent navigateur a besoin du *pourquoi*, pas
+seulement du *quoi*.** Une consigne d'ouvrir des pages en série, présentée nue, est indistinguable
+d'une collecte de masse — et refusée à juste titre. Le contexte n'est pas de l'ornement dans le
+prompt : c'est ce qui rend la tâche évaluable.
+
+---
+
+## 2026-07-17 — Proximité & cartographie (plan P3) : géo par vol d'oiseau, Leaflet/OSM, BAN, IDFM
+
+Cadre le plan `plans/P3/`. Fonctionnalité prévue de longue date au brief (« Carte de proximité »,
+Version 2). Rien n'est encore implémenté ; ceci fige les arbitrages avant le premier commit.
+
+### Décision
+Ajouter une **couche géographique** par-dessus l'annuaire et la fiche : distance de chaque fiche à un
+**point de référence**, carte, et arrêts de transport proches. Cinq choix structurants :
+
+1. **Distance à vol d'oiseau (Haversine)**, fonction **pure** 100 % côté client — pas de temps de
+   trajet (qui exigerait une API de routage). Se recalcule en mémoire à chaque changement de référence.
+2. **Carte : Leaflet + tuiles OpenStreetMap** (`react-leaflet`), **sans clé ni facturation**.
+3. **Géocodage : Base Adresse Nationale** (`api-adresse.data.gouv.fr`, sans clé), avec **seuil de
+   confiance `score ≥ 0,6`** — en dessous, pas d'épingle (« position à préciser »).
+4. **Point de référence** : la MSP par défaut (24 rue des Plâtrières, coordonnées **relevées** via la
+   BAN, jamais inventées) ; **une autre adresse** (domicile patient) est saisissable → **état client
+   transitoire, jamais stocké**.
+5. **Arrêts de transport** : open data **Île-de-France Mobilités** embarqué, borné **Paris + communes
+   limitrophes**, plus proches calculés en mémoire.
+
+### Contexte
+Le champ `adresse` est un texte libre sans coordonnées. Tout (carte, distance, arrêts, recalcul en
+direct) repose sur une brique unique : **géocoder chaque fiche**. Une fois lat/lng en base, les
+affichages sont quasi gratuits à calculer.
+
+### Alternatives envisagées
+- **Google Maps** : rendu familier + Street View, mais **clé API + compte Google Cloud facturé** ;
+  écarté au profit du gratuit-sans-clé, cohérent avec les sources publiques FR du reste du projet.
+- **Temps de trajet réel** (transports/à pied) : plus parlant à Paris, mais API de routage
+  (coût/clé/latence) → reporté en V2 par-dessus le vol d'oiseau.
+- **Mini-carte par ligne d'annuaire** (formulation initiale) : ~1000 cartes = perf et coûts
+  catastrophiques → remplacé par **une carte partagée** + pastille de distance par ligne.
+- **Overpass/Google Places pour les arrêts** : dépendance réseau + quotas → embarquer l'open data IDFM
+  (même pattern que l'open data CNAM joint hors ligne).
+
+### Raison du choix
+Gratuit, sans clé, RGPD-friendly, cohérent avec l'écosystème du projet ; le vol d'oiseau suffit à
+classer proche/loin et se recalcule sans serveur (aligné avec la recherche/filtres côté client). Le
+seuil BAN applique la doctrine « ne jamais deviner » de T-005 : pas de fausse position.
+
+### Conséquences
+- **Schéma** : 4 colonnes nullable sur `contacts` — `latitude`, `longitude`, `geocode_score`,
+  `geocoded_at` (bloc idempotent, pattern `email_rdv`). Pas d'index (calcul client).
+- **Géocodage à la saisie** : à la création/édition, si l'adresse est présente/modifiée, géocodage **en
+  arrière-plan non bloquant** ; échec silencieux → coordonnées `null`.
+- **Nuance RGPD assumée** : les **tuiles OSM sont chargées depuis openstreetmap.org au rendu** (appel
+  tiers, contrairement aux fonts self-hostées). Inhérent à toute carte, ne concerne qu'un membre
+  authentifié ouvrant une carte, aucune donnée patient n'y transite. Bascule possible vers un
+  fournisseur à clé (MapTiler/Stadia) ou IGN si le volume monte.
+- **Étanchéité intacte** : la couche géo ne lit que l'`adresse` (bloc Lieu), ne touche aucun champ pro,
+  n'apparaît jamais sur la feuille patient.
+
+### Impact IA
+Découpage en 4 sessions à zones disjointes (`plans/P3/`), fonctions géo **pures et testables**
+(Haversine, plus-proches-arrêts) isolées dans `src/features/proximite/`. Le géocodage initial est un
+script hors app rejouable, dans la lignée de `supabase/import/`.
+
+---
+
+## 2026-07-17 — Ajout assisté depuis Doctolib (plan P4) : bookmarklet, pas de scraping serveur
+
+Cadre le plan `plans/P4/`. But : **alléger la saisie** d'un nouveau contact en pré-remplissant le
+formulaire depuis une page Doctolib. Rien n'est encore implémenté.
+
+### Décision
+Pré-remplir l'écran « Ajouter » via un **bookmarklet un-clic** qui lit la page Doctolib **déjà ouverte
+dans le navigateur du membre** et rebondit vers `/nouveau?prefill=<payload>`.
+
+1. **Pas de scraping serveur** : récupérer la page depuis l'app est impossible (T-005 : Doctolib
+   renvoie **403**, anti-bot ; le CORS l'interdirait aussi). On passe par le **navigateur du membre**,
+   sur une page qu'il consulte légitimement — même philosophie que P2/S2.
+2. **Extraction JSON-LD d'abord, DOM en repli**, **heuristique, sans IA, sans donnée qui sort**.
+3. **Relais par URL** (`?prefill=` base64url) : une navigation, pas une requête de fond → **pas de
+   CORS** ; la session persistée du membre fait le reste.
+4. **Provenance & prudence** : fiche pré-remplie en **`statut = 'a_verifier'`**, `source_url` = l'URL
+   Doctolib, `source_type = 'doctolib'` ; Doctolib étant **déclaratif et non daté**, **jamais
+   d'écrasement** ; relecture humaine obligatoire.
+5. **Étanchéité par double barrière** : Doctolib est **destiné aux patients** → n'expose que
+   identité/adresse/lien patient ; **et** le lecteur de `prefill` applique une **liste blanche** qui
+   rejette tout champ pro. Aucune coordonnée pro ne peut entrer par ce canal.
+
+### Contexte
+La saisie manuelle est la friction n°1 de l'adoption. Beaucoup de correspondants ont une page Doctolib
+qui porte déjà nom, spécialité, adresse (et souvent des coordonnées GPS en JSON-LD).
+
+### Alternatives envisagées
+- **Scraping serveur / fetch de la page** : bloqué (403 + CORS + CGU). Déjà constaté en T-005.
+- **Coller-pour-préremplir** (copier le texte de la page) : plus robuste et universel, mais Thibault a
+  choisi le **confort du un-clic**. Conservé comme **repli ultime** si l'extension elle-même échoue.
+- **Parsing par IA** du texte collé : très robuste mais clé API + coût + latence + **sortie de données**
+  → écarté au profit de l'heuristique locale.
+
+### Raison du choix
+C'est la seule voie qui « autocomplète depuis une page Doctolib » **sans** violer l'anti-bot ni les
+CGU, et sans infrastructure. Le JSON-LD (schema.org) est un point d'extraction **stable**.
+
+### Conséquences
+- **Contrat `prefill`** figé en S1 : clés en **liste blanche** patient/identité/lieu, base64url,
+  assainissement + bornes de longueur (entrée non fiable). Route `/nouveau` rétrocompatible sans le
+  paramètre.
+- **Provenance écrite uniquement par ce chemin** : la saisie manuelle reste sans provenance (P1/S5).
+- **CSP** : un bookmarklet peut être bloqué par la CSP de Doctolib → **repli mini-extension** (P4/S3,
+  **conditionnelle**, déclenchée seulement sur constat), qui réutilise le **même extracteur**
+  (`extract.js`, source unique).
+- **Synergie P3, non bloquante** : l'`adresse` alimente le géocodage ; le GPS du JSON-LD peut être
+  transporté si les colonnes géo existent (dégradation gracieuse sinon).
+- **Maintenance continue** assumée : Doctolib change son HTML → adapter l'extracteur (JSON-LD limite la
+  casse). Même leçon que P2/S2.
+
+### Impact IA
+Le code vit hors de l'app (`tools/doctolib-bookmarklet/`, `tools/doctolib-extension/`) ; la logique
+d'extraction est **pure et testable** hors navigateur (fixtures HTML). Le risque d'entrée non fiable est
+traité côté app par la liste blanche, pas par la confiance au payload.
+
+---
+
 ## Archives
 
 > Une ligne par décision caduque : `YYYY-MM-DD — Titre — remplacée par <décision/date>`.

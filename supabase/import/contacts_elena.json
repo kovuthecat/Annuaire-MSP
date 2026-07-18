@@ -1,0 +1,1449 @@
+[
+  {
+    "type": "structure",
+    "sous_type": "ambulance",
+    "nom": "Ambulance",
+    "tel_secretariat": "01 43 46 33 11",
+    "_meta": { "source_owner": "elena", "source_line": 2, "source_text": "ambulance ,01 43 46 33 11 ,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "ambulance",
+    "nom": "Ambulance TSA",
+    "comments": [ { "type": "info", "texte": "Vont à l'institut Curie." } ],
+    "_meta": { "source_owner": "elena", "source_line": 3, "source_text": "AMBULANCE TSA ( mme venault) vont a curie,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "taxi",
+    "nom": "Alpha Taxi",
+    "tel_secretariat": "01 45 85 85 85",
+    "tags": ["taxi conventionné"],
+    "comments": [ { "type": "info", "texte": "Taxi conventionné." } ],
+    "_meta": { "source_owner": "elena", "source_line": 4, "source_text": "alpha taxi,,,145858585,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Lesniac",
+    "prenom": "Jérôme",
+    "profession": "Allergologue",
+    "adresse": "Nation",
+    "arrondissement": "75012",
+    "_meta": { "source_owner": "elena", "source_line": 5, "source_text": "allergologue,dr jerome lesniac,nation 12eme,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "freoa damien",
+    "profession": "Angiologue",
+    "adresse": "Rue Pelleport",
+    "arrondissement": "75020",
+    "portable": "06 20 28 48 15",
+    "consignes_pro": "Numéro direct communiqué par Elena, à utiliser si besoin.",
+    "statut": "a_verifier",
+    "comments": [ { "type": "reco", "texte": "Adorable." } ],
+    "_meta": { "source_owner": "elena", "source_line": 6, "source_text": "angiologue,dr freoa damien,\"rue pelleport , adorable, numéro direct si besoin : \",620284815,", "needs_web": true, "garbled": true, "confidence": "low" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Dray",
+    "profession": "Angiologue",
+    "_meta": { "source_owner": "elena", "source_line": 7, "source_text": "angiologue,dr Dray,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Koskas",
+    "profession": "Angiologue",
+    "adresse": "1 Rue Saint-Antoine",
+    "arrondissement": "75004",
+    "_meta": { "source_owner": "elena", "source_line": 8, "source_text": "angiologue,dr koskas,\"1 Rue Saint-Antoine, 75004 Paris\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Delorme",
+    "prenom": "Marie-Christine",
+    "profession": "Angiologue",
+    "adresse": "132 Rue de la Roquette",
+    "arrondissement": "75011",
+    "tel_secretariat": "01 44 64 76 76",
+    "_meta": { "source_owner": "elena", "source_line": 9, "source_text": "angiologue,dr Delorme marie christine,\"132 Rue de la Roquette, 75011 Paris\",01 44 64 76 76,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Lajat-Kiss",
+    "profession": "Angiologue",
+    "_meta": { "source_owner": "elena", "source_line": 10, "source_text": "angiologue,dr lajat-kiss,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Abou Chakra",
+    "profession": "Cardiologue",
+    "adresse": "Métro Couronnes",
+    "_meta": { "source_owner": "elena", "source_line": 11, "source_text": "cardiologue ,Dr ABOU CHAKRA,métro couronne ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Alperin",
+    "profession": "Cardiologue",
+    "etablissement": "CMI ou GOSB",
+    "_meta": { "source_owner": "elena", "source_line": 12, "source_text": "cardiologue ,dr alperin,\"CMI, ou GOSB\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Szwarc",
+    "profession": "Cardiologue",
+    "arrondissement": "75011",
+    "_meta": { "source_owner": "elena", "source_line": 13, "source_text": "cardiologue ,dr szwarc,paris 11,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Iserin",
+    "profession": "Cardiopédiatre",
+    "arrondissement": "75011",
+    "comments": [ { "type": "info", "texte": "Consulter aussi sa remplaçante." } ],
+    "_meta": { "source_owner": "elena", "source_line": 14, "source_text": "cardio pediatre,dr iserin et sa remplacante,paris 11,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "association",
+    "nom": "Centre d'action sociale de la Ville de Paris (CASVP)",
+    "adresse": "Rue du Surmelin",
+    "arrondissement": "75020",
+    "comments": [ { "type": "info", "texte": "Dossier d'APA : portage des repas, téléalarme, auxiliaire de vie." } ],
+    "_meta": { "source_owner": "elena", "source_line": 15, "source_text": "centre d'action socaile de la ville de paris ,rue du surmellin 20eme ,\"dossier d'apa : portage des repas, telealarme, et auxiliare de vie.\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Centre anti-douleur - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "fax": "01 56 01 71 05",
+    "tele_expertise": "Demande à faxer.",
+    "comments": [ { "type": "info", "texte": "Adressage par fax." } ],
+    "_meta": { "source_owner": "elena", "source_line": 16, "source_text": "centre anti douleur Tenon,demande à faxer ,156017105,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "nom": "Centre antirabique",
+    "tel_secretariat": "01 45 68 80 88",
+    "comments": [ { "type": "info", "texte": "Horaires : 9h-12h." } ],
+    "_meta": { "source_owner": "elena", "source_line": 17, "source_text": "centre anti rabique ,01 45 68 80 88 9h-12h,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Chirurgie gynécologique - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "profession": "Chirurgie gynécologique",
+    "tel_secretariat": "01 56 01 68 76",
+    "comments": [ { "type": "info", "texte": "Autre numéro : 01 53 01 60 19." } ],
+    "_meta": { "source_owner": "elena", "source_line": 19, "source_text": "chir gyneco tenon,tenon,01 56 01 68 76     01 53 01 60 19 ,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Stevigon",
+    "prenom": "Thomas",
+    "profession": "Chirurgien orthopédiste",
+    "orientation": "Membre inférieur",
+    "etablissement": "Clinique Saint-Hilaire",
+    "tel_secretariat": "01 55 43 15 10",
+    "portable": "06 76 99 99 83",
+    "consignes_pro": "Téléphone personnel.",
+    "_meta": { "source_owner": "elena", "source_line": 20, "source_text": "chir ortho ,dr stevigon thomas mb inf ,\"clinique st hilaire : 01 55 43 15 10, tel perso :  0676999983\",,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Pr",
+    "nom": "Boyer",
+    "prenom": "Patrick",
+    "profession": "Chirurgien orthopédiste",
+    "orientation": "Épaule, genou, chirurgie du sport",
+    "etablissement": "Hôpital Bichat",
+    "tel_secretariat": "01 40 25 87 51",
+    "portable": "06 29 99 52 08",
+    "consignes_pro": "Second numéro (mobile) fourni comme alternative.",
+    "_meta": { "source_owner": "elena", "source_line": 21, "source_text": "chir ortho ,\"Pr patrick boyer :epaule, genou, chir du sport\",hopital bichat,0140258751ou0629995208,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Frison",
+    "prenom": "Aurélien",
+    "profession": "Chirurgien orthopédiste",
+    "orientation": "Membre inférieur",
+    "etablissement": "Clinique Drouot Molitor",
+    "arrondissement": "75016",
+    "consignes_pro": "L'adresser de la part d'Elena.",
+    "comments": [ { "type": "reco", "texte": "Très bon ami d'Elena. S'adapte pour les prix. Membre inférieur +++." } ],
+    "_meta": { "source_owner": "elena", "source_line": 22, "source_text": "chir ortho ,Dr Frison aurelien ( trés bon ami à moi) ,\"clinique drouot molitor ( Paris 16eme) , sadapte pour les prix, membre inf +++ ne pas hesiter à dire que vous l'adressez de ma part\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Ramanoudjame",
+    "prenom": "Mira",
+    "profession": "Chirurgien orthopédiste pédiatrique",
+    "etablissement": "Centre médical ortho pédiatrique (Nation) ou hôpital Trousseau",
+    "_meta": { "source_owner": "elena", "source_line": 23, "source_text": "chir ortho ped,Dr Mira RAMANOUDJAME,centre medical ortho pediatrique ( nation) ou trousseau ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "centre de santé",
+    "nom": "CMSEA",
+    "profession": "Chirurgie orthopédique pédiatrique",
+    "_meta": { "source_owner": "elena", "source_line": 24, "source_text": "chir ortho ped,CMSEA,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Sattam",
+    "profession": "Chirurgien urologue",
+    "orientation": "Posthectomie",
+    "adresse": "Sarcelles",
+    "_meta": { "source_owner": "elena", "source_line": 25, "source_text": "chir uro posthectomie,dr sattam ,sarcelles ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Abbas",
+    "profession": "Chirurgien urologue",
+    "orientation": "Posthectomie",
+    "etablissement": "Clinique du Plateau",
+    "adresse": "Bezons",
+    "_meta": { "source_owner": "elena", "source_line": 26, "source_text": "chir uro posthectomie,dr abbas,bezon clinique du plateau ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "anne mattt ??",
+    "profession": "Chirurgien urologue",
+    "orientation": "Posthectomie",
+    "etablissement": "CCBB",
+    "statut": "a_verifier",
+    "_meta": { "source_owner": "elena", "source_line": 27, "source_text": "chir uro posthtectomie,dr anne mattt ??,CCBB,,", "needs_web": true, "garbled": true, "confidence": "low" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Chabaud",
+    "prenom": "Maud",
+    "profession": "Chirurgien urologue pédiatrique",
+    "etablissement": "Hôpital Trousseau ou cabinet privé",
+    "adresse": "Cabinet privé dans le 7e",
+    "_meta": { "source_owner": "elena", "source_line": 28, "source_text": "chir uro pediatrique,dr chabaud maud,trousseau ou cabinet privé dans le 7eme,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Chirurgie urologique - Hôpital Saint-Joseph",
+    "etablissement": "Hôpital Saint-Joseph",
+    "profession": "Chirurgie urologique",
+    "orientation": "Vasectomie",
+    "tel_secretariat": "01 44 12 80 00",
+    "email_avis": "cs-chirurologique@ghsj.fr",
+    "comments": [ { "type": "info", "texte": "Secrétariat consultation pour prise de RDV." } ],
+    "_meta": { "source_owner": "elena", "source_line": 29, "source_text": "chir uro ( notamment vasectomie) ,hopital siant joseph,\"secretariat consult  pour prise de rdv : 01 44 12 80 00 ou cs-chirurologique@ghsj,fr\",,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Wartelle",
+    "prenom": "Sébastien",
+    "profession": "ORL pédiatrique",
+    "orientation": "Chirurgie ORL pédiatrique",
+    "etablissement": "Centre CS2PM",
+    "tags": ["orl", "pédiatrie", "chirurgie"],
+    "_meta": { "source_owner": "elena", "source_line": 30, "source_text": "chir ORL pediatrique,dr wartelle sebastien ,centre CS2PM,, (aussi ligne 105 : ORL ped)", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Maman",
+    "prenom": "Gilles",
+    "profession": "ORL pédiatrique",
+    "orientation": "Chirurgie ORL pédiatrique",
+    "arrondissement": "75017",
+    "_meta": { "source_owner": "elena", "source_line": 31, "source_text": "chir ORL pediatrique,dr maman gilles ,75017,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Couture",
+    "profession": "Chirurgien vasculaire",
+    "etablissement": "Pitié-Salpêtrière",
+    "_meta": { "source_owner": "elena", "source_line": 33, "source_text": "chir  vasculaire ,dr couture ,pitié slapetrière,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "commissariat",
+    "nom": "Commissariat de police du 20e",
+    "arrondissement": "75020",
+    "_meta": { "source_owner": "elena", "source_line": 34, "source_text": "commissariat paris 20,psychologue mme dolbeau : 06 07 15 04 06,intervenant social mr lecuyer : 06 40 70 91 41 ,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Dolbeau",
+    "profession": "Psychologue",
+    "etablissement": "Commissariat de police du 20e",
+    "portable": "06 07 15 04 06",
+    "consignes_pro": "Portable direct de la psychologue du commissariat.",
+    "_meta": { "source_owner": "elena", "source_line": 34, "source_text": "commissariat paris 20,psychologue mme dolbeau : 06 07 15 04 06,intervenant social mr lecuyer : 06 40 70 91 41 ,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "M.",
+    "nom": "Lecuyer",
+    "profession": "Intervenant social",
+    "etablissement": "Commissariat de police du 20e",
+    "portable": "06 40 70 91 41",
+    "consignes_pro": "Portable direct de l'intervenant social du commissariat.",
+    "_meta": { "source_owner": "elena", "source_line": 34, "source_text": "commissariat paris 20,psychologue mme dolbeau : 06 07 15 04 06,intervenant social mr lecuyer : 06 40 70 91 41 ,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Cohen Solal",
+    "prenom": "Eric",
+    "profession": "Dentiste",
+    "_meta": { "source_owner": "elena", "source_line": 35, "source_text": "dentiste ,cohen solal eric,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Damri",
+    "prenom": "Alisson",
+    "profession": "Dentiste",
+    "adresse": "Place Gambetta",
+    "_meta": { "source_owner": "elena", "source_line": 36, "source_text": "dentiste ,alisson damri ,place gambetta,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Cuevas",
+    "profession": "Dentiste",
+    "etablissement": "Centre Clavel",
+    "comments": [ { "type": "reco", "texte": "Recommandée par une patiente." } ],
+    "_meta": { "source_owner": "elena", "source_line": 37, "source_text": "dentiste ,dr cuevas ( centre clavel),dentiste recommandée par mme garcia juliette,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Farhi",
+    "profession": "Dermatologue",
+    "orientation": "Dermatologie chirurgicale",
+    "adresse": "8 Rue Saint-Gilles",
+    "arrondissement": "75003",
+    "tel_secretariat": "01 60 34 28 72",
+    "_meta": { "source_owner": "elena", "source_line": 38, "source_text": "dermato chir,dr farhi,\"8 Rue Saint-Gilles, 75003 Paris\",01 60 34 28 72,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Anfroy",
+    "prenom": "Jean-Pierre",
+    "profession": "Dermatologue",
+    "orientation": "Dermatologie chirurgicale",
+    "etablissement": "Cosem Miromesnil",
+    "tel_secretariat": "01 55 56 62 50",
+    "comments": [ { "type": "spec", "texte": "Naevus, lipome, pendulum, abcès superficiel, kyste pilonidal, chéloïde = sous AL, au bloc, en externe. Tiers payant intégral." } ],
+    "_meta": { "source_owner": "elena", "source_line": 39, "source_text": "dermato chir ,cosem miromesnil dr anfroy jean pierre ,\"(naevus, lipome, pendlum, abces sperficiel, kyste pilonidal , cheloide = sous AL, au bloc, en externe, tier payant integral)\",01 55 56 62 50 ,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Dermatologie - Hôpital Mondor (télédermatologie)",
+    "etablissement": "Hôpital Henri-Mondor",
+    "email_avis": "telderm.mondor@aphp.fr",
+    "tele_expertise": "Télédermatologie par mail.",
+    "_meta": { "source_owner": "elena", "source_line": 40, "source_text": "dermato mondor (telederm),telderm.mondor@aphp.fr,,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Dermatologie - Hôpital Saint-Joseph",
+    "etablissement": "Hôpital Saint-Joseph",
+    "email_avis": "cs-dermato@ghpsj.fr",
+    "comments": [ { "type": "spec", "texte": "Cancer ++." } ],
+    "_meta": { "source_owner": "elena", "source_line": 41, "source_text": "dermato st joseph,cs-dermato@ghpsj.fr,( cancer ++),,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "de Belilovsky",
+    "prenom": "Clarence",
+    "profession": "Dermatologue",
+    "orientation": "Dermatologie vulvaire",
+    "etablissement": "Institut Fournier",
+    "tags": ["vulvaire"],
+    "comments": [ { "type": "spec", "texte": "Consultation dédiée à la pathologie vulvaire sous toutes ses formes (dermatologique, infectieuse, fonctionnelle...)." } ],
+    "_meta": { "source_owner": "elena", "source_line": 42, "source_text": "dermato vulvaire,Dr Clarence DE BELILOVSKY (institut fournier) ,\" consultation dédiée à la pathologie vulvaire sous toutes ses formes (dermatologique, infectieuse, fonctionnelle, autres...).\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Moyal Baracco",
+    "profession": "Dermatologue",
+    "orientation": "Dermatologie vulvaire",
+    "adresse": "4 Rue Léon Delhomme",
+    "arrondissement": "75015",
+    "tags": ["vulvaire"],
+    "_meta": { "source_owner": "elena", "source_line": 43, "source_text": "dermato vulvaire ,moyal baracco,\"4 Rue Léon Delhomme, 75015 Paris\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Hau",
+    "prenom": "Estelle",
+    "profession": "Dermatologue",
+    "orientation": "Dermatologie / vénéréologie",
+    "adresse": "Rue de l'Hôpital Saint-Louis",
+    "_meta": { "source_owner": "elena", "source_line": 44, "source_text": "dermato/venero,estelle hau,rue d el'hopital saint louis,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Grenier Mazelle",
+    "prenom": "Elodie",
+    "profession": "Diététicienne",
+    "adresse": "49 Bd Voltaire",
+    "arrondissement": "75011",
+    "_meta": { "source_owner": "elena", "source_line": 45, "source_text": "dieteticienne,elodie grenier mazelle,\"49 bd voltaire, 75011\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Azizi",
+    "prenom": "Louiza",
+    "profession": "Radiologue / échographiste",
+    "adresse": "5 Rue Faidherbe",
+    "arrondissement": "75011",
+    "comments": [ { "type": "reco", "texte": "Super pour l'échographie pelvienne ++." } ],
+    "_meta": { "source_owner": "elena", "source_line": 46, "source_text": "Echographe/radiologue (super pour echo pelv ++),Dr AZIZI louiza,\"5 Rue Faidherbe, 75011 Paris\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Saatdjian",
+    "prenom": "Lucile",
+    "profession": "Endocrinologue",
+    "adresse": "31 Rue du Petit Musc",
+    "arrondissement": "75004",
+    "secteur_conv": "2",
+    "_meta": { "source_owner": "elena", "source_line": 47, "source_text": "endocrinologue,Lucile SAATDJIAN,\"31 Rue du Petit Musc, 75004 Paris (secteur 2)\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Centonze-Wagschal",
+    "prenom": "Michèle",
+    "profession": "Endocrinologue",
+    "etablissement": "Centre de santé René Laborie",
+    "adresse": "29 Rue Turgot",
+    "secteur_conv": "centre",
+    "_meta": { "source_owner": "elena", "source_line": 48, "source_text": "endocrinologue,Dr Michele CENTONZE-WAGSCHAL ,\"Centre de santé René Laborie, 29 rue turgot\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Housni",
+    "prenom": "Selma",
+    "profession": "Endocrinologue",
+    "etablissement": "MSP Pelleport",
+    "arrondissement": "75020",
+    "_meta": { "source_owner": "elena", "source_line": 49, "source_text": "endocrinologue,selma housni ,MSP pelleport ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Endocrinologie - Hôpital Saint-Antoine",
+    "etablissement": "Hôpital Saint-Antoine",
+    "email_avis": "consultation-endocrinologie.sat@aphp.fr",
+    "_meta": { "source_owner": "elena", "source_line": 50, "source_text": "endocrinologie,saint antoine,\"consultation-endocrinologie,sat@aphp,fr\",,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Hagege",
+    "prenom": "Charles",
+    "profession": "Gastro-entérologue",
+    "adresse": "Rue Taine",
+    "arrondissement": "75012",
+    "_meta": { "source_owner": "elena", "source_line": 51, "source_text": "gastro,Dr Charles HAGEGE, rue taine 75012,,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Odinot",
+    "profession": "Gastro-entérologue",
+    "adresse": "49 Bd Saint-Germain",
+    "arrondissement": "75005",
+    "tel_secretariat": "01 43 54 84 84",
+    "_meta": { "source_owner": "elena", "source_line": 52, "source_text": "gastro ,dr odinot,\"49 Bd Saint-Germain, 75005 Paris\",01 43 54 84 84,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Viennot",
+    "prenom": "Stéphanie",
+    "profession": "Gastro-entérologue",
+    "adresse": "10 Rue Margueritte",
+    "arrondissement": "75017",
+    "tel_secretariat": "01 88 40 59 60",
+    "_meta": { "source_owner": "elena", "source_line": 53, "source_text": "gastro,Dr Stéphanie VIENNOT,\"10 Rue Margueritte, 75017 Paris\",01 88 40 59 60,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Hépato-gastro-entérologie - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "email_avis": "consultation.hepatogast@aphp.fr",
+    "comments": [ { "type": "info", "texte": "Indiquer nom, prénom, date de naissance du patient. Réservé au 20e et limitrophes." } ],
+    "_meta": { "source_owner": "elena", "source_line": 54, "source_text": "gastro ,tenon,\"consultation.hepatogast@aphp.fr  (bien mettre nom, prenom, DDN patient du 20 eme et limitrophe seulement)\",,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Garcette",
+    "prenom": "Céline",
+    "profession": "Gastro-pédiatre",
+    "etablissement": "CMSEA",
+    "_meta": { "source_owner": "elena", "source_line": 55, "source_text": "gastro ped ,dr celine garcette,CMSEA,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Équipe mobile de gériatrie - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "tel_secretariat": "01 56 01 86 99",
+    "_meta": { "source_owner": "elena", "source_line": 56, "source_text": "hospi geriatre TENON ,equipe mobile geriatrie,156018699,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Dahan",
+    "prenom": "Meryl",
+    "profession": "Gynécologue",
+    "etablissement": "Hôpital Tenon",
+    "email_avis": "meryl.dahan@aphp.fr",
+    "_meta": { "source_owner": "elena", "source_line": 57, "source_text": "gyneco tenon,\"meryl,dahan@aphp,fr\",,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Gynécologie - pathologie du sein - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "orientation": "Pathologie du sein",
+    "comments": [ { "type": "spec", "texte": "Cancer +++." } ],
+    "_meta": { "source_owner": "elena", "source_line": 58, "source_text": "gyneco patho sein ( cancer +++ ) TENON,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Davy",
+    "profession": "Gynécologue",
+    "orientation": "Fertilité, notamment projet mère solo",
+    "_meta": { "source_owner": "elena", "source_line": 59, "source_text": "gyneco fertilité ( notamment projet mere solo),dr davy,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Ferretti",
+    "prenom": "Caterina",
+    "profession": "Gynécologue",
+    "orientation": "Fertilité, projet à l'étranger",
+    "adresse": "Avenue de Villiers",
+    "_meta": { "source_owner": "elena", "source_line": 60, "source_text": "gyneco fertilité projet à létranger ,dr caterina ferretti ,avenue de villiers,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Karachouli",
+    "profession": "Gynécologue",
+    "arrondissement": "75013",
+    "comments": [ { "type": "reco", "texte": "Très bon contact, attentif au consentement." } ],
+    "_meta": { "source_owner": "elena", "source_line": 61, "source_text": "\"gyneco ( trés bon contact, consentement etc,,) \",dr karachouli ,75013,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Broussard",
+    "prenom": "Cécile",
+    "profession": "Gynécologue",
+    "arrondissement": "75012",
+    "_meta": { "source_owner": "elena", "source_line": 62, "source_text": "gyneco,cecile broussard,75012,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "clinique",
+    "nom": "Gexeus",
+    "orientation": "PMA",
+    "comments": [ { "type": "info", "texte": "CHU en Espagne qui pratique la PMA." } ],
+    "_meta": { "source_owner": "elena", "source_line": 63, "source_text": "gexeus (CHU espagne qui fait PMA ) ,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "clinique",
+    "nom": "Barcelona IVF",
+    "orientation": "PMA à l'étranger",
+    "_meta": { "source_owner": "elena", "source_line": 64, "source_text": "barcelona IVF et IVi eugin,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "clinique",
+    "nom": "IVI Eugin",
+    "orientation": "PMA à l'étranger",
+    "_meta": { "source_owner": "elena", "source_line": 64, "source_text": "barcelona IVF et IVi eugin,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "clinique",
+    "nom": "Procriar",
+    "orientation": "PMA à l'étranger",
+    "_meta": { "source_owner": "elena", "source_line": 65, "source_text": "clinbique PMA : procriar,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Hématologie - Hôpital Bichat",
+    "etablissement": "Hôpital Bichat",
+    "email_avis": "hemato2.secretariat.bch@aphp.fr",
+    "tele_expertise": "Courrier à envoyer par mail.",
+    "_meta": { "source_owner": "elena", "source_line": 66, "source_text": "hemato bichat,courrier à mailer,hemato2.secretariat.bch@aphp.fr,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Hématologie - Hôpital Saint-Louis",
+    "etablissement": "Hôpital Saint-Louis",
+    "fax": "01 42 38 52 67",
+    "tele_expertise": "Courrier à faxer.",
+    "_meta": { "source_owner": "elena", "source_line": 67, "source_text": "hemato saint louis,courrier à faxer,142385267,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Schemoul",
+    "profession": "Radiologue",
+    "orientation": "Hystérosalpingographie",
+    "etablissement": "Institut d'imagerie de la femme",
+    "adresse": "Vincennes",
+    "tel_secretariat": "01 48 08 50 50",
+    "tags": ["imagerie", "hystérosalpingographie"],
+    "_meta": { "source_owner": "elena", "source_line": 68, "source_text": "hystero palpingographie,institu d'imagerie de la femme dr schemoul,148085050,vincennes,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Drunat",
+    "profession": "Gérontopsychiatre",
+    "etablissement": "Hôpital Bretonneau",
+    "tel_secretariat": "01 53 11 17 21",
+    "_meta": { "source_owner": "elena", "source_line": 69, "source_text": "GERONTO PSY BRETONNEAUX,DR DRUNAT,01 53 11 17 21 ,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Chirurgie gynécologique (consultation) - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "tel_secretariat": "01 56 01 76 75",
+    "_meta": { "source_owner": "elena", "source_line": 70, "source_text": "gyneco chir consultation tenon,,156017675,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Chirurgie gynécologique cancérologique - Lariboisière",
+    "etablissement": "Hôpital Lariboisière",
+    "orientation": "Cancérologie gynécologique",
+    "tel_secretariat": "01 49 95 62 77",
+    "email_avis": "chirgyneco.larib@gmail.com",
+    "comments": [ { "type": "info", "texte": "Autre numéro : 01 49 95 62 78." } ],
+    "_meta": { "source_owner": "elena", "source_line": 71, "source_text": "GYNECO CHIR CANCERO larib ,chirgyneco.larib@gmail.com  0149956277 ou 0149956278,,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Berville",
+    "prenom": "Sophie",
+    "profession": "Gynécologue",
+    "orientation": "Vulvodynie",
+    "tags": ["vulvodynie"],
+    "_meta": { "source_owner": "elena", "source_line": 72, "source_text": "gyneco vulvodynie,sophie berville,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Mathieu d'Argent",
+    "prenom": "Emmanuelle",
+    "profession": "Gynécologue",
+    "orientation": "PMA",
+    "etablissement": "Hôpital Tenon",
+    "_meta": { "source_owner": "elena", "source_line": 73, "source_text": "gyneco PMA TENON,Dr Emmanuelle mathieu d'argent,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "maternité",
+    "nom": "Gynécologie transition - Les Bluets",
+    "etablissement": "Maternité des Bluets",
+    "orientation": "Transition",
+    "_meta": { "source_owner": "elena", "source_line": 74, "source_text": "gyneco trnasition bluets,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "autre",
+    "nom": "UMAYA (page ressources)",
+    "orientation": "Projet bébé à l'étranger",
+    "comments": [ { "type": "info", "texte": "Page d'Audrey Page. Plein de ressources pour s'y retrouver dans un projet bébé à l'étranger." } ],
+    "_meta": { "source_owner": "elena", "source_line": 75, "source_text": "projet bébé à l'étranger : consulter page UMAYA ( audrey page) ,pleins de ressources pour aider à s'y retrouver ,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Touati",
+    "prenom": "Jean",
+    "profession": "Hypnothérapeute",
+    "orientation": "Hypnose tabac",
+    "adresse": "31 Rue des Bourdonnais",
+    "arrondissement": "75001",
+    "tarif": "180 € (2 fois)",
+    "tags": ["hypnose", "tabac"],
+    "_meta": { "source_owner": "elena", "source_line": 77, "source_text": "hypnose tabac ,jean touati,\"31 Rue des Bourdonnais, 75001 Paris. 180 euros 2 fois\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Infectiologie (ligne d'avis) - Tenon",
+    "etablissement": "Hôpital Tenon",
+    "ligne_directe": "01 56 01 86 87",
+    "consignes_pro": "Ligne d'avis infectiologie (pour les correspondants).",
+    "_meta": { "source_owner": "elena", "source_line": 78, "source_text": "infectiologue avis tenon ,01 56 01 86 87 ,,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Contard",
+    "prenom": "Isabelle",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, vulvodynie",
+    "tags": ["périnée", "vulvodynie"],
+    "comments": [ { "type": "spec", "texte": "Tout le cabinet est spécialisé périnée." } ],
+    "_meta": { "source_owner": "elena", "source_line": 79, "source_text": "kiné périnée vulvodynie ,isabelle contard ,( tout le cabinet est specialisé périnée),,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Da Cruz",
+    "prenom": "Chloé",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, vulvodynie",
+    "adresse": "32 Rue Pastourelle",
+    "arrondissement": "75003",
+    "tags": ["périnée", "vulvodynie"],
+    "_meta": { "source_owner": "elena", "source_line": 80, "source_text": "kiné périnée vulvodynie ,chloé da cruz,\"32 rue pastourelle, 75003\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Friot",
+    "prenom": "Hélène",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, vulvodynie",
+    "adresse": "Bastille",
+    "tags": ["périnée", "vulvodynie"],
+    "_meta": { "source_owner": "elena", "source_line": 81, "source_text": "kiné perinée vulvodynie,helene friot,bastille ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Coll Nicolo",
+    "prenom": "Marta",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, vulvodynie",
+    "adresse": "Nation",
+    "tags": ["périnée", "vulvodynie"],
+    "_meta": { "source_owner": "elena", "source_line": 82, "source_text": "kiné périnée vulvodynie ,marta coll nicolo ,nation,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Juglard",
+    "prenom": "Marie",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, endométriose",
+    "arrondissement": "75020",
+    "tags": ["périnée", "endométriose"],
+    "_meta": { "source_owner": "elena", "source_line": 83, "source_text": "kiné perinée endometriose ,marie juglard,75020,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Szawlewa",
+    "prenom": "Hélène",
+    "profession": "Ostéopathe / sage-femme",
+    "orientation": "Périnée, vulvodynie",
+    "tags": ["périnée", "vulvodynie"],
+    "_meta": { "source_owner": "elena", "source_line": 84, "source_text": "osteo SF périnée vulvodynie,helene szawlewa,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Pobla",
+    "prenom": "Jeanne",
+    "profession": "Kinésithérapeute",
+    "orientation": "Périnée, post-partum",
+    "adresse": "Métro Rue Saint-Maur",
+    "tags": ["périnée", "post-partum"],
+    "_meta": { "source_owner": "elena", "source_line": 85, "source_text": "kiné périéne post partum ,jeanne pobla,metro rue saint maur,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Clevenot",
+    "prenom": "Maël",
+    "profession": "Kinésithérapeute",
+    "orientation": "Pédiatrique, post-partum",
+    "tags": ["pédiatrie", "post-partum"],
+    "_meta": { "source_owner": "elena", "source_line": 86, "source_text": "kiné ped + post partum,mael clevenot,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Floch",
+    "prenom": "Kevin",
+    "profession": "Kinésithérapeute",
+    "orientation": "Rééducation vestibulaire",
+    "tags": ["vestibulaire"],
+    "_meta": { "source_owner": "elena", "source_line": 87, "source_text": "kiné vestibulaire ,kevin floch,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "nom": "Kinofit",
+    "profession": "Kinésithérapie",
+    "adresse": "Rue des Grands Champs",
+    "arrondissement": "75020",
+    "_meta": { "source_owner": "elena", "source_line": 88, "source_text": "kiné ,kinofit,rue des grands champs ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "nom": "Kiné Paris",
+    "profession": "Kinésithérapie",
+    "adresse": "160 Rue Oberkampf",
+    "arrondissement": "75011",
+    "_meta": { "source_owner": "elena", "source_line": 89, "source_text": "kiné,kiné paris,160 rue oberkampf ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Pellet",
+    "prenom": "Manon",
+    "profession": "Kinésithérapeute",
+    "orientation": "Articulation temporo-mandibulaire",
+    "adresse": "Rue Chanzy",
+    "arrondissement": "75011",
+    "tags": ["atm"],
+    "_meta": { "source_owner": "elena", "source_line": 90, "source_text": "kiné articulé temporo mandibulaire ,manon pellet,rue chanzy 75011,,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Lozet",
+    "prenom": "Lidwine",
+    "profession": "Kinésithérapeute / ostéopathe",
+    "orientation": "Pédiatrique",
+    "adresse": "83 Rue de la Mare",
+    "arrondissement": "75020",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 91, "source_text": "kiné osteo pediatrique,lidwine lozet,83 rue de la mare 75020,,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Orhant",
+    "prenom": "Clémence",
+    "profession": "Kinésithérapeute",
+    "orientation": "Rééducation vestibulaire",
+    "etablissement": "Centre kiné vestibulaire",
+    "adresse": "14 Rue de Bruxelles",
+    "arrondissement": "75009",
+    "tel_secretariat": "01 48 74 29 65",
+    "tags": ["vestibulaire"],
+    "_meta": { "source_owner": "elena", "source_line": 92, "source_text": "kiné vestibulaire,orhant clemence ,\"centre kiné vestibulaire , 14 rue de bruxelles 75009\",148742965,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Balança Lalanne",
+    "prenom": "Astrid",
+    "profession": "Médecin MPR",
+    "orientation": "Troubles vésico-sphinctériens, périnée",
+    "arrondissement": "75001",
+    "tags": ["périnée"],
+    "_meta": { "source_owner": "elena", "source_line": 94, "source_text": "\"MPR troubles vesico scpincterien , périnée\",dr balança lalanne astrid,75001,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Izzedine",
+    "prenom": "Hassan",
+    "profession": "Néphrologue",
+    "etablissement": "Diaverum",
+    "email_avis": "hassan.izzeddine@aphp.fr",
+    "_meta": { "source_owner": "elena", "source_line": 95, "source_text": "nephrologue,dr hassan izzedine ( diaverum),,hassan.izzeddine@aphp.fr,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Neurologie - Fondation Rothschild",
+    "etablissement": "Fondation ophtalmologique Adolphe de Rothschild",
+    "email_avis": "neurologie@for.paris",
+    "tele_expertise": "Avis par mail.",
+    "_meta": { "source_owner": "elena", "source_line": 96, "source_text": "neuro rotchild,neurologie@for.paris,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Savenier",
+    "prenom": "Florian",
+    "profession": "Neurologue",
+    "_meta": { "source_owner": "elena", "source_line": 97, "source_text": "neurologue ,florian savenier ,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Rochon",
+    "profession": "Radiologue / échographiste",
+    "orientation": "Plutôt gynécologie",
+    "_meta": { "source_owner": "elena", "source_line": 98, "source_text": "\"radio echographiste, plutot gyneco \",Dr ROCHON ,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Kintzig",
+    "profession": "Ophtalmologue pédiatrique",
+    "adresse": "95 Rue du Faubourg Saint-Antoine",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 100, "source_text": "ophtalmo ped,Dr Kintzig,95 rue du faubourg saint antoine,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Vera",
+    "prenom": "Liza",
+    "profession": "Ophtalmologue pédiatrique",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 101, "source_text": "ophtalmo ped,Dr Liza Vera,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Cardine",
+    "profession": "Ophtalmologue pédiatrique",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 102, "source_text": "ophtalmo ped,dr cardine,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Sfez",
+    "prenom": "Lou",
+    "profession": "Orthophoniste",
+    "adresse": "10 Avenue du Père Lachaise",
+    "arrondissement": "75020",
+    "tel_secretariat": "06 50 50 19 86",
+    "_meta": { "source_owner": "elena", "source_line": 103, "source_text": "ORTHOPHONISTE,lou sfez,10 avenue du pere lachaise ,650501986,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Chilot",
+    "prenom": "Pauline",
+    "profession": "Orthoptiste",
+    "adresse": "4 Rue Charles Renouvier",
+    "arrondissement": "75020",
+    "_meta": { "source_owner": "elena", "source_line": 104, "source_text": "orthopstiste ,pauline chilot,4 rue charles renouvier ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Henrion",
+    "prenom": "Pascale",
+    "profession": "ORL pédiatrique",
+    "adresse": "Rue Bachaumont",
+    "arrondissement": "75002",
+    "tel_secretariat": "01 42 36 67 00",
+    "tags": ["orl", "pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 106, "source_text": "ORL ped,dr henrion pascale,rue bachaumont,01 42 36 67 00 ,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Sain Oulhen",
+    "prenom": "Charlotte",
+    "profession": "ORL pédiatrique",
+    "etablissement": "Institut Vernes",
+    "adresse": "Rue d'Assas",
+    "arrondissement": "75006",
+    "tel_secretariat": "01 44 39 53 11",
+    "tags": ["orl", "pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 107, "source_text": "ORL ped,dr sain oulhen charlotte,institut vernes rue d'assas 75006,01 44 39 53 11 ,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Haider",
+    "profession": "ORL",
+    "arrondissement": "75002",
+    "consignes_pro": "Contact particulier (de la part d'Elena) — numéro non renseigné.",
+    "_meta": { "source_owner": "elena", "source_line": 108, "source_text": "ORL ,dr haider,75002,contact particulier,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Jafari",
+    "prenom": "Alice",
+    "profession": "ORL",
+    "etablissement": "Hôpital Tenon",
+    "comments": [ { "type": "spec", "texte": "Chirurgie cutanée : kyste, pomme d'Adam, thyroïdectomie." } ],
+    "_meta": { "source_owner": "elena", "source_line": 109, "source_text": "ORL TENON,DR JAFARI ALICE,\"chir cutané : kyste, pomme d'adam, thyroidectomie\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Oncogénétique (consultation) - Hôpital Saint-Louis",
+    "etablissement": "Hôpital Saint-Louis",
+    "email_avis": "oncogenetique.sls@aphp.fr",
+    "tele_expertise": "Envoyer directement un mail pour l'adressage.",
+    "_meta": { "source_owner": "elena", "source_line": 110, "source_text": "oncogenetique saint louis ( consultation),oncogenetique.sls@aphp.fr,envoyer directement un mail  pour adressage,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Polycar",
+    "prenom": "Myrianne",
+    "profession": "Conseillère conjugale",
+    "etablissement": "Planning familial - Hôpital Tenon",
+    "tel_secretariat": "01 56 01 80 13",
+    "comments": [ { "type": "info", "texte": "Autre numéro : 01 56 01 68 52." } ],
+    "_meta": { "source_owner": "elena", "source_line": 111, "source_text": "PLANNING TENON (conseillere conjugale),mme myrianne polycar,conseillere conjugale,0156018013 ou 0156016852,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Ben Hassen",
+    "prenom": "Ikram",
+    "profession": "Pneumologue",
+    "etablissement": "Alquier-Debrousse",
+    "arrondissement": "75020",
+    "secteur_conv": "1",
+    "comments": [ { "type": "reco", "texte": "Super !" } ],
+    "_meta": { "source_owner": "elena", "source_line": 112, "source_text": "pneumologue,ikram ben hassen,\"secteur 1, super ! à alquier debrousse 75020\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Schlegel",
+    "prenom": "Hugues",
+    "profession": "Pneumologue",
+    "adresse": "24 Avenue de la République",
+    "arrondissement": "75011",
+    "tel_secretariat": "01 47 00 87 49",
+    "_meta": { "source_owner": "elena", "source_line": 113, "source_text": "pneumologue,hugues Schlegel,24 avenue de la republique 75011,147008749,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Simon",
+    "prenom": "Virginie",
+    "profession": "Pneumologue",
+    "adresse": "10 Rue Beaurepaire",
+    "secteur_conv": "2",
+    "_meta": { "source_owner": "elena", "source_line": 114, "source_text": "pneumologue,virginie simon,10 rue beuarepaire (secteur 2),,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Vergez",
+    "prenom": "Mylène",
+    "profession": "Pneumopédiatre-allergologue",
+    "adresse": "10 Rue Pierre Leroux",
+    "arrondissement": "75007",
+    "tel_secretariat": "01 87 03 94 85",
+    "tags": ["pédiatrie", "allergologie"],
+    "_meta": { "source_owner": "elena", "source_line": 115, "source_text": "pneumopédiatre-allergologue,mylene vergez,\"10 Rue Pierre Leroux, 75007 Paris\",01 87 03 94 85,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Pneumologie / cancérologie - Tenon APHP",
+    "etablissement": "Hôpital Tenon",
+    "orientation": "Cancer du poumon",
+    "tel_secretariat": "01 56 01 66 73",
+    "email_avis": "cancer-poumon.diag@aphp.fr",
+    "_meta": { "source_owner": "elena", "source_line": 116, "source_text": "pneumologie/cancero,TENON APHP,,01 56 01 66 73,cancer-poumon.diag@aphp.fr", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Troadec",
+    "prenom": "Corinne",
+    "profession": "Pneumopédiatre-allergologue",
+    "etablissement": "CMSEA",
+    "adresse": "17 Rue Froment",
+    "arrondissement": "75011",
+    "tel_secretariat": "01 43 55 17 17",
+    "tags": ["pédiatrie", "allergologie"],
+    "_meta": { "source_owner": "elena", "source_line": 117, "source_text": "pneumopédiatre-allergologue,corinne troadec,\"CMSEA : 17 Rue Froment, 75011 Paris\",01 43 55 17 17,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "M.",
+    "nom": "Elbaz",
+    "profession": "Podologue",
+    "adresse": "105 Rue Orfila",
+    "arrondissement": "75020",
+    "vad": true,
+    "_meta": { "source_owner": "elena", "source_line": 118, "source_text": "podologue à domciile ,M. Elbaz,105 rue Orfila,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Sordou",
+    "prenom": "Cristel",
+    "profession": "Podologue",
+    "tel_secretariat": "06 31 47 39 00",
+    "vad": true,
+    "_meta": { "source_owner": "elena", "source_line": 119, "source_text": "podologue à domciile ,cristel sordou,06 31 47 39 00,06 31 47 39 00,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "hôpital",
+    "nom": "Proctologie - Hôpital Saint-Joseph",
+    "etablissement": "Hôpital Saint-Joseph",
+    "tel_secretariat": "01 44 12 72 45",
+    "email_avis": "secretariatproctologique@ghpsj.fr",
+    "_meta": { "source_owner": "elena", "source_line": 120, "source_text": "proctologie ,saint joseph ,\"consult : 01 44 12 72 45  ou secretariatproctologique@ghpsj,fr\",,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Matet",
+    "profession": "Psychiatre",
+    "arrondissement": "75004",
+    "_meta": { "source_owner": "elena", "source_line": 121, "source_text": "psychiatre,Dr MATET,75004,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Douay",
+    "profession": "Psychiatre",
+    "arrondissement": "75004",
+    "comments": [ { "type": "info", "texte": "Ancien du CMP l'Espagnol." } ],
+    "_meta": { "source_owner": "elena", "source_line": 122, "source_text": "psychiatre,Dr Douay,75004,,ancien du cmp l'espagnol", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Lutz",
+    "prenom": "Brigitte",
+    "profession": "Psychiatre",
+    "arrondissement": "75014",
+    "tel_secretariat": "01 45 41 19 49",
+    "_meta": { "source_owner": "elena", "source_line": 123, "source_text": "psychiatre,Dr lutz brigitte,75014,01 45 41 19 49,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Mazzoleni",
+    "prenom": "Manon",
+    "profession": "Psychiatre",
+    "adresse": "Rue d'Assas",
+    "comments": [ { "type": "info", "texte": "Remplaçante du Dr Hamdani." } ],
+    "_meta": { "source_owner": "elena", "source_line": 124, "source_text": "psychiatre,\"Dr manon mazzoleni, remplacante du dr hamdani\",rue d'assas,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Dr",
+    "nom": "Siboni",
+    "prenom": "Laurent",
+    "profession": "Psychiatre",
+    "orientation": "Notamment TCA",
+    "adresse": "44 Bd Diderot",
+    "arrondissement": "75012",
+    "tags": ["tca"],
+    "_meta": { "source_owner": "elena", "source_line": 125, "source_text": "psychiatre ( notamment TCA),Dr Siboni Laurent,\"44 Bd Diderot, 75012 Paris\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Dreux d'Écolombel",
+    "profession": "Psychologue",
+    "orientation": "Pédiatrique",
+    "adresse": "Rue Julien Lacroix",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 126, "source_text": "psychologue ped,mme dreux d ecolombel ,rue julien lacroix ,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Roll Viala",
+    "profession": "Psychologue",
+    "orientation": "Pédiatrique",
+    "tags": ["pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 127, "source_text": "psychologue ped,mme roll viala,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Illouz",
+    "prenom": "Anna",
+    "profession": "Psychologue",
+    "orientation": "Pédiatrique (10/11 ans) et adulte",
+    "adresse": "8 Boulevard de Ménilmontant",
+    "arrondissement": "75020",
+    "tel_secretariat": "07 67 24 61 60",
+    "_meta": { "source_owner": "elena", "source_line": 128, "source_text": "psychologue ped ( 10/11 ans) + adulte,mme illouz anna,\"8 Boulevard de Ménilmontant, 75020 Paris\",07 67 24 61 60,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Lis",
+    "profession": "Psychologue",
+    "orientation": "Adulte",
+    "adresse": "14 Rue de la Cour des Noues",
+    "tel_secretariat": "06 58 31 78 04",
+    "tags": ["hypnose", "emdr", "psychotraumatisme"],
+    "comments": [ { "type": "spec", "texte": "Adulte, hypnose, mouvements oculaires (stress post-traumatique)." } ],
+    "_meta": { "source_owner": "elena", "source_line": 129, "source_text": "psychologue,mme lis,14 rue d ela cours des noues,658317804,\"adulte, hypnose, mouvements oculaires (stresspost trauma)\"", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Godard",
+    "profession": "Psychologue",
+    "adresse": "56 Rue de la Bidassoa",
+    "arrondissement": "75020",
+    "tel_secretariat": "01 47 97 95 83",
+    "_meta": { "source_owner": "elena", "source_line": 130, "source_text": "psychologue,mme godard ,56 rue d ela bidassoa 75020,147979583,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Bertoli",
+    "prenom": "Nadia",
+    "profession": "Psychologue",
+    "orientation": "Dispositif MonPsy",
+    "arrondissement": "75011",
+    "tags": ["monpsy"],
+    "_meta": { "source_owner": "elena", "source_line": 131, "source_text": "psychologue du dispositif mon psy,mme nadia bertoli ,75011,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Pfauwadel",
+    "profession": "Psychologue",
+    "adresse": "4 Rue du Marché Popincourt",
+    "arrondissement": "75011",
+    "tel_secretariat": "06 30 90 04 39",
+    "_meta": { "source_owner": "elena", "source_line": 132, "source_text": "psychologue,mme pfauwadel,4 rue du marché popincourt 75011 paris,630900439,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "civilite": "Mme",
+    "nom": "Mann",
+    "profession": "Psychologue",
+    "orientation": "Plutôt souffrance au travail",
+    "adresse": "66 Rue des Grands Champs",
+    "arrondissement": "75020",
+    "tel_secretariat": "07 69 38 58 69",
+    "_meta": { "source_owner": "elena", "source_line": 133, "source_text": "psychologue (plutot souffrance au travail) ,mme mann,66 rue des grands champs 75020 paris,769385869,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Simsolo",
+    "prenom": "Laura",
+    "profession": "Psychologue",
+    "adresse": "4 Villa de l'Ermitage",
+    "arrondissement": "75020",
+    "tel_secretariat": "01 46 36 42 54",
+    "_meta": { "source_owner": "elena", "source_line": 134, "source_text": "psychologue,laura simsolo,4 villa de l'ermittage 75020,146364254,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Chaussecourte",
+    "prenom": "Philippe",
+    "profession": "Psychologue",
+    "adresse": "11 Rue de la Cour des Noues",
+    "tel_secretariat": "06 52 42 06 46",
+    "_meta": { "source_owner": "elena", "source_line": 135, "source_text": "psychologue,chaussecourte philippe,11 rue de la cours des noues ,652420646,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Planchette",
+    "prenom": "Sandrine",
+    "profession": "Psychologue",
+    "orientation": "TCC",
+    "tags": ["tcc"],
+    "_meta": { "source_owner": "elena", "source_line": 136, "source_text": "psychologue TCC,sandrine planchette,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Bouychou",
+    "prenom": "Mathilde",
+    "profession": "Psychologue",
+    "orientation": "Périnatalité, PMA, deuil périnatal",
+    "tel_secretariat": "06 64 37 65 62",
+    "email_avis": "mbouychou.psychologue@gmail.com",
+    "tags": ["périnatalité", "pma"],
+    "_meta": { "source_owner": "elena", "source_line": 137, "source_text": "psychologue peri natalité/pma deuil peri natal,mathile bouychou,,06 64 37 65 62,mbouychou.psychologue@gmail.com", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Lecoq",
+    "prenom": "Louisiane",
+    "profession": "Psychologue",
+    "etablissement": "Centre psychotrauma Saint-Blaise",
+    "tags": ["psychotraumatisme"],
+    "_meta": { "source_owner": "elena", "source_line": 138, "source_text": "psychologue centre psychotrauma saint blaise,louisiane lecoq,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "réseau",
+    "nom": "REPOP 75 (réseau prise en charge obésité pédiatrique 3-12 ans)",
+    "orientation": "Obésité pédiatrique 3-12 ans",
+    "tel_secretariat": "01 42 73 05 53",
+    "portable": "06 34 17 95 40",
+    "email_avis": "elsa.lemoine@repop.fr",
+    "tags": ["obésité", "pédiatrie"],
+    "comments": [ { "type": "info", "texte": "Contact : Elsa Lemoine, psychologue coordinatrice REPOP 75." } ],
+    "_meta": { "source_owner": "elena", "source_line": 139, "source_text": "réseau prise en charge obésité pédiatrie 3-12 ans (REPOP),elsa lemoine (psycologue coordinatrice REPOP 75),01 42 73 05 53 ou 06 34 17 9540 ou elsa.lemoine@repop.fr,,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "réseau",
+    "nom": "Réseau Humanest",
+    "comments": [ { "type": "info", "texte": "M2A / maison des aidants." } ],
+    "_meta": { "source_owner": "elena", "source_line": 140, "source_text": "\"réseau humanest ( M2A, ou maison des aidants) \",,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "réseau",
+    "nom": "Réseau Paris Diabète",
+    "orientation": "Diabète",
+    "adresse": "16 bis Rue Lauzin",
+    "arrondissement": "75019",
+    "tel_secretariat": "01 45 45 46 56",
+    "tags": ["diabète"],
+    "_meta": { "source_owner": "elena", "source_line": 141, "source_text": "Réseau Paris Diabète ,\"16 bis Rue Lauzin, 75019 Paris\",,01 45 45 46 56,", "needs_web": false, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Gross",
+    "prenom": "Jimmy",
+    "profession": "Rhumatologue",
+    "_meta": { "source_owner": "elena", "source_line": 142, "source_text": "rhumato,jimmy gross,,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "nom": "Rééducation cardiaque - Léopold Bellan",
+    "etablissement": "Fondation Léopold Bellan",
+    "orientation": "Rééducation cardiaque",
+    "email_avis": "secretariat.urcv@fondationbellan.org",
+    "comments": [ { "type": "info", "texte": "Envoyer CR cardio et traitement biologique. Programme d'un mois, tous les matins ou après-midi." } ],
+    "_meta": { "source_owner": "elena", "source_line": 143, "source_text": "reeduc cardio leopold bellan,\"secretariat,urcv@fondationbellan,org\",\"envoyer cr cardio, ttt bio, dure 1 mois tous les matins ou ou aprem \",,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Souède",
+    "prenom": "Nimasha",
+    "profession": "Sage-femme",
+    "orientation": "Rééducation périnéale",
+    "adresse": "163 Rue Pelleport",
+    "arrondissement": "75020",
+    "tags": ["périnée"],
+    "_meta": { "source_owner": "elena", "source_line": 144, "source_text": "sage femme pour réeduc perinée,Nimasha SOUEDE,\"163 Rue Pelleport, 75020 Paris\",,", "needs_web": true, "garbled": false, "confidence": "high" }
+  },
+  {
+    "type": "structure",
+    "nom": "Cabinet de sages-femmes - Rue des Prairies",
+    "profession": "Sage-femme",
+    "orientation": "Rééducation périnéale",
+    "adresse": "68 Rue des Prairies",
+    "arrondissement": "75020",
+    "tags": ["périnée"],
+    "_meta": { "source_owner": "elena", "source_line": 145, "source_text": "sage femme pour réeduc perinée,cabinet rue des prairies ,\"68 Rue des Prairies, 75020 Paris\",,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Riser",
+    "prenom": "Laetitia",
+    "profession": "Sage-femme",
+    "orientation": "Rééducation périnéale",
+    "tags": ["périnée"],
+    "comments": [ { "type": "spec", "texte": "Radiofréquence vaginale." } ],
+    "_meta": { "source_owner": "elena", "source_line": 146, "source_text": "sage femme pour réeduc perinée,laetitia riser,radiofrequence vaginal,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Nemet Pier",
+    "prenom": "Lyliane",
+    "profession": "Spécialiste du sommeil de l'enfant",
+    "orientation": "Sommeil de l'enfant",
+    "adresse": "8 Villa des Gobelins",
+    "tel_secretariat": "06 52 22 57 41",
+    "tags": ["sommeil", "pédiatrie"],
+    "_meta": { "source_owner": "elena", "source_line": 147, "source_text": "sommeil enfant,lyliane nemet pier,8 villa des gobelins,652225741,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Gribé",
+    "prenom": "Garance",
+    "profession": "Sexologue",
+    "arrondissement": "75012",
+    "_meta": { "source_owner": "elena", "source_line": 148, "source_text": "sexologue,garance gribé,75012,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "praticien",
+    "nom": "Alquier",
+    "prenom": "Claire",
+    "profession": "Sexologue",
+    "orientation": "Sexologie de couple",
+    "arrondissement": "75011",
+    "_meta": { "source_owner": "elena", "source_line": 149, "source_text": "sexo couple,claire alquier,75011,,", "needs_web": true, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "taxi",
+    "nom": "Taxi conventionné (Mr Bada)",
+    "tel_secretariat": "06 59 20 92 84",
+    "tags": ["taxi conventionné"],
+    "comments": [ { "type": "info", "texte": "Contact : Luis. Taxi de Mr Bada." } ],
+    "_meta": { "source_owner": "elena", "source_line": 150, "source_text": "taxi conventionné,luis,,659209284,taxi mr bada", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "autre",
+    "nom": "Petits dormeurs deviendra grand",
+    "orientation": "Sommeil de l'enfant",
+    "vad": true,
+    "tarif": "100 €",
+    "tags": ["sommeil", "pédiatrie"],
+    "comments": [ { "type": "info", "texte": "Consultante prénommée Stéphanie. 100 € à domicile." } ],
+    "_meta": { "source_owner": "elena", "source_line": 153, "source_text": "sommeil : petits dormeurs deviendra grand : stephanie : 100euros à domciile ,,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "autre",
+    "nom": "Ressources contraception masculine (comptes Instagram)",
+    "orientation": "Contraception masculine",
+    "tags": ["contraception masculine"],
+    "comments": [ { "type": "info", "texte": "Comptes Instagram : 0 million, Slow Contraception, coucouroucoucou (Andro Switch)." } ],
+    "_meta": { "source_owner": "elena", "source_line": 155, "source_text": "\"compte ig / 0 MILLION, SLOW CONTRACEPTION , coucouroucoucou ( andro switch) \",REUNION PLANNING FAMILIAL RUE VIVIENNE ,CONTRACEPTION MASCULINE  (reunion d'information) ,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "association",
+    "nom": "Planning familial - Rue Vivienne",
+    "adresse": "Rue Vivienne",
+    "orientation": "Contraception masculine",
+    "tags": ["contraception masculine"],
+    "comments": [ { "type": "info", "texte": "Réunion d'information sur la contraception masculine." } ],
+    "_meta": { "source_owner": "elena", "source_line": 155, "source_text": "\"compte ig / 0 MILLION, SLOW CONTRACEPTION , coucouroucoucou ( andro switch) \",REUNION PLANNING FAMILIAL RUE VIVIENNE ,CONTRACEPTION MASCULINE  (reunion d'information) ,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "association",
+    "nom": "Paris en Compagnie",
+    "tel_secretariat": "01 85 74 75 76",
+    "comments": [ { "type": "info", "texte": "Accompagne aux rendez-vous médicaux." } ],
+    "_meta": { "source_owner": "elena", "source_line": 157, "source_text": "PARIS en compagnie ( acocmpagne aux rdv medicaux) ,185747576,,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  },
+  {
+    "type": "structure",
+    "sous_type": "pharmacie",
+    "nom": "Pharmacie Porte de Bagnolet (sur le rond-point)",
+    "comments": [ { "type": "info", "texte": "Inhaleur Nicorette moins cher." } ],
+    "_meta": { "source_owner": "elena", "source_line": 158, "source_text": "pharmacie posrte de bagnolet sur le rond point ,inhaleur nicorette moins cher ,,,", "needs_web": true, "garbled": false, "confidence": "low" }
+  },
+  {
+    "type": "labo",
+    "nom": "Eurofins / Biomnis",
+    "tel_secretariat": "01 44 12 59 36",
+    "comments": [ { "type": "info", "texte": "Pour les résultats de FCV (frottis). Autre numéro : 01 44 12 59 41." } ],
+    "_meta": { "source_owner": "elena", "source_line": 160, "source_text": "eurofins/biomnis  pour resultats FCV : 01 44 12 59 36 ou 01 44 12 59 41 ,,,,", "needs_web": false, "garbled": false, "confidence": "medium" }
+  }
+]

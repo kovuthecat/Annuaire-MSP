@@ -13,6 +13,18 @@ visuelle humaine (`VALIDATION.md`) et push.
 L'open data CNAM est joint aux 1 052 fiches (hors ligne, Licence Ouverte). Reste S2 (Doctolib au
 navigateur, avec Thibault) puis S3 (consolidation + commit). **Rien n'est encore commité.**
 
+**Phases 3 & 4 — planifiées, non démarrées (cadrage écrit le 2026-07-17).** Deux nouvelles
+fonctionnalités cadrées à la demande de Thibault, plans rédigés, **aucun code** :
+
+- **P3 — Proximité & cartographie** (`plans/P3/`, T-006) : géocodage BAN + distance vol d'oiseau +
+  carte Leaflet/OSM (annuaire + fiche) + arrêts de transport IDFM + référence MSP/adresse patient. 4
+  sessions (S1 schéma+géocodage → S2 distance/annuaire → S3 ∥ S4 cartes/transports).
+- **P4 — Ajout assisté depuis Doctolib** (`plans/P4/`, T-007) : bookmarklet un-clic →
+  `/nouveau?prefill=` (liste blanche patient-only, provenance « à vérifier »), extension en repli si
+  CSP. 3 sessions (S1 lecteur prefill → S2 extracteur+bookmarklet → S3 extension *conditionnelle*).
+- Décisions de cadrage consignées dans `DECISIONS.md` (2 entrées du 2026-07-17). **Ces phases ajoutent
+  4 colonnes géo à `contacts` (P3/S1) — à appliquer au schéma avant leur câblage.**
+
 ## Ce qui fonctionne
 
 - Fichiers de contexte instanciés (brief, architecture, décisions).

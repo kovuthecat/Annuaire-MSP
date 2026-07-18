@@ -12,7 +12,9 @@ import json, os, uuid, datetime
 
 SCRATCH = os.path.dirname(os.path.abspath(__file__))
 NS = uuid.UUID("6f9b1e2a-3c4d-5e6f-8a9b-0c1d2e3f4a5b")   # espace de noms du projet
-OWNERS = ["anne", "charlene", "aurelien", "antonin"]
+# elena + maylis ajoutés 2026-07-18 (carnet Elena + listes Google Maps de Maylis),
+# emails renseignés le 2026-07-18 (comptes Supabase provisionnés).
+OWNERS = ["anne", "charlene", "aurelien", "antonin", "elena", "maylis"]
 
 def cid(idx):
     return str(uuid.uuid5(NS, "annuaire-msp:contact:%d" % idx))
@@ -78,10 +80,12 @@ w("-- si l'un d'eux manque, plutôt que d'importer un carnet dans le vide.")
 w("-- ---------------------------------------------------------------------------")
 w("create temp table seed_owner_map (slug text primary key, email text not null);")
 w("insert into seed_owner_map (slug, email) values")
-w("  ('anne',     'kammerer.anne@gmail.com'),")
+w("  ('anne',     'annekammerer.sf@gmail.com'),")
 w("  ('charlene', 'charly.lemet@gmail.com'),")
 w("  ('aurelien', 'aurelien.descarpentries@gmail.com'),")
-w("  ('antonin',  'amathieu@mspmenilmontant.fr');")
+w("  ('antonin',  'amathieu@mspmenilmontant.fr'),")
+w("  ('elena',    'elena.nasreddine@gmail.com'),")
+w("  ('maylis',   'mbayleorthophoniste@gmail.com');")
 w("-- Les commentaires de l'ancien répertoire partagé ne figurent pas ici : ils sont")
 w("-- importés avec author_id = null et s'affichent « Extrait de l'ancien répertoire ».")
 w("")

@@ -48,24 +48,39 @@ OUT_PROTO = os.environ.get("OUT_PROTO") or os.path.join(HERE, "s2_protocole.csv"
 
 PROCHE = {"75020", "75011", "75012", "75019", "93100", "93260", "93170", "93500"}
 
-# Le protocole vit DANS le classeur, pas dans le dépôt : Claude in Chrome n'a pas le
-# système de fichiers — il ne peut pas lire plans/P2/S2.md. Sa seule mémoire durable est
-# la feuille. Les consignes doivent donc être à côté des données, sinon elles n'atteignent
-# jamais leur exécutant. Un CSV n'a pas d'onglets → second fichier, importé en 2e feuille.
+# /!\ Corrigé le 2026-07-17. Ce bloc visait à mettre le protocole DANS le classeur, pour
+# qu'il atteigne son exécutant (Claude in Chrome n'a pas le système de fichiers, il ne peut
+# pas lire plans/P2/S2.md). Essayé : il REFUSE d'exécuter un protocole lu dans une page. Il
+# traite tout contenu de page comme des données, jamais comme des instructions — défense
+# contre l'injection de prompt, pas un bug, pas contournable.
+# L'exécutable est donc plans/P2/S2_PROMPT.md, collé par Thibault à chaque séance.
+# Ce qui reste vrai : la feuille est la mémoire durable des DONNÉES produites.
+# PROTOCOLE ci-dessous n'est pas mort pour autant : il est la source du texte du prompt et
+# la référence de Thibault. Toute règle modifiée ici doit l'être AUSSI dans S2_PROMPT.md.
 PROTOCOLE = [
     ("But", "Ouvrir des fiches Doctolib une par une pour (1) vérifier des liens déjà en "
             "base qui n'ont JAMAIS été ouverts, (2) retrouver des liens manquants, "
             "(3) relever ce que seul Doctolib possède."),
-    ("Boucle", "1. Filtrer etat = a_faire, trier par priorite. 2. Prendre les 20 "
-               "premières. 3. Pour chacune : ouvrir la page, trancher, ÉCRIRE LA LIGNE "
-               "ET PASSER etat, puis passer à la suivante. 4. À la 20e : ARRÊT NET, "
-               "bilan de 5 lignes, rendre la main."),
+    ("Boucle", "1. La plage de lignes est donnée dans le prompt (de la frontière à la "
+               "ligne 233). Ne RIEN filtrer, ne RIEN trier : la feuille est déjà triée et "
+               "le n° de ligne dit la tâche (2-143 vérifier / 144-201 trouver / 202-233 "
+               "exerce-t-il encore). 2. Lire F:K + P sur la plage, et rien d'autre. "
+               "3. Pour chacune : ouvrir la page, trancher, ÉCRIRE LA LIGNE ET PASSER "
+               "etat, puis passer à la suivante. 4. Courir jusqu'à 233 ou jusqu'à l'arrêt."),
     ("Sauvegarde", "Écrire dans la feuille APRÈS CHAQUE FICHE — pas tous les 5. Si la "
                    "session est perdue, tout ce qui n'est pas dans la feuille est perdu "
-                   "avec elle. La feuille est la seule mémoire."),
-    ("Arrêt", "20 fiches maximum puis STOP, même si tout va bien, même s'il « reste de "
-              "la place ». La limite ne prévient pas. Si le contexte grossit vite, "
-              "descendre à 10-15. JAMAIS monter."),
+                   "avec elle. La feuille est la seule mémoire. C'est aussi ce qui rend "
+                   "une interruption gratuite : on relance à la ligne suivante."),
+    ("Arrêt", "PAS DE QUOTA DE FICHES (plafond de 20 supprimé le 2026-07-17). Il ne tenait "
+              "qu'à « la perte est totale » — or l'écriture par fiche l'a déjà éliminée : au "
+              "pire on perd la fiche en cours. Il ne payait plus que ses frais fixes, une "
+              "douzaine de fois. Seule borne : la LIGNE 233, fin de la vague A. La séance "
+              "court jusque-là ou jusqu'à ce qu'elle s'arrête ; on repart au point d'arrêt."),
+    ("Qualité — ce que le quota ne protège plus",
+     "La 60e fiche doit être jugée comme la 1re. Le plafond bornait accessoirement le temps "
+     "passé sous contexte chargé ; il n'en reste que les vraies garanties : 1 PAGE PAR FICHE, "
+     "règle d'identité, DOUTE → reportee. S'arrêter et le dire si le jugement se dégrade — "
+     "c'est un résultat acceptable. Une fiche mal traitée ne l'est pas."),
     ("Identité — la règle n°1",
      "Avant toute écriture : confirmer NOM + SPÉCIALITÉ + ADRESSE contre la ligne. Les "
      "homonymes parisiens sont fréquents et déjà constatés : deux « Alice » gynécologues "
@@ -370,7 +385,19 @@ def main():
             "etat": "a_faire", "verdict_lien": "", "doctolib_url_verifiee": "",
             "activite_constatee": "", "mode_rdv": "", "prend_nouveaux": "", "motifs_consultation": "", "langues": "",
             "pmr": "", "tarif": "", "note": ""})
-    rows.sort(key=lambda r: (r["priorite"], r["nom"].lower()))
+    # Ordre de passage — S2.md §« Ordre de passage à l'intérieur de la vague A ».
+    # Le 2e critère applique enfin ce que le plan prescrivait et que le tri (priorite, nom)
+    # n'a jamais appliqué : DANS chaque priorité, le 20e et les limitrophes d'abord — là où
+    # la MSP adresse réellement, donc là où une donnée fausse fait un dégât réel. Une séance
+    # s'interrompt : cet ordre garantit qu'à n'importe quel moment de l'arrêt, ce qui compte
+    # le plus est déjà acquis.
+    # Tri STABLE dans chaque priorité → les frontières de bandes (p1 = lignes 2-143,
+    # p2 = 144-201, p3 = 202-233) sont INCHANGÉES. S2_PROMPT.md en dépend : les bandes
+    # encodent la tâche à faire. Si un jour les effectifs par priorité bougent, ces bornes
+    # sont à recalculer dans S2_PROMPT.md ET dans Curseur!B2 (le plafond 233).
+    rows.sort(key=lambda r: (r["priorite"],
+                             r["arrondissement"] not in PROCHE,
+                             r["nom"].lower()))
     # utf-8-sig : Google Sheets et Excel lisent les accents correctement à l'import
     with open(OUT, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLS)

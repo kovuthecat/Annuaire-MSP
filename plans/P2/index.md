@@ -72,17 +72,24 @@ donne en une seconde serait du gâchis.
 | Session | Titre | Modèle | Effort | Dépend de | Zone modifiée | Statut |
 | --- | --- | --- | --- | --- | --- | --- |
 | [S1](S1.md) | Open data CNAM : récupération, jointure, application hors ligne | Opus | xhigh | — | `supabase/import/`, `supabase/annuaire_donnees.json`, `supabase/seed_annuaire.sql` | [x] exécutée le 2026-07-17 (commit à renseigner en fin de plan) |
-| [S2](S2.md) | Doctolib via Claude in Chrome — **vague A : 200 fiches en ~10 micro-séances de 20** | Opus | xhigh | S1 | `supabase/import/doctolib_worklist.json`, `annuaire_donnees.json` | [ ] |
+| [S2](S2.md) | Doctolib via Claude in Chrome — **vague A : 232 fiches, lignes 2-233 du Sheet** | Opus | xhigh | S1 | Google Sheet → `annuaire_donnees.json` | [~] en cours (≈50 fiches au 2026-07-17) |
 | [S3](S3.md) | Consolidation : audit, regen du seed, `STATUS`/`DECISIONS`/`IMPORT.md`, commit | Sonnet | medium | S1, S2 | fichiers de contexte | [ ] |
 
-> S2 n'est **pas une session unique** : c'est un protocole rejoué autant de fois que nécessaire, en
-> micro-séances de **20 fiches maximum** (cf. S2 §T4). Son cadrage définitif est écrit juste avant sa
-> vague, une fois S1 rendue — c'est S1 qui produit la worklist.
+> S2 n'est **pas une session unique** : c'est un protocole rejoué autant de fois que nécessaire.
+> ~~En micro-séances de 20 fiches maximum~~ — **plafond supprimé le 2026-07-17** (cf. S2 §T4.2) : une
+> séance court jusqu'à la ligne 233 ou jusqu'à ce qu'elle s'arrête, et on repart au point d'arrêt.
+> Son cadrage définitif est écrit juste avant sa vague, une fois S1 rendue — c'est S1 qui produit la
+> worklist.
 >
-> **Le découpage en séances ne s'écrit nulle part : il émerge du tri** (« les 20 premières `a_faire`
-> par `priorite` »). Et le protocole **ne vit pas dans le dépôt** — Claude in Chrome n'a pas le
-> système de fichiers : il vit dans un **onglet « Protocole » du Sheet**, à côté des données
-> (cf. S2 §T4.4). Amorcer une séance = coller une phrase.
+> **Le découpage en séances ne se décide pas : il tombe** — une séance = « de la frontière
+> (`Curseur!B1`) à la ligne 233 », et elle s'arrête quand elle s'arrête.
+>
+> ⚠️ **Corrigé le 2026-07-17** : ~~le protocole vit dans un onglet « Protocole » du Sheet ; amorcer une
+> séance = coller une phrase.~~ **Claude in Chrome refuse d'exécuter un protocole lu dans une page** —
+> il traite tout contenu de page comme des données, jamais comme des instructions (défense contre
+> l'injection de prompt). Le protocole est un **prompt** : `plans/P2/S2_PROMPT.md`, collé en entier à
+> chaque séance. Le Sheet reste la mémoire des **données** — ça, ça marche, et c'était l'essentiel.
+> Cf. `DECISIONS.md` 2026-07-17 et S2 §T4.4.
 
 ## Ordonnancement
 
@@ -106,8 +113,13 @@ déjà sur le disque disparaît.
 Le plan est construit autour de ça :
 
 - **Sauvegarde après chaque fiche** (pas tous les 5 : la perte n'est pas partielle, elle est totale).
-- **20 fiches par session, puis arrêt net** — même si tout va bien, même s'il « reste de la place ».
-  À calibrer à la baisse (10-15) si le contexte grossit vite ; **jamais à la hausse**.
+  **C'est la seule règle que la contrainte impose réellement** — et elle suffit.
+- ~~**20 fiches par session, puis arrêt net**~~ — **plafond supprimé le 2026-07-17**, après ~50 fiches
+  réelles. Il ne tenait qu'à « la perte est totale », **que la sauvegarde par fiche a déjà éliminée** :
+  au pire on perd la fiche en cours. Il ne payait plus que ses frais fixes — un prompt à recoller, une
+  plage à relire, un contexte à reconstruire — **une douzaine de fois**. Une séance court désormais
+  jusqu'à la **ligne 233** (fin de la vague A) ou jusqu'à ce qu'elle s'arrête ; on repart au point
+  d'arrêt. Cf. S2 §T4.2.
 - **L'état vit dans un Google Sheet**, jamais dans le contexte. Claude in Chrome n'a pas le disque :
   sa mémoire durable, c'est la feuille, qu'il a nativement sous la main. Une session perdue ne coûte
   alors qu'elle-même, et la suivante rouvre le Sheet sans rien savoir de la précédente.

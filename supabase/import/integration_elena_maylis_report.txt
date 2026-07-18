@@ -1,0 +1,277 @@
+=== INTÉGRATION Elena + Maylis ===
+Fiches brutes : 219 | après dédup interne : 216 (3 fusions internes)
+Doublons-base (owner ajouté) : 35
+Ambigus (>1 candidat base -> fiche neuve + drapeau) : 0
+Fiches NEUVES créées (idx 1052..1232) : 181
+Conflits de champ signalés en commentaire : 15
+
+-- OWNERS AJOUTÉS À DES FICHES EXISTANTES --
+  idx 11    Begon Bagdassarian            +maylis  [confirmé]  champs remplis: —
+  idx 19    Vergez                        +elena  [phone]  champs remplis: —
+  idx 30    Abou Chakra                   +elena  [nom_prenom_prof]  champs remplis: —
+  idx 31    Alperin                       +elena  [nom_prenom_prof]  champs remplis: —
+  idx 47    Drunat                        +elena  [nom_prenom_prof]  champs remplis: —
+  idx 84    BAUDHUIN                      +maylis  [phone]  champs remplis: orientation
+  idx 108   de Belilovsky                 +elena  [nom_prenom_prof]  champs remplis: —
+  idx 111   Hau                           +elena  [nom_prenom_prof]  champs remplis: orientation
+  idx 115   Moyal Baracco                 +elena  [nom_prenom_prof]  champs remplis: —
+  idx 157   Housni                        +elena  [nom_prenom_prof]  champs remplis: —
+  idx 164   Saatdjian                     +elena  [nom_prenom_prof]  champs remplis: —
+  idx 166   Cabinet d'Ergothérapie Lieff  +maylis  [phone]  champs remplis: site_web
+  idx 198   Berville                      +elena  [nom_prenom_prof]  champs remplis: —
+  idx 206   Ferretti                      +elena  [nom_prenom_prof]  champs remplis: —
+  idx 224   SEROR                         +maylis  [phone]  champs remplis: civilite
+  idx 312   Da Cruz                       +elena  [nom_prenom_prof]  champs remplis: orientation
+  idx 322   Friot                         +elena  [nom_prenom_prof]  champs remplis: orientation
+  idx 408   Koskas                        +elena  [nom_prenom_prof]  champs remplis: —
+  idx 441   Wartelle                      +elena  [nom_prenom_prof]  champs remplis: —
+  idx 461   Vera                          +elena  [nom_prenom_prof]  champs remplis: —
+  idx 474   Frison                        +elena  [nom_prenom_prof]  champs remplis: civilite,consignes_pro
+  idx 491   Dray                          +elena  [nom_prenom_prof]  champs remplis: —
+  idx 513   SIMON                         +elena,maylis  [phone]  champs remplis: civilite
+  idx 514   Troadec                       +elena  [phone]  champs remplis: etablissement
+  idx 593   Dolbeau                       +elena  [phone]  champs remplis: civilite
+  idx 614   Dreux de Colombel             +elena,maylis  [confirmé]  champs remplis: civilite,prenom,adresse,arrondissement,tel_secretariat,site_web
+  idx 648   Pariente                      +maylis  [phone]  champs remplis: —
+  idx 663   NIVAULT                       +maylis  [phone]  champs remplis: —
+  idx 675   Gribé                         +elena  [nom_prenom_prof]  champs remplis: —
+  idx 737   Ben Hassen                    +elena  [nom_prenom_prof]  champs remplis: —
+  idx 759   Centre d'Imagerie Diderot     +maylis  [phone]  champs remplis: profession
+  idx 801   CMSEA                         +elena  [structure_nom]  champs remplis: profession,sous_type
+  idx 916   Lecuyer                       +elena  [phone]  champs remplis: civilite,profession,consignes_pro
+  idx 968   Paris en Compagnie            +elena  [structure_nom]  champs remplis: tel_secretariat
+  idx 1048  Azizi                         +elena  [nom_prenom_prof]  champs remplis: adresse,arrondissement
+
+-- CONFLITS (fiche existante ≠ carnet, en commentaire, a_verifier) --
+  idx 408   adresse        base='31/33 rue de Caumartin'  carnet(elena)='1 Rue Saint-Antoine'
+  idx 408   arrondissement base='75009'  carnet(elena)='75004'
+  idx 47    tel_secretariat base='01 53 11 18 00'  carnet(elena)='01 53 11 17 21'
+  idx 312   adresse        base='6 rue Auger'  carnet(elena)='32 Rue Pastourelle'
+  idx 312   arrondissement base='75020'  carnet(elena)='75003'
+  idx 514   adresse        base='5 place de la République'  carnet(elena)='17 Rue Froment'
+  idx 514   arrondissement base='75003'  carnet(elena)='75011'
+  idx 759   adresse        base='6 cour Saint-Eloi (entrée à côté du 134 boulevard Diderot)'  carnet(maylis)='134 Bd Diderot'
+  idx 84    adresse        base='18 Rue Etienne Marey'  carnet(maylis)='4 Rue Charles Renouvier'
+  idx 648   adresse        base='255 boulevard Voltaire'  carnet(maylis)='255 Bd Voltaire'
+  idx 11    adresse        base='145 rue de Belleville'  carnet(maylis)='41 R. de Turbigo'
+  idx 11    arrondissement base='75019'  carnet(maylis)='75003'
+  idx 224   adresse        base='avenue Ledru Rollin'  carnet(maylis)='146 Av. Ledru Rollin'
+  idx 663   adresse        base='22 rue du Sergent Bauchat'  carnet(maylis)='22 Rue du Sergent Bauchat, 3e étage gauche'
+  idx 166   tel_secretariat base='09 81 35 21 83 / 06 15 93 97 21'  carnet(maylis)='09 81 35 21 83'
+
+-- AMBIGUS (plusieurs candidats base exacts — fiche neuve créée, à trancher) --
+
+-- DOUBLONS-BASE PROBABLES (nom proche/double nom ; fiche neuve + a_verifier, à confirmer) --
+  idx 1052 Ambulance                                     ~ idx 699 (Ambulance Alban), idx 700 (Ambulance PS)
+  idx 1056 freoa damien               Angiologue         ~ idx 492 (FREOA)
+  idx 1061 Centre d'action sociale de                    ~ idx 879 (Hôpital Tenon - IVG en ville)
+  idx 1081 Dermatologie - Hôpital Mon                    ~ idx 100 (Mondor), idx 721 (Avis dermatologie - Hôpital Mondor)
+  idx 1085 Endocrinologie - Hôpital S                    ~ idx 146 (Endocrinologie, diabétologie et endocrinologie de la reproduction), idx 150 (Service de diabétologie-endocrinologie-nutrition)
+  idx 1088 Viennot                    Gastro-entérologue ~ idx 187 (VIENOT)
+  idx 1091 Équipe mobile de gériatrie                    ~ idx 263 (Equipe mobile géronto psy Paris Est), idx 847 (Équipe douleur - Hôpital Trousseau)
+  idx 1093 Gynécologie - pathologie d                    ~ idx 190 (Gynécologie), idx 193 (Service de Gynécologie-Obstétrique)
+  idx 1099 IVI Eugin                                     ~ idx 901 (IVI)
+  idx 1101 Hématologie - Hôpital Bich                    ~ idx 147 (Hôpital Bichat-Claude-Bernard), idx 933 (Maison des femmes Bichat)
+  idx 1107 Gynécologie transition - L                    ~ idx 190 (Gynécologie), idx 193 (Service de Gynécologie-Obstétrique), idx 741 (Bluets), idx 919 (Les Bluets / Trousseau - Planning et IVG)
+  idx 1119 Kiné Paris                 Kinésithérapie     ~ idx 305 (Cabinet Paramédical Kiné Infirmière), idx 905 (KEP (Kiné Est Parisien))
+  idx 1125 Neurologie - Fondation Rot                    ~ idx 399 (Neurologie)
+  idx 1139 Pneumologie / cancérologie                    ~ idx 448 (Cancérologie – Oncologie médicale – Onco-hématologie)
+  idx 1142 Proctologie - Hôpital Sain                    ~ idx 1004 (Secrétariat consultation proctologie — DCSS)
+  idx 1160 REPOP 75 (réseau prise en                     ~ idx 719 (Avis de dermatologie pédiatrique - Necker)
+  idx 1161 Réseau Humanest                               ~ idx 886 (Humanest)
+  idx 1162 Réseau Paris Diabète                          ~ idx 127 (Diabète obstétrical)
+  idx 1174 Pharmacie Porte de Bagnole                    ~ idx 489 (Pharmacie)
+  idx 1175 Eurofins / Biomnis                            ~ idx 852 (Eurofins Biomnis - service facturation)
+  idx 1176 Hôpital d'Instruction des  Hôpital militaire  ~ idx 381 (Begin)
+  idx 1180 DENTYMED - Centre Médical  Centre médical     ~ idx 91 (Centre médical et dentaire Pyrénées)
+  idx 1210 Cabinet médical ipso Natio Médecin généralist ~ idx 106 (Centre dermatologie Nation), idx 490 (Centre de santé Bauchat Nation)
+  idx 1214 Orthodontie Newport Pantin Orthodontiste      ~ idx 935 (Maison des femmes de Pantin)
+  idx 1217 Costa                      Ostéopathe         ~ idx 310 (COSTA DOS SANTOS)
+  idx 1221 Dagonneau Cousté           Psychomotricien    ~ idx 601 (DAGONNEAU)
+
+-- PAIRES INTERNES À REVOIR (non fusionnées) --
+  elena | Ambulance  <>  elena | Ambulance TSA   (nom proche (dist 3) — à confirmer)
+  elena | Chirurgie gynécologique - Tenon  <>  elena | Chirurgie gynécologique (consultation) - Tenon   (nom proche (dist 3) — à confirmer)
+
+-- FICHES NEUVES --
+  idx 1052  Ambulance                                             [elena]  ⚠ doublon possible
+  idx 1053  Ambulance TSA                                         [elena]
+  idx 1054  Alpha Taxi                                            [elena]
+  idx 1055  Lesniac                        Allergologue           [elena]
+  idx 1056  freoa damien                   Angiologue             [elena]  ⚠ doublon possible
+  idx 1057  Delorme                        Angiologue             [elena]
+  idx 1058  Lajat-Kiss                     Angiologue             [elena]
+  idx 1059  Szwarc                         Cardiologue            [elena]
+  idx 1060  Iserin                         Cardiopédiatre         [elena]
+  idx 1061  Centre d'action sociale de la                         [elena]  ⚠ doublon possible
+  idx 1062  Centre anti-douleur - Tenon                           [elena]
+  idx 1063  Centre antirabique                                    [elena]
+  idx 1064  Chirurgie gynécologique - Teno Chirurgie gynécologiqu [elena]
+  idx 1065  Stevigon                       Chirurgien orthopédist [elena]
+  idx 1066  Boyer                          Chirurgien orthopédist [elena]
+  idx 1067  Ramanoudjame                   Chirurgien orthopédist [elena]
+  idx 1068  Sattam                         Chirurgien urologue    [elena]
+  idx 1069  Abbas                          Chirurgien urologue    [elena]
+  idx 1070  anne mattt ??                  Chirurgien urologue    [elena]
+  idx 1071  Chabaud                        Chirurgien urologue pé [elena]
+  idx 1072  Chirurgie urologique - Hôpital Chirurgie urologique   [elena]
+  idx 1073  Maman                          ORL pédiatrique        [elena]
+  idx 1074  Couture                        Chirurgien vasculaire  [elena]
+  idx 1075  Commissariat de police du 20e                         [elena]
+  idx 1076  Cohen Solal                    Dentiste               [elena]
+  idx 1077  Damri                          Dentiste               [elena]
+  idx 1078  Cuevas                         Dentiste               [elena]
+  idx 1079  Farhi                          Dermatologue           [elena]
+  idx 1080  Anfroy                         Dermatologue           [elena]
+  idx 1081  Dermatologie - Hôpital Mondor                         [elena]  ⚠ doublon possible
+  idx 1082  Dermatologie - Hôpital Saint-J                        [elena]
+  idx 1083  Grenier Mazelle                Diététicienne          [elena]
+  idx 1084  Centonze-Wagschal              Endocrinologue         [elena]
+  idx 1085  Endocrinologie - Hôpital Saint                        [elena]  ⚠ doublon possible
+  idx 1086  Hagege                         Gastro-entérologue     [elena]
+  idx 1087  Odinot                         Gastro-entérologue     [elena]
+  idx 1088  Viennot                        Gastro-entérologue     [elena]  ⚠ doublon possible
+  idx 1089  Hépato-gastro-entérologie - Te                        [elena]
+  idx 1090  Garcette                       Gastro-pédiatre        [elena]
+  idx 1091  Équipe mobile de gériatrie - T                        [elena]  ⚠ doublon possible
+  idx 1092  Dahan                          Gynécologue            [elena]
+  idx 1093  Gynécologie - pathologie du se                        [elena]  ⚠ doublon possible
+  idx 1094  Davy                           Gynécologue            [elena]
+  idx 1095  Karachouli                     Gynécologue            [elena]
+  idx 1096  Broussard                      Gynécologue            [elena]
+  idx 1097  Gexeus                                                [elena]
+  idx 1098  Barcelona IVF                                         [elena]
+  idx 1099  IVI Eugin                                             [elena]  ⚠ doublon possible
+  idx 1100  Procriar                                              [elena]
+  idx 1101  Hématologie - Hôpital Bichat                          [elena]  ⚠ doublon possible
+  idx 1102  Hématologie - Hôpital Saint-Lo                        [elena]
+  idx 1103  Schemoul                       Radiologue             [elena]
+  idx 1104  Chirurgie gynécologique (consu                        [elena]
+  idx 1105  Chirurgie gynécologique cancér                        [elena]
+  idx 1106  Mathieu d'Argent               Gynécologue            [elena]
+  idx 1107  Gynécologie transition - Les B                        [elena]  ⚠ doublon possible
+  idx 1108  UMAYA (page ressources)                               [elena]
+  idx 1109  Touati                         Hypnothérapeute        [elena]
+  idx 1110  Infectiologie (ligne d'avis) -                        [elena]
+  idx 1111  Contard                        Kinésithérapeute       [elena]
+  idx 1112  Coll Nicolo                    Kinésithérapeute       [elena]
+  idx 1113  Juglard                        Kinésithérapeute       [elena]
+  idx 1114  Szalewa                        Ostéopathe             [elena,maylis]
+  idx 1115  Pobla                          Kinésithérapeute       [elena]
+  idx 1116  Clevenot                       Kinésithérapeute       [elena]
+  idx 1117  Floch                          Kinésithérapeute       [elena]
+  idx 1118  Kinofit                        Kinésithérapie         [elena]
+  idx 1119  Kiné Paris                     Kinésithérapie         [elena]  ⚠ doublon possible
+  idx 1120  Pellet                         Kinésithérapeute       [elena]
+  idx 1121  Lozet                          Kinésithérapeute / ost [elena]
+  idx 1122  Orhant                         Kinésithérapeute       [elena]
+  idx 1123  Balança Lalanne                Médecin MPR            [elena]
+  idx 1124  Izzedine                       Néphrologue            [elena]
+  idx 1125  Neurologie - Fondation Rothsch                        [elena]  ⚠ doublon possible
+  idx 1126  Savenier                       Neurologue             [elena]
+  idx 1127  Rochon                         Radiologue / échograph [elena]
+  idx 1128  Kintzig                        Ophtalmologue pédiatri [elena]
+  idx 1129  Cardine                        Ophtalmologue pédiatri [elena]
+  idx 1130  Sfez                           Orthophoniste          [elena]
+  idx 1131  Chilot                         Orthoptiste            [elena]
+  idx 1132  Henrion                        ORL pédiatrique        [elena]
+  idx 1133  Sain Oulhen                    ORL pédiatrique        [elena]
+  idx 1134  Haider                         ORL                    [elena]
+  idx 1135  Jafari                         ORL                    [elena]
+  idx 1136  Oncogénétique (consultation) -                        [elena]
+  idx 1137  Polycar                        Conseillère conjugale  [elena]
+  idx 1138  Schlegel                       Pneumologue            [elena]
+  idx 1139  Pneumologie / cancérologie - T                        [elena]  ⚠ doublon possible
+  idx 1140  Elbaz                          Podologue              [elena]
+  idx 1141  Sordou                         Podologue              [elena]
+  idx 1142  Proctologie - Hôpital Saint-Jo                        [elena]  ⚠ doublon possible
+  idx 1143  Matet                          Psychiatre             [elena]
+  idx 1144  Douay                          Psychiatre             [elena]
+  idx 1145  Lutz                           Psychiatre             [elena]
+  idx 1146  Mazzoleni                      Psychiatre             [elena]
+  idx 1147  Siboni                         Psychiatre             [elena]
+  idx 1148  Roll Viala                     Psychologue            [elena]
+  idx 1149  Illouz                         Psychologue            [elena]
+  idx 1150  Lis                            Psychologue            [elena]
+  idx 1151  Godard                         Psychologue            [elena]
+  idx 1152  Bertoli                        Psychologue            [elena]
+  idx 1153  Pfauwadel                      Psychologue            [elena]
+  idx 1154  Mann                           Psychologue            [elena]
+  idx 1155  Simsolo                        Psychologue            [elena]
+  idx 1156  Chaussecourte                  Psychologue            [elena]
+  idx 1157  Planchette                     Psychologue            [elena]
+  idx 1158  Bouychou                       Psychologue            [elena]
+  idx 1159  Lecoq                          Psychologue            [elena]
+  idx 1160  REPOP 75 (réseau prise en char                        [elena]  ⚠ doublon possible
+  idx 1161  Réseau Humanest                                       [elena]  ⚠ doublon possible
+  idx 1162  Réseau Paris Diabète                                  [elena]  ⚠ doublon possible
+  idx 1163  Gross                          Rhumatologue           [elena]
+  idx 1164  Rééducation cardiaque - Léopol                        [elena]
+  idx 1165  Souède                         Sage-femme             [elena]
+  idx 1166  Cabinet de sages-femmes - Rue  Sage-femme             [elena]
+  idx 1167  Riser                          Sage-femme             [elena]
+  idx 1168  Nemet Pier                     Spécialiste du sommeil [elena]
+  idx 1169  Alquier                        Sexologue              [elena]
+  idx 1170  Taxi conventionné (Mr Bada)                           [elena]
+  idx 1171  Petits dormeurs deviendra gran                        [elena]
+  idx 1172  Ressources contraception mascu                        [elena]
+  idx 1173  Planning familial - Rue Vivien                        [elena]
+  idx 1174  Pharmacie Porte de Bagnolet (s                        [elena]  ⚠ doublon possible
+  idx 1175  Eurofins / Biomnis                                    [elena]  ⚠ doublon possible
+  idx 1176  Hôpital d'Instruction des Armé Hôpital militaire      [maylis]  ⚠ doublon possible
+  idx 1177  Groupe hospitalier Diaconesses Hôpital                [maylis]
+  idx 1178  Sénéchal                       Orthophoniste          [maylis]
+  idx 1179  Centre d'accueil de jour L'Eti Service de placement f [maylis]
+  idx 1180  DENTYMED - Centre Médical et d Centre médical         [maylis]  ⚠ doublon possible
+  idx 1181  Rezzonico                      Ostéopathe             [maylis]
+  idx 1182  Torche                         Kinésiologue           [maylis]
+  idx 1183  Neurocab                       Psychologue            [maylis]
+  idx 1184  Croutzeilles                                          [maylis]
+  idx 1185  Hôpital Paris Saint-Joseph     Hôpital                [maylis]
+  idx 1186  Naman                          Chiropracteur          [maylis]
+  idx 1187  Centre de Santé Télégraphe - M Cabinet médical        [maylis]
+  idx 1188  Institut de la Femme et de l'E                        [maylis]
+  idx 1189  NAOURI                         Parodontiste spécialis [maylis]
+  idx 1190  MAURY                          Ostéopathe             [maylis]
+  idx 1191  de Gasquet                     Psychologue            [maylis]
+  idx 1192  SESSAD Servan                  Organisme de soutien e [maylis]
+  idx 1193  Dubreuil                       Psychomotricien        [maylis]
+  idx 1194  Cheval                         Nutritionniste         [maylis]
+  idx 1195  Schwab                         Psychologue            [maylis]
+  idx 1196  Launay                         Psychologue            [maylis]
+  idx 1197  Demanuele                      Dentiste               [maylis]
+  idx 1198  NOËL                           Psychologue pour enfan [maylis]
+  idx 1199  Boucherat                      Ostéopathe             [maylis]
+  idx 1200  Soriano                        Psychiatre             [maylis]
+  idx 1201  Attali                         Kinésithérapeute       [maylis]
+  idx 1202  Clément                        Ostéopathe             [maylis]
+  idx 1203  Rodriguez                      Psychologue            [maylis]
+  idx 1204  Schlepp                        Médecin généraliste    [maylis]
+  idx 1205  Hôpital Necker Enfants malades Hôpital pour enfants   [maylis]
+  idx 1206  Ravaud                         Ostéopathe             [maylis]
+  idx 1207  Barbier-Lambert                Orthophoniste          [maylis]
+  idx 1208  Monnier                        Kinésithérapeute       [maylis]
+  idx 1209  SPITERI                        Cardiologue            [maylis]
+  idx 1210  Cabinet médical ipso Nation    Médecin généraliste    [maylis]  ⚠ doublon possible
+  idx 1211  Valladas                       Médecin généraliste    [maylis]
+  idx 1212  Simon                          Praticien en médecine  [maylis]
+  idx 1213  Zhu                            Acupuncteur            [maylis]
+  idx 1214  Orthodontie Newport Pantin     Orthodontiste          [maylis]  ⚠ doublon possible
+  idx 1215  IME Cerep-Phymentin                                   [maylis]
+  idx 1216  Académie de Reiki              Thérapeute Reiki       [maylis]
+  idx 1217  Costa                          Ostéopathe             [maylis]  ⚠ doublon possible
+  idx 1218  Van Der Horst                  Orthophoniste          [maylis]
+  idx 1219  Laguerre                       Médecin généraliste    [maylis]
+  idx 1220  DHONT                          Psychomotricien        [maylis]
+  idx 1221  Dagonneau Cousté               Psychomotricien        [maylis]  ⚠ doublon possible
+  idx 1222  GLEIZE                         Psychomotricien        [maylis]
+  idx 1223  LIDURIN                        Psychomotricien        [maylis]
+  idx 1224  Mougin                         Psychomotricienne      [maylis]
+  idx 1225  Hascoët                        Psychomotricien        [maylis]
+  idx 1226  Binard                         Psychomotricien        [maylis]
+  idx 1227  Gervoise                       Psychomotricien        [maylis]
+  idx 1228  Jauvat                         Ergothérapeute         [maylis]
+  idx 1229  Carvalho                       Ergothérapeute         [maylis]
+  idx 1230  Cabinet d'ergothérapie Marion  Ergothérapeute         [maylis]
+  idx 1231  Mouvergo                       Ergothérapeute         [maylis]
+  idx 1232  Bouday                         Ergothérapeute         [maylis]
