@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { colors } from '../theme/tokens'
 import { useAuth } from '../features/auth/AuthProvider'
@@ -154,6 +154,21 @@ function ProfileMenu() {
   const { member, session, signOut } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  // Fermeture au clic extérieur plutôt qu'au survol (`onMouseLeave`) : le menu est positionné en
+  // absolu avec un petit écart sous la pastille (top: 34 vs pastille de 26px) — un `mouseLeave`
+  // se déclenchait en traversant cet écart, avant que le clic sur un item n'ait pu arriver.
+  useEffect(() => {
+    if (!open) return
+    const handlePointerDown = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [open])
 
   const handleSignOut = async () => {
     setOpen(false)
@@ -162,7 +177,7 @@ function ProfileMenu() {
   }
 
   return (
-    <div style={profileMenuWrapperStyle} onMouseLeave={() => setOpen(false)}>
+    <div ref={wrapperRef} style={profileMenuWrapperStyle}>
       <div
         onClick={() => setOpen((v) => !v)}
         title="Mon profil / déconnexion"
