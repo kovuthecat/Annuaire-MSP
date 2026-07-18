@@ -1,11 +1,15 @@
 import type { CSSProperties } from 'react'
-import { useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
+import { useReference } from '../proximite/ReferenceProvider'
+import { MSP_COORDS, coordsOf } from '../proximite/geo'
 import { filterContacts } from '../../data/search'
 import type { ContactFilters } from '../../data/search'
 import { Button } from '../../components/ui'
+import { ProximityMap } from '../../components/Map'
+import type { MapPoint } from '../../components/Map'
 import { colors, radii } from '../../theme/tokens'
 import ContactRow from './ContactRow'
 import FiltersBar from './FiltersBar'
@@ -55,6 +59,41 @@ const messageBodyStyle: CSSProperties = {
   maxWidth: 360,
 }
 
+// ---------------------------------------------------------------------------
+// Panneau carte (plans/P3/S3.md T2) — une carte unique pour tout l'écran (pas une mini-carte par
+// ligne, cf. §Décision clé perf), repliée par défaut (la liste prime, cf. ARCHITECTURE §Contraintes
+// UI). Chargée en lazy (`components/Map`) : Leaflet n'entre dans le bundle que si le panneau
+// s'ouvre.
+// ---------------------------------------------------------------------------
+
+const mapToggleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  marginBottom: 14,
+}
+
+const mapHintStyle: CSSProperties = {
+  font: '500 11px "Plus Jakarta Sans"',
+  color: colors.text.faint,
+}
+
+const mapPanelStyle: CSSProperties = {
+  marginBottom: 14,
+}
+
+const mapLoadingStyle: CSSProperties = {
+  height: 320,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: colors.white,
+  border: `1px solid ${colors.borderLight}`,
+  borderRadius: radii.xl,
+  font: '500 12.5px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+}
+
 /** Valeurs distinctes non vides d'un champ, triées alphabétiquement (locale FR). */
 function distinctValues(values: Array<string | null>): string[] {
   const set = new Set(values.filter((v): v is string => Boolean(v && v.trim())))
@@ -64,6 +103,7 @@ function distinctValues(values: Array<string | null>): string[] {
 export default function AnnuairePage() {
   const { contacts, loading, error, reload, adoptContact, unadoptContact } = useDirectory()
   const { selectedIds, toggle } = useSelection()
+  const { reference, isPatientAddress } = useReference()
   const navigate = useNavigate()
 
   const [query, setQuery] = useState('')
@@ -77,6 +117,10 @@ export default function AnnuairePage() {
   const [profession, setProfession] = useState('')
   const [tag, setTag] = useState('')
   const [sort, setSort] = useState<SortOption>('pertinence')
+  // Panneau carte : replié par défaut (mobile ET desktop, cf. plan T2 étape 3 — la liste prime).
+  const [mapOpen, setMapOpen] = useState(false)
+  // Épingle cliquée → ligne mise en évidence (plan T2 étape 2, « au minimum épingle → ligne »).
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
 
   const arrondissementOptions = useMemo(
     () => distinctValues(contacts.map((c) => c.arrondissement)),
@@ -103,7 +147,38 @@ export default function AnnuairePage() {
   )
 
   const filtered = useMemo(() => filterContacts(contacts, query, filters), [contacts, query, filters])
-  const sorted = useMemo(() => sortContacts(filtered, sort), [filtered, sort])
+  // La référence n'est utilisée que par le tri "distance" (cf. sort.ts) mais toujours passée —
+  // recalcule à chaque changement de référence (MSP <-> adresse patient, plans/P3/S2.md T4).
+  const sorted = useMemo(
+    () => sortContacts(filtered, sort, reference.coords),
+    [filtered, sort, reference],
+  )
+
+  // Carte partagée (plans/P3/S3.md T2 étape 1) : MSP + référence active (si ≠ MSP) + les résultats
+  // filtrés ayant des coordonnées. Les contacts sans coordonnées sont exclus (comptés à part).
+  const mapPoints = useMemo<MapPoint[]>(() => {
+    const points: MapPoint[] = [{ id: 'msp', coords: MSP_COORDS, label: 'MSP', kind: 'msp' }]
+    if (isPatientAddress) {
+      points.push({ id: 'reference', coords: reference.coords, label: reference.label, kind: 'reference' })
+    }
+    for (const contact of sorted) {
+      const coords = coordsOf(contact)
+      if (coords) points.push({ id: contact.id, coords, label: contact.nom, kind: 'contact' })
+    }
+    return points
+  }, [sorted, reference, isPatientAddress])
+
+  const contactsWithoutCoords = useMemo(
+    () => sorted.filter((contact) => !coordsOf(contact)).length,
+    [sorted],
+  )
+
+  // Épingle → ligne (plan T2 étape 2) : scrolle et met en évidence la ligne correspondante.
+  useEffect(() => {
+    if (!highlightedId) return
+    const row = document.getElementById(`contact-row-${highlightedId}`)
+    row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [highlightedId])
 
   const hasActiveFilters =
     query !== '' || secteur1 || vad || ameCmu || nouveauxPatients || arrondissement !== '' || profession !== '' || tag !== ''
@@ -172,6 +247,27 @@ export default function AnnuairePage() {
         resultCount={sorted.length}
       />
 
+      <div style={mapToggleRowStyle}>
+        <Button variant="outline" onClick={() => setMapOpen((v) => !v)}>
+          {mapOpen ? 'Masquer la carte' : 'Afficher la carte'}
+        </Button>
+        {contactsWithoutCoords > 0 && (
+          <span style={mapHintStyle}>{contactsWithoutCoords} sans position</span>
+        )}
+      </div>
+
+      {mapOpen && (
+        <div style={mapPanelStyle}>
+          <Suspense fallback={<div style={mapLoadingStyle}>Chargement de la carte…</div>}>
+            <ProximityMap
+              points={mapPoints}
+              activeId={highlightedId ?? undefined}
+              onSelect={setHighlightedId}
+            />
+          </Suspense>
+        </div>
+      )}
+
       {sorted.length === 0 ? (
         contacts.length === 0 ? (
           <div style={messageCardStyle}>
@@ -209,15 +305,17 @@ export default function AnnuairePage() {
       ) : (
         <div style={listStyle}>
           {sorted.map((contact) => (
-            <ContactRow
-              key={contact.id}
-              contact={contact}
-              selected={selectedIds.has(contact.id)}
-              onToggleSelect={() => toggle(contact.id)}
-              onToggleStar={() =>
-                void (contact.starred ? unadoptContact(contact.id) : adoptContact(contact.id))
-              }
-            />
+            <div key={contact.id} id={`contact-row-${contact.id}`}>
+              <ContactRow
+                contact={contact}
+                selected={selectedIds.has(contact.id)}
+                highlighted={highlightedId === contact.id}
+                onToggleSelect={() => toggle(contact.id)}
+                onToggleStar={() =>
+                  void (contact.starred ? unadoptContact(contact.id) : adoptContact(contact.id))
+                }
+              />
+            </div>
           ))}
         </div>
       )}
