@@ -2,13 +2,16 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
-import { Button, TextField } from '../../components/ui'
+import { Button, Select, TextField } from '../../components/ui'
+import { MEMBER_LOGINS, emailForPrenom } from './memberLogins'
 import { colors } from '../../theme/tokens'
 
 /**
  * Écran de connexion (cf. plans/P1/S7.md T10) — reproduit la carte de la maquette
  * (design/maquettes/design-annuaire-msp/project/MSP Annuaire.dc.html, lignes ~22-38) avec
  * email + mot de passe au lieu du lien magique (cf. DECISIONS.md §Auth).
+ * Depuis le 2026-07-18 : connexion par **prénom** (menu déroulant → email via memberLogins.ts) —
+ * plus simple pour ~10 membres ; l'auth Supabase reste par email en interne.
  * Ajouts hors maquette (décision T10) : message d'erreur, état « connexion… », mention
  * « mot de passe oublié → référent ».
  */
@@ -93,7 +96,7 @@ const forgotStyle = {
 
 export default function ConnexionPage() {
   const { session, loading, signIn } = useAuth()
-  const [email, setEmail] = useState('')
+  const [prenom, setPrenom] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,11 +110,16 @@ export default function ConnexionPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
+    const email = emailForPrenom(prenom)
+    if (!email) {
+      setError('Choisis ton prénom dans la liste.')
+      return
+    }
     setSubmitting(true)
     const { error: signInError } = await signIn(email, password)
     setSubmitting(false)
     if (signInError) {
-      setError('Email ou mot de passe incorrect.')
+      setError('Mot de passe incorrect.')
     }
   }
 
@@ -126,14 +134,21 @@ export default function ConnexionPage() {
 
         <form onSubmit={handleSubmit}>
           <div style={fieldGroupStyle}>
-            <TextField
-              type="email"
-              placeholder="prenom.nom@msp-menilmontant.fr"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
+            <Select
+              value={prenom}
+              onChange={(event) => setPrenom(event.target.value)}
               required
-            />
+              aria-label="Prénom"
+            >
+              <option value="" disabled>
+                Choisis ton prénom…
+              </option>
+              {MEMBER_LOGINS.map((m) => (
+                <option key={m.email} value={m.prenom}>
+                  {m.prenom}
+                </option>
+              ))}
+            </Select>
             <TextField
               type="password"
               placeholder="Mot de passe"
