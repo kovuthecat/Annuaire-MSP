@@ -1,6 +1,6 @@
 # STATUS.md — Annuaire MSP
 
-> **Dernière mise à jour :** 2026-07-17
+> **Dernière mise à jour :** 2026-07-18
 
 ## Phase actuelle
 
@@ -13,17 +13,29 @@ visuelle humaine (`VALIDATION.md`) et push.
 L'open data CNAM est joint aux 1 052 fiches (hors ligne, Licence Ouverte). Reste S2 (Doctolib au
 navigateur, avec Thibault) puis S3 (consolidation + commit). **Rien n'est encore commité.**
 
-**Phases 3 & 4 — planifiées, non démarrées (cadrage écrit le 2026-07-17).** Deux nouvelles
-fonctionnalités cadrées à la demande de Thibault, plans rédigés, **aucun code** :
+**Phases 3 & 4 — câblées côté code le 2026-07-18, validation visuelle humaine restante.** Deux
+nouvelles fonctionnalités cadrées à la demande de Thibault le 2026-07-17, implémentées le lendemain :
 
 - **P3 — Proximité & cartographie** (`plans/P3/`, T-006) : géocodage BAN + distance vol d'oiseau +
-  carte Leaflet/OSM (annuaire + fiche) + arrêts de transport IDFM + référence MSP/adresse patient. 4
-  sessions (S1 schéma+géocodage → S2 distance/annuaire → S3 ∥ S4 cartes/transports).
+  carte Leaflet/OSM (annuaire + fiche) + arrêts de transport IDFM + référence MSP/adresse patient.
+  S1 (T1 schéma géo seul), S2 (distance/géocodage à la saisie/pastille-tri/référence), S3 (cartes
+  Leaflet annuaire+fiche), S4 (arrêts de transport) faites. **S1 T2/T3 (géocodage BAN en masse +
+  rapport) différées** : le backfill doit attendre la fin de la réconciliation Doctolib+web de P2,
+  non terminée — sans backfill, les fiches existantes affichent « — »/« Position à préciser » jusqu'à
+  géocodage individuel (à la création/modification). **S4 a dû dévier du cadrage** : le jeu open data
+  IDFM prévu (`arrets-lignes`, Licence Ouverte) était vide côté IDFM au moment de l'implémentation
+  (en cours de repeuplement) ; construit à la place sur le GTFS complet IDFM (Licence Mobilité,
+  topologie arrêt↔ligne seulement, sans horaires) — licence vérifiée compatible avec un usage interne
+  (`DECISIONS.md`, entrée du 2026-07-18).
 - **P4 — Ajout assisté depuis Doctolib** (`plans/P4/`, T-007) : bookmarklet un-clic →
   `/nouveau?prefill=` (liste blanche patient-only, provenance « à vérifier »), extension en repli si
-  CSP. 3 sessions (S1 lecteur prefill → S2 extracteur+bookmarklet → S3 extension *conditionnelle*).
-- Décisions de cadrage consignées dans `DECISIONS.md` (2 entrées du 2026-07-17). **Ces phases ajoutent
-  4 colonnes géo à `contacts` (P3/S1) — à appliquer au schéma avant leur câblage.**
+  CSP. S1 (lecteur prefill) et S2 (extracteur + bookmarklet + notice) faits côté code. **Reste un test
+  humain bloquant** : essayer le bookmarklet sur ≥ 2 vraies pages Doctolib (notice dans
+  `tools/doctolib-bookmarklet/README.md`) — si la CSP de Doctolib le bloque, S3 (extension navigateur)
+  se déclenche ; sinon P4 est fonctionnellement complet.
+- Décisions de cadrage consignées dans `DECISIONS.md` (2 entrées du 2026-07-17 + 1 du 2026-07-18 sur
+  la déviation IDFM). **4 colonnes géo ajoutées à `contacts`** (`supabase/schema.sql`, P3/S1 T1) — pas
+  encore appliquées à une vraie base (cf. §Ce qui casse, le seed n'a jamais été exécuté).
 
 ## Ce qui fonctionne
 

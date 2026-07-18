@@ -55,9 +55,9 @@ Arbitrées avec Thibault le 2026-07-17 (à reporter dans `DECISIONS.md` en fin d
 
 | Session | Titre | Modèle | Effort | Dépend de | Zone modifiée | Statut |
 | --- | --- | --- | --- | --- | --- | --- |
-| [S1](S1.md) | L'écran « Ajouter » lit un préremplissage `?prefill=` (contrat + liste blanche + bandeau « à vérifier ») | Sonnet | medium/high | — | `src/features/edition/`, `src/data/directory.ts` (au besoin) | [ ] |
-| [S2](S2.md) | L'extracteur Doctolib + le bookmarklet + notice d'installation | Sonnet/Opus | high | S1 (contrat) + app déployée | `tools/doctolib-bookmarklet/` | [ ] |
-| [S3](S3.md) | *Conditionnelle* — mini-extension navigateur, **seulement si la CSP de Doctolib bloque le bookmarklet** | Sonnet | medium | S2 (constat CSP) | `tools/doctolib-extension/` | [ ] |
+| [S1](S1.md) | L'écran « Ajouter » lit un préremplissage `?prefill=` (contrat + liste blanche + bandeau « à vérifier ») | Sonnet | medium/high | — | `src/features/edition/`, `src/data/directory.ts` (au besoin) | [x] |
+| [S2](S2.md) | L'extracteur Doctolib + le bookmarklet + notice d'installation | Sonnet/Opus | high | S1 (contrat) + app déployée | `tools/doctolib-bookmarklet/` | [x] test CSP réel restant (humain, sur une vraie page Doctolib) |
+| [S3](S3.md) | *Conditionnelle* — mini-extension navigateur, **seulement si la CSP de Doctolib bloque le bookmarklet** | Sonnet | medium | S2 (constat CSP) | `tools/doctolib-extension/` | [ ] non déclenchée — en attente du verdict CSP de S2 |
 
 ## Ordonnancement
 

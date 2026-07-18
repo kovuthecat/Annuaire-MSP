@@ -134,6 +134,42 @@
       impression (barre du haut et panneau masqués).
 - [ ] État vide (aucune sélection) → message + retour annuaire.
 
+## Proximité & cartographie (P3) — annuaire + fiche
+
+> Checklists complètes : `plans/P3/S2.md`, `plans/P3/S3.md`, `plans/P3/S4.md` §Checklist visuelle.
+> **Pré-requis** : le backfill géo de masse (P3/S1 T2/T3) n'a **pas encore tourné** (différé jusqu'à
+> la fin de P2 — Doctolib+web) : les fiches existantes affichent « — »/« Position à préciser » tant
+> qu'elles n'ont pas été géocodées individuellement (à la création/modification d'une fiche).
+
+- [ ] Une ligne d'annuaire affiche une distance plausible depuis la MSP ; une fiche sans coordonnées
+      affiche « — » (jamais un chiffre inventé).
+- [ ] Tri « Distance » (proches en tête, sans-coordonnées en fin) et sélecteur de référence (MSP /
+      autre adresse) fonctionnent, avec rappel « adresse non enregistrée ».
+- [ ] Créer/modifier une fiche avec adresse → acquiert une position après quelques secondes (géocodage
+      en arrière-plan, non bloquant pour l'enregistrement).
+- [ ] Annuaire : « Afficher la carte » → carte unique avec les épingles des résultats filtrés + MSP ;
+      cliquer une épingle met en évidence la ligne correspondante.
+- [ ] Fiche : carte praticien + MSP avec distance affichée, ou « Position à préciser » si pas de
+      coordonnées (jamais de carte vide).
+- [ ] Fiche : bloc « Transports à proximité » (arrêts + lignes réelles, via le GTFS IDFM — cf.
+      `DECISIONS.md` 2026-07-18) cohérent, absent si pas de coordonnées.
+- [ ] Responsive mobile sur les 3 points ci-dessus (carte repliée par défaut, pastilles/sélecteur
+      lisibles, pas de débordement horizontal).
+
+## Ajout assisté Doctolib (P4)
+
+> Checklist complète : `plans/P4/S1.md`, `plans/P4/S2.md` §Checklist.
+> **Test humain restant, décisif pour juger P4 complet** : installer le bookmarklet
+> (`tools/doctolib-bookmarklet/README.md`) et le tester sur ≥ 2 vraies pages Doctolib. Si la CSP de
+> Doctolib bloque son exécution → P4/S3 (extension navigateur) est à cadrer/exécuter en repli.
+
+- [ ] `/nouveau` sans `prefill` : strictement identique à l'actuel (aucune régression).
+- [ ] Bookmarklet sur une vraie page Doctolib → `/nouveau?prefill=…` pré-rempli, bandeau « pré-rempli
+      depuis Doctolib — à vérifier » visible, **aucun champ pro rempli**.
+- [ ] Enregistrement d'une fiche pré-remplie → statut « à vérifier », provenance Doctolib visible
+      (fiche ou base).
+- [ ] **Verdict CSP à consigner ici une fois testé** : bookmarklet OK, ou bloqué → déclenche S3.
+
 ## Membres
 
 - [ ] Liste des membres : avatar à initiales, nom, `profession · email`, badge « Référent » sur ton compte.

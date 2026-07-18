@@ -62,10 +62,10 @@ Bloc idempotent, **même pattern que `email_rdv`/`source_url`** (`supabase/schem
 
 | Session | Titre | Modèle | Effort | Dépend de | Zone modifiée | Statut |
 | --- | --- | --- | --- | --- | --- | --- |
-| [S1](S1.md) | Schéma géo + géocodage BAN hors app (backfill + rapport) | Opus/Sonnet | high | schéma seedé | `supabase/schema.sql`, `supabase/import/geocode.py`, `supabase/geo_backfill.sql` | [ ] |
-| [S2](S2.md) | Distance (Haversine) + géocodage à la saisie + pastille/tri annuaire + sélecteur de référence | Sonnet | high | S1 (schéma) | `src/types/db.ts`, `src/features/proximite/`, `src/app/`, `src/features/annuaire/`, `src/features/edition/` | [ ] |
-| [S3](S3.md) | Carte Leaflet réutilisable + carte annuaire (épingles) + carte fiche | Sonnet | high | S2 | `package.json`, `src/components/Map/`, `src/features/annuaire/`, `src/features/fiche/` | [ ] |
-| [S4](S4.md) | Arrêts de transport à proximité (open data IDFM embarqué) sur la fiche | Sonnet | medium/high | S2 | `supabase/import/transit_prep.py`, `src/features/proximite/`, `src/features/fiche/` | [ ] |
+| [S1](S1.md) | Schéma géo + géocodage BAN hors app (backfill + rapport) | Opus/Sonnet | high | schéma seedé | `supabase/schema.sql`, `supabase/import/geocode.py`, `supabase/geo_backfill.sql` | [x] T1 seul — T2/T3 (backfill+rapport) différées jusqu'à fin P2 |
+| [S2](S2.md) | Distance (Haversine) + géocodage à la saisie + pastille/tri annuaire + sélecteur de référence | Sonnet | high | S1 (schéma) | `src/types/db.ts`, `src/features/proximite/`, `src/app/`, `src/features/annuaire/`, `src/features/edition/` | [x] |
+| [S3](S3.md) | Carte Leaflet réutilisable + carte annuaire (épingles) + carte fiche | Sonnet | high | S2 | `package.json`, `src/components/Map/`, `src/features/annuaire/`, `src/features/fiche/` | [x] |
+| [S4](S4.md) | Arrêts de transport à proximité (open data IDFM embarqué) sur la fiche | Sonnet | medium/high | S2 | `supabase/import/transit_prep.py`, `src/features/proximite/`, `src/features/fiche/` | [x] source GTFS complet/Licence Mobilité, pas `arrets-lignes` (vide) — cf. `DECISIONS.md` 2026-07-18 |
 
 > Le détail de chaque session est rédigé avant sa vague. L'index fait foi pour le périmètre et
 > l'ordonnancement. S3 introduit une **surface visuelle nouvelle** (panneau carte) : pas de maquette
