@@ -75,9 +75,16 @@ Bloc idempotent, **même pattern que `email_rdv`/`source_url`** (`supabase/schem
 ## Ordonnancement
 
 - **Vague 1** : **S1** seule. Hors ligne (schéma + script BAN), aucune dépendance au front.
+  - Le **schéma** (colonnes géo) peut être ajouté **quand on veut**, en parallèle de tout le reste.
+  - ⚠️ **Le *backfill* géo (géocodage en masse des adresses) doit tourner APRÈS la fin de la
+    réconciliation des extractions Doctolib (P2) ET web dans `annuaire_donnees.json`** *(noté le
+    2026-07-18)*. Ces passes **corrigent et complètent les adresses** ; géocoder avant, c'est géocoder
+    des adresses non finales et devoir tout relancer. Ordre imposé : *réconcilier Doctolib + web →
+    **puis** backfill géo*. (Le géocodage à la saisie de S2 reste incrémental et couvre les fiches
+    ajoutées ou modifiées ensuite.)
 - **Vague 2** : **S2**, après le schéma de S1. *Le code de S2 ne dépend pas des données de backfill* :
   tant qu'une fiche n'a pas de coordonnées, sa distance affiche « — ». Le backfill peut donc tourner en
-  parallèle ou après.
+  parallèle ou après **le code de S2** — mais **jamais avant la réconciliation Doctolib + web** (cf. Vague 1).
 - **Vague 3 — parallélisable** : **S3 ∥ S4** (après S2 ; zones disjointes — S3 = carte, S4 = transports).
 
 ## Pré-requis externe
