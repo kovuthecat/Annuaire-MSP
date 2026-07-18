@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, Badge, CommentIcons, StarToggle } from '../../components'
 import type { CommentEntries, CommentCounts } from '../../components'
@@ -7,6 +7,7 @@ import { COMMENT_TYPES } from '../../types/db'
 import type { Comment, ContactWithMeta } from '../../types/db'
 import { useReference } from '../proximite/ReferenceProvider'
 import { coordsOf, formatDistance, haversineKm } from '../proximite/geo'
+import { highlightSegments } from './highlight'
 
 /**
  * Une ligne de l'annuaire — reproduit la maquette lignes 89-158 (cf. les 2 PNG de
@@ -21,6 +22,8 @@ interface ContactRowProps {
   selected: boolean
   /** Ligne mise en évidence depuis la carte partagée (plans/P3/S3.md T2 étape 2, épingle → ligne). */
   highlighted?: boolean
+  /** Mots de la recherche courante, surlignés dans le nom et la ligne meta (cf. Highlight). */
+  queryTerms?: string[]
   onToggleSelect: () => void
   onToggleStar: () => void
 }
@@ -77,6 +80,30 @@ const distanceStyle: CSSProperties = {
   flex: 'none',
 }
 
+// Surlignage des termes de recherche (fond = teinte bleue de marque, cohérente avec la mise en
+// évidence des lignes). Logique pure dans `highlight.ts` ; ici on ne fait que la rendre.
+const markStyle: CSSProperties = {
+  background: 'rgba(31,127,214,.18)',
+  color: 'inherit',
+  borderRadius: 3,
+  padding: '0 1px',
+}
+
+function Highlight({ text, terms }: { text: string; terms: string[] }): ReactNode {
+  if (terms.length === 0 || !text) return text
+  const segments = highlightSegments(text, terms)
+  if (!segments.some((segment) => segment.match)) return text
+  return segments.map((segment, i) =>
+    segment.match ? (
+      <mark key={i} style={markStyle}>
+        {segment.text}
+      </mark>
+    ) : (
+      segment.text
+    ),
+  )
+}
+
 /** "12/03/2026" — même format court pour les 3 usages (compact ici, detailed en fiche S4). */
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR')
@@ -94,6 +121,7 @@ export default function ContactRow({
   contact,
   selected,
   highlighted = false,
+  queryTerms = [],
   onToggleSelect,
   onToggleStar,
 }: ContactRowProps) {
@@ -107,9 +135,10 @@ export default function ContactRow({
     comments[type] = toEntries(contact.comments[type], contact.authorNames)
   }
 
-  const metaParts = [contact.profession, contact.arrondissement ? `${contact.arrondissement} arr.` : null].filter(
-    Boolean,
-  )
+  const metaParts = [
+    contact.profession,
+    contact.arrondissement ? `${contact.arrondissement} arr.` : null,
+  ].filter((part): part is string => Boolean(part))
 
   // Pastille de distance (plans/P3/S2.md T4 étape 1) : « — » discret si la fiche n'a pas encore de
   // coordonnées (backfill non passé ou géocodage échoué) — jamais une distance inventée.
@@ -130,8 +159,19 @@ export default function ContactRow({
       />
       <Avatar onClick={open} />
       <div onClick={open} style={nameBlockStyle}>
-        <div style={nameStyle}>{contact.nom}</div>
-        {metaParts.length > 0 && <div style={metaLineStyle}>{metaParts.join(' · ')}</div>}
+        <div style={nameStyle}>
+          <Highlight text={contact.nom} terms={queryTerms} />
+        </div>
+        {metaParts.length > 0 && (
+          <div style={metaLineStyle}>
+            {metaParts.map((part, i) => (
+              <span key={i}>
+                {i > 0 && ' · '}
+                <Highlight text={part} terms={queryTerms} />
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       {contact.secteur_conv === '1' && <Badge variant="secteur1" />}
       {contact.secteur_conv === '2' && <Badge variant="secteur2" />}

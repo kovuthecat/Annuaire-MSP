@@ -33,6 +33,10 @@ export const colors = {
     ame: { fg: '#b8894a', bg: '#fbf0e0' },
     vad: { fg: '#1f7fd6', bg: '#e7f1fc' },
     newpatients: { fg: '#3aa876', bg: '#e9f7ef' },
+    // Chips de filtre Pédiatrie / Avis (cf. DECISIONS.md 2026-07-18) — réutilisent des teintes déjà
+    // présentes dans la palette (vert / bleu), aucune couleur nouvelle inventée.
+    pediatrie: { fg: '#3aa876', bg: '#e9f7ef' },
+    avis: { fg: '#1f7fd6', bg: '#e7f1fc' },
   },
 
   // 4 types de commentaire (cf. DECISIONS.md).

@@ -87,8 +87,16 @@
 - [ ] Rendu d'une ligne conforme aux 2 PNG de référence (`design/.../project/uploads/pasted-...png`) :
       avatar, nom/profession/arrondissement, badges, icônes de commentaires, téléphone, étoile.
 - [ ] Popover au survol (desktop) et au tap (mobile) d'une icône de commentaire.
-- [ ] Chips Secteur 1 / VAD / AME-CMU / + Nouveaux patients : couleur pleine à l'activation.
-- [ ] Sélecteurs Arrondissement / Profession / Tag filtrent correctement.
+- [ ] Chips **Secteur 1 / Pédiatrie / Avis** (et **rien d'autre** — VAD, AME/CMU, + Nouveaux patients
+      et les 3 menus déroulants ont été retirés, cf. `DECISIONS.md` 2026-07-18) : couleur pleine à
+      l'activation (teal / vert / bleu), cumulables entre eux et avec la recherche.
+- [ ] **Pédiatrie** : fiches pédiatriques au sens large — pédiatres, spécialistes tagués « pédiatrie »,
+      **et** motifs « enfants/adolescents » ou « prend les enfants » (y compris repérés dans un
+      commentaire). Vérifier que des psychologues « enfants, adolescents » remontent ; qu'une fiche
+      « protection de l'enfance » (social) **ne** remonte **pas**.
+- [ ] **Avis** : fiches avec tag « avis » ou télé-expertise / email d'avis / ligne directe (services
+      AP-HP inclus). Un badge VAD/AME reste visible sur une ligne concernée même s'il n'y a plus de
+      filtre correspondant.
 - [ ] Bascule Mes contacts / Tous : style actif (fond blanc + ombre) vs inactif conforme.
 - [ ] Compteur de résultats + tri (Pertinence / Nom A→Z / Arrondissement) fonctionnent.
 - [ ] Case à cocher d'une ligne → indicateur « N sélectionné(s) → Imprimer » dans la barre du haut.
@@ -96,6 +104,25 @@
 - [ ] Étoile (StarToggle) → adopte/retire de « Mes contacts » (persiste après rechargement).
 - [ ] État base vide, état recherche sans résultat : messages + boutons de sortie utiles.
 - [ ] Responsive mobile : recherche/toggle/chips en colonne, ligne de contact reste lisible.
+
+> Recherche multi-termes + tolérance aux fautes + bouton effacer (cf. `DECISIONS.md` 2026-07-18).
+> Auto vert : `npm run test` (20 cas), `npm run typecheck`, `npm run build`.
+
+- [ ] **Multi-termes (ET)** : « kiné 20e » ne renvoie que les kinés du 20e ; « 20e kiné » (ordre
+      inverse) donne le même résultat ; « kiné 75e » (arrondissement absent d'une même fiche) → 0.
+- [ ] **Fiche + commentaire combinés** : un mot présent seulement dans un commentaire, associé à un mot
+      du nom/profession (ex. « dupont diabète »), retrouve bien la fiche.
+- [ ] **Faute de frappe** : « cardilogue » remonte les cardiologues, « kinesiterapeute » (h manquant)
+      les kinés ; un mot court mal tapé (« line ») ne crée **pas** de faux positif.
+- [ ] **Bouton effacer (×)** : apparaît dès qu'on tape, aligné proprement dans la barre ; clic → vide le
+      champ et restaure la liste complète.
+- [ ] **Classement « Pertinence »** : avec une requête et le tri « Pertinence », les fiches qui matchent
+      par le **nom** remontent avant celles qui ne matchent que par un **commentaire**. Sans requête, le
+      tri « Pertinence » n'altère pas l'ordre.
+- [ ] **Surlignage** : les mots recherchés sont surlignés (fond bleu léger) dans le nom et la ligne
+      profession/arrondissement des résultats ; accents et casse d'origine préservés (« Kiné » surligné
+      dans « Kinésithérapeute » même si on a tapé « kine »). Un match par faute de frappe n'est pas
+      surligné (normal), mais la fiche apparaît quand même.
 
 ## Fiche détail (`/contact/:id`)
 

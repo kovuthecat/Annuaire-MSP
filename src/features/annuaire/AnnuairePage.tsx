@@ -5,7 +5,7 @@ import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
 import { useReference } from '../proximite/ReferenceProvider'
 import { MSP_COORDS, coordsOf } from '../proximite/geo'
-import { filterContacts } from '../../data/search'
+import { filterContacts, queryTerms } from '../../data/search'
 import type { ContactFilters } from '../../data/search'
 import { Button } from '../../components/ui'
 import { ProximityMap } from '../../components/Map'
@@ -94,12 +94,6 @@ const mapLoadingStyle: CSSProperties = {
   color: colors.text.secondary,
 }
 
-/** Valeurs distinctes non vides d'un champ, triées alphabétiquement (locale FR). */
-function distinctValues(values: Array<string | null>): string[] {
-  const set = new Set(values.filter((v): v is string => Boolean(v && v.trim())))
-  return [...set].sort((a, b) => a.localeCompare(b, 'fr'))
-}
-
 export default function AnnuairePage() {
   const { contacts, loading, error, reload, adoptContact, unadoptContact } = useDirectory()
   const { selectedIds, toggle } = useSelection()
@@ -109,49 +103,34 @@ export default function AnnuairePage() {
   const [query, setQuery] = useState('')
   // Mes contacts actif par défaut (cf. maquette — état initial `mesContacts: true`).
   const [mineOnly, setMineOnly] = useState(true)
+  // Filtres réduits à 3 chips à forte valeur d'adressage (cf. DECISIONS.md 2026-07-18 §Filtres).
   const [secteur1, setSecteur1] = useState(false)
-  const [vad, setVad] = useState(false)
-  const [ameCmu, setAmeCmu] = useState(false)
-  const [nouveauxPatients, setNouveauxPatients] = useState(false)
-  const [arrondissement, setArrondissement] = useState('')
-  const [profession, setProfession] = useState('')
-  const [tag, setTag] = useState('')
+  const [pediatrie, setPediatrie] = useState(false)
+  const [avis, setAvis] = useState(false)
   const [sort, setSort] = useState<SortOption>('pertinence')
   // Panneau carte : replié par défaut (mobile ET desktop, cf. plan T2 étape 3 — la liste prime).
   const [mapOpen, setMapOpen] = useState(false)
   // Épingle cliquée → ligne mise en évidence (plan T2 étape 2, « au minimum épingle → ligne »).
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
 
-  const arrondissementOptions = useMemo(
-    () => distinctValues(contacts.map((c) => c.arrondissement)),
-    [contacts],
-  )
-  const professionOptions = useMemo(
-    () => distinctValues(contacts.map((c) => c.profession)),
-    [contacts],
-  )
-  const tagOptions = useMemo(() => distinctValues(contacts.flatMap((c) => c.tags)), [contacts])
-
   const filters: ContactFilters = useMemo(
     () => ({
       mineOnly,
       secteurConv: secteur1 ? '1' : undefined,
-      vad,
-      ameCmu,
-      prendNouveaux: nouveauxPatients ? 'oui' : undefined,
-      arrondissement: arrondissement || undefined,
-      profession: profession || undefined,
-      tags: tag ? [tag] : undefined,
+      pediatrie: pediatrie || undefined,
+      avis: avis || undefined,
     }),
-    [mineOnly, secteur1, vad, ameCmu, nouveauxPatients, arrondissement, profession, tag],
+    [mineOnly, secteur1, pediatrie, avis],
   )
 
   const filtered = useMemo(() => filterContacts(contacts, query, filters), [contacts, query, filters])
-  // La référence n'est utilisée que par le tri "distance" (cf. sort.ts) mais toujours passée —
-  // recalcule à chaque changement de référence (MSP <-> adresse patient, plans/P3/S2.md T4).
+  // Mots de la requête, surlignés dans chaque ligne de résultat (cf. Highlight).
+  const terms = useMemo(() => queryTerms(query), [query])
+  // La référence n'est utilisée que par le tri "distance" et `query` que par "pertinence" (cf.
+  // sort.ts) mais toujours passées — recalcule au changement de référence/requête/tri.
   const sorted = useMemo(
-    () => sortContacts(filtered, sort, reference.coords),
-    [filtered, sort, reference],
+    () => sortContacts(filtered, sort, reference.coords, query),
+    [filtered, sort, reference, query],
   )
 
   // Carte partagée (plans/P3/S3.md T2 étape 1) : MSP + référence active (si ≠ MSP) + les résultats
@@ -180,18 +159,13 @@ export default function AnnuairePage() {
     row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [highlightedId])
 
-  const hasActiveFilters =
-    query !== '' || secteur1 || vad || ameCmu || nouveauxPatients || arrondissement !== '' || profession !== '' || tag !== ''
+  const hasActiveFilters = query !== '' || secteur1 || pediatrie || avis
 
   const resetFilters = () => {
     setQuery('')
     setSecteur1(false)
-    setVad(false)
-    setAmeCmu(false)
-    setNouveauxPatients(false)
-    setArrondissement('')
-    setProfession('')
-    setTag('')
+    setPediatrie(false)
+    setAvis(false)
   }
 
   if (loading) {
@@ -227,21 +201,10 @@ export default function AnnuairePage() {
         onMineOnlyChange={setMineOnly}
         secteur1={secteur1}
         onSecteur1Change={setSecteur1}
-        vad={vad}
-        onVadChange={setVad}
-        ameCmu={ameCmu}
-        onAmeCmuChange={setAmeCmu}
-        nouveauxPatients={nouveauxPatients}
-        onNouveauxPatientsChange={setNouveauxPatients}
-        arrondissement={arrondissement}
-        onArrondissementChange={setArrondissement}
-        arrondissementOptions={arrondissementOptions}
-        profession={profession}
-        onProfessionChange={setProfession}
-        professionOptions={professionOptions}
-        tag={tag}
-        onTagChange={setTag}
-        tagOptions={tagOptions}
+        pediatrie={pediatrie}
+        onPediatrieChange={setPediatrie}
+        avis={avis}
+        onAvisChange={setAvis}
         sort={sort}
         onSortChange={setSort}
         resultCount={sorted.length}
@@ -310,6 +273,7 @@ export default function AnnuairePage() {
                 contact={contact}
                 selected={selectedIds.has(contact.id)}
                 highlighted={highlightedId === contact.id}
+                queryTerms={terms}
                 onToggleSelect={() => toggle(contact.id)}
                 onToggleStar={() =>
                   void (contact.starred ? unadoptContact(contact.id) : adoptContact(contact.id))

@@ -1,4 +1,4 @@
-import { normalize } from '../../data/search'
+import { normalize, relevanceScore } from '../../data/search'
 import { coordsOf, haversineKm } from '../proximite/geo'
 import type { LatLng } from '../proximite/geo'
 import type { ContactWithMeta } from '../../types/db'
@@ -6,8 +6,9 @@ import type { ContactWithMeta } from '../../types/db'
 /**
  * Tri de la liste annuaire (maquette l.84 « Tri ▾ », cf. plans/P1/S3.md T6 étape 4 ;
  * option « Distance » ajoutée en plans/P3/S2.md T4).
- * "pertinence" = pas de tri additionnel, on garde l'ordre déjà produit par `filterContacts`
- * (S2, zone verrouillée — cf. plans/P1/S3.md §Si bloqué : le tri ne modifie pas `src/data/search.ts`).
+ * "pertinence" = classement par `relevanceScore` (search.ts) **quand une requête est saisie** — un
+ * match sur le nom prime sur un match dans un commentaire (cf. DECISIONS.md 2026-07-18) ; sans
+ * requête, on garde l'ordre déjà produit par `filterContacts` (aucune pertinence à départager).
  */
 export type SortOption = 'pertinence' | 'nom' | 'arrondissement' | 'distance'
 
@@ -19,16 +20,24 @@ function arrondissementRank(value: string | null): number {
 }
 
 /**
- * `reference` n'est utilisé que par le tri "distance" (ignoré sinon) — cf. plans/P3/S2.md T4
- * étape 2 : « étendre `sortContacts` en lui passant la référence ». Les fiches sans coordonnées
- * vont toujours en fin de liste (jamais une fausse distance pour trier).
+ * `reference` n'est utilisé que par le tri "distance", `query` que par le tri "pertinence" (ignorés
+ * sinon). Les fiches sans coordonnées vont toujours en fin de liste (jamais une fausse distance).
  */
 export function sortContacts(
   contacts: ContactWithMeta[],
   sort: SortOption,
   reference: LatLng,
+  query = '',
 ): ContactWithMeta[] {
-  if (sort === 'pertinence') return contacts
+  if (sort === 'pertinence') {
+    // Sans requête, aucun signal de pertinence : on garde l'ordre de `filterContacts`.
+    if (!query.trim()) return contacts
+    // Score calculé une fois par contact (décoration), puis tri décroissant, nom en départage.
+    return contacts
+      .map((contact) => ({ contact, score: relevanceScore(contact, query) }))
+      .sort((a, b) => b.score - a.score || normalize(a.contact.nom).localeCompare(normalize(b.contact.nom)))
+      .map((entry) => entry.contact)
+  }
 
   const sorted = [...contacts]
   if (sort === 'nom') {

@@ -5,12 +5,11 @@ import { useReference } from '../proximite/ReferenceProvider'
 import type { SortOption } from './sort'
 
 /**
- * Barre de recherche + bascule Mes contacts/Tous + rangée de filtres (maquette lignes 67-85).
- * Les chips booléens (Secteur 1/VAD/AME-CMU/+Nouveaux patients) reprennent les couleurs
- * sémantiques exactes de la capture (cf. `colors.sector`) ; les 3 sélecteurs (Arrondissement,
- * Profession, Tag) sont un ajout de câblage (ARCHITECTURE.md §Écarts #5 — absents des bindings
- * réels du prototype, qui n'affichait qu'un texte statique) : même style de chip au repos, texte
- * plus foncé une fois une valeur choisie (pas de couleur sémantique dédiée dans la maquette).
+ * Barre de recherche + bascule Mes contacts/Tous + rangée de filtres. Filtres réduits à 3 chips à
+ * forte valeur d'adressage (cf. DECISIONS.md 2026-07-18 §Filtres) : **Secteur 1 / Pédiatrie / Avis**.
+ * VAD, AME/CMU, « + Nouveaux patients » et les menus Arrondissement/Profession/Tag ont été retirés
+ * (marginaux, non refusables, ou plus rapides à taper dans la recherche). Les chips reprennent des
+ * teintes de `colors.sector` (aucune couleur inventée).
  */
 export interface FiltersBarProps {
   query: string
@@ -21,24 +20,10 @@ export interface FiltersBarProps {
 
   secteur1: boolean
   onSecteur1Change: (value: boolean) => void
-  vad: boolean
-  onVadChange: (value: boolean) => void
-  ameCmu: boolean
-  onAmeCmuChange: (value: boolean) => void
-  nouveauxPatients: boolean
-  onNouveauxPatientsChange: (value: boolean) => void
-
-  arrondissement: string
-  onArrondissementChange: (value: string) => void
-  arrondissementOptions: string[]
-
-  profession: string
-  onProfessionChange: (value: string) => void
-  professionOptions: string[]
-
-  tag: string
-  onTagChange: (value: string) => void
-  tagOptions: string[]
+  pediatrie: boolean
+  onPediatrieChange: (value: boolean) => void
+  avis: boolean
+  onAvisChange: (value: boolean) => void
 
   sort: SortOption
   onSortChange: (value: SortOption) => void
@@ -67,6 +52,16 @@ const searchInputStyle: CSSProperties = {
   background: 'transparent',
   font: '500 13px "Plus Jakarta Sans"',
   color: colors.text.primary,
+}
+
+const clearButtonStyle: CSSProperties = {
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  padding: 2,
+  lineHeight: 0,
+  color: '#9a9488',
+  display: 'flex',
 }
 
 const topRowStyle: CSSProperties = {
@@ -129,15 +124,6 @@ function chipActiveStyle(fg: string, bg: string): CSSProperties {
     font: '600 11px "Plus Jakarta Sans"',
     color: fg,
     background: bg,
-  }
-}
-
-function selectChipStyle(active: boolean): CSSProperties {
-  return {
-    ...chipBaseStyle,
-    font: `${active ? 600 : 500} 11px "Plus Jakarta Sans"`,
-    color: active ? colors.text.primary : colors.text.muted,
-    background: '#f1ede4',
   }
 }
 
@@ -336,21 +322,10 @@ export default function FiltersBar({
   onMineOnlyChange,
   secteur1,
   onSecteur1Change,
-  vad,
-  onVadChange,
-  ameCmu,
-  onAmeCmuChange,
-  nouveauxPatients,
-  onNouveauxPatientsChange,
-  arrondissement,
-  onArrondissementChange,
-  arrondissementOptions,
-  profession,
-  onProfessionChange,
-  professionOptions,
-  tag,
-  onTagChange,
-  tagOptions,
+  pediatrie,
+  onPediatrieChange,
+  avis,
+  onAvisChange,
   sort,
   onSortChange,
   resultCount,
@@ -372,6 +347,20 @@ export default function FiltersBar({
             placeholder="Rechercher un nom, une spécialité, un tag, un commentaire…"
             style={searchInputStyle}
           />
+          {query !== '' && (
+            <button
+              type="button"
+              onClick={() => onQueryChange('')}
+              style={clearButtonStyle}
+              aria-label="Effacer la recherche"
+              title="Effacer"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <line x1="3.5" y1="3.5" x2="10.5" y2="10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                <line x1="10.5" y1="3.5" x2="3.5" y2="10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
         </div>
         <div style={segmentedWrapperStyle}>
           <div onClick={() => onMineOnlyChange(true)} style={segmentStyle(mineOnly)}>
@@ -393,68 +382,19 @@ export default function FiltersBar({
           bg={colors.sector.secteur1.bg}
         />
         <BoolChip
-          label="VAD"
-          active={vad}
-          onToggle={() => onVadChange(!vad)}
-          fg={colors.sector.vad.fg}
-          bg={colors.sector.vad.bg}
+          label="Pédiatrie"
+          active={pediatrie}
+          onToggle={() => onPediatrieChange(!pediatrie)}
+          fg={colors.sector.pediatrie.fg}
+          bg={colors.sector.pediatrie.bg}
         />
         <BoolChip
-          label="AME/CMU"
-          active={ameCmu}
-          onToggle={() => onAmeCmuChange(!ameCmu)}
-          fg={colors.sector.ame.fg}
-          bg={colors.sector.ame.bg}
+          label="Avis"
+          active={avis}
+          onToggle={() => onAvisChange(!avis)}
+          fg={colors.sector.avis.fg}
+          bg={colors.sector.avis.bg}
         />
-        <BoolChip
-          label="+ Nouveaux patients"
-          active={nouveauxPatients}
-          onToggle={() => onNouveauxPatientsChange(!nouveauxPatients)}
-          fg={colors.sector.newpatients.fg}
-          bg={colors.sector.newpatients.bg}
-        />
-
-        <select
-          value={arrondissement}
-          onChange={(e) => onArrondissementChange(e.target.value)}
-          style={selectChipStyle(arrondissement !== '')}
-          aria-label="Filtrer par arrondissement"
-        >
-          <option value="">Arrondissement</option>
-          {arrondissementOptions.map((value) => (
-            <option key={value} value={value}>
-              {value} arr.
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={profession}
-          onChange={(e) => onProfessionChange(e.target.value)}
-          style={selectChipStyle(profession !== '')}
-          aria-label="Filtrer par profession/spécialité"
-        >
-          <option value="">Profession / spécialité</option>
-          {professionOptions.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={tag}
-          onChange={(e) => onTagChange(e.target.value)}
-          style={selectChipStyle(tag !== '')}
-          aria-label="Filtrer par tag"
-        >
-          <option value="">Tag</option>
-          {tagOptions.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
 
         <ReferenceSelector />
 
