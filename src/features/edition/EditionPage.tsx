@@ -1,6 +1,6 @@
 import type { CSSProperties, FormEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { memberDisplayName } from '../../data/directory'
 import { findSimilarContacts } from '../../data/search'
@@ -15,8 +15,16 @@ import CoordonneesSection from './CoordonneesSection'
 import TagsSection from './TagsSection'
 import CommentDraftList from './CommentDraftList'
 import type { DraftComment } from './CommentDraftList'
-import { buildContactPayload, emptyForm, formFromContact, validateForm } from './formState'
+import {
+  buildContactPayload,
+  emptyForm,
+  formFromContact,
+  formFromPrefill,
+  parsePrefill,
+  validateForm,
+} from './formState'
 import type { FormState } from './formState'
+import { geocodeAddress } from '../proximite/geocode'
 
 /**
  * Écran Ajouter / Modifier une fiche (maquette l.257-395, cf. plans/P1/S5.md T8). Un seul
@@ -91,6 +99,26 @@ const errorBannerStyle: CSSProperties = {
   marginBottom: 14,
 }
 
+/** Bandeau « pré-rempli depuis Doctolib » (T2) : ton sobre, bleu info existant (cf. ARCHITECTURE
+ * §Ton visuel — pas de couleur « notation » agressive, donc pas la teinte d'alerte `sector.ame`). */
+const prefillBannerStyle: CSSProperties = {
+  background: colors.comment.info.bg,
+  color: colors.comment.info.fg,
+  border: `1px solid ${colors.comment.info.fg}`,
+  borderRadius: radii.lg,
+  padding: '10px 14px',
+  font: '600 12px "Plus Jakarta Sans"',
+  marginBottom: 14,
+}
+
+/** Message discret si le `prefill` reçu est illisible (base64/JSON corrompu) — pas un blocage,
+ * juste une mention que le formulaire s'est ouvert vide plutôt que prérempli (T1 §Décision clé). */
+const prefillUnreadableStyle: CSSProperties = {
+  font: '500 11.5px "Plus Jakarta Sans"',
+  color: colors.text.muted,
+  marginBottom: 14,
+}
+
 const stickyBarStyle: CSSProperties = {
   position: 'sticky',
   bottom: 0,
@@ -143,6 +171,7 @@ export default function EditionPage() {
   const { id } = useParams<{ id: string }>()
   const mode: 'create' | 'edit' = id ? 'edit' : 'create'
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { contacts, loading, createContact, updateContact, addComment, reload } = useDirectory()
   const { member } = useAuth()
 
@@ -151,7 +180,21 @@ export default function EditionPage() {
     [mode, contacts, id],
   )
 
-  const [form, setForm] = useState<FormState>(() => emptyForm())
+  // Contrat `prefill` (P4/S1, cf. formState.ts) : uniquement en création — `/nouveau?prefill=…`.
+  // En édition, le paramètre est ignoré : une fiche existante n'est jamais réécrite par un prefill.
+  const rawPrefill = mode === 'create' ? searchParams.get('prefill') : null
+  // `null` = pas de prefill dans l'URL ; `undefined` = présent mais illisible (base64/JSON corrompu) ;
+  // sinon un `Prefill` assaini (potentiellement vide si aucune clé reconnue).
+  const prefill = useMemo(() => {
+    if (!rawPrefill) return null
+    const parsed = parsePrefill(rawPrefill)
+    return parsed ?? undefined
+  }, [rawPrefill])
+  const prefillUnreadable = prefill === undefined
+
+  const [form, setForm] = useState<FormState>(() =>
+    prefill ? formFromPrefill(prefill) : emptyForm(),
+  )
   // `true` dès le départ en création (rien à charger) ; en édition, passe à `true` une fois la
   // fiche trouvée dans le dataset — évite de re-remplir le formulaire (et d'écraser la saisie en
   // cours) à chaque rechargement du dataset déclenché par `addComment`/`reload` pendant l'édition.
@@ -237,14 +280,59 @@ export default function EditionPage() {
     setSubmitting(true)
     try {
       const payload = buildContactPayload(form, mode)
+      let contactId: string | null = null
       if (mode === 'create') {
-        const created = await createContact(payload)
+        // Provenance (T1 §Étapes 2) : posée uniquement quand la fiche part d'un `prefill` valide —
+        // jamais en saisie manuelle (le payload standard, lui, ne porte aucune colonne de provenance).
+        const created = await createContact(
+          prefill
+            ? {
+                ...payload,
+                source_url: prefill.source_url ?? null,
+                source_type: 'doctolib',
+                statut: 'a_verifier',
+              }
+            : payload,
+        )
+        contactId = created.id
         for (const draft of drafts) {
           await addComment(created.id, draft.type, draft.texte)
         }
       } else if (existingContact) {
         await updateContact(existingContact.id, payload)
+        contactId = existingContact.id
       }
+
+      // Géocodage à la saisie (plans/P3/S2.md T2 §Décision clé) : la fiche est déjà
+      // créée/modifiée ci-dessus (comportement inchangé) ; le géocodage se déclenche en
+      // arrière-plan et ne retarde jamais la navigation — `reload()` du provider rafraîchira la
+      // position quand elle arrive. Uniquement si l'adresse est renseignée et (création, ou
+      // adresse modifiée en édition). Échec silencieux (BAN muette, score < seuil, ou RLS sur
+      // l'update de suivi juste après l'insert, cf. T2 §Si bloqué) : latitude/longitude restent
+      // `null`, rien ne remonte à l'utilisateur.
+      if (contactId && payload.adresse) {
+        const adresseChanged = mode === 'edit' && payload.adresse !== (existingContact?.adresse ?? null)
+        if (mode === 'create' || adresseChanged) {
+          const idToGeocode = contactId
+          const addressToGeocode = payload.adresse
+          void (async () => {
+            const result = await geocodeAddress(addressToGeocode)
+            if (!result) return
+            try {
+              await updateContact(idToGeocode, {
+                latitude: result.lat,
+                longitude: result.lng,
+                geocode_score: result.score,
+                geocoded_at: new Date().toISOString(),
+              })
+            } catch {
+              // Échec silencieux — cf. T2 §Si bloqué (RLS) : ne jamais faire remonter d'erreur
+              // pour ce suivi en arrière-plan.
+            }
+          })()
+        }
+      }
+
       await reload()
       navigate('/')
     } catch (err) {
@@ -270,6 +358,18 @@ export default function EditionPage() {
             <div style={subtitleStyle}>{subtitle}</div>
           </div>
         </div>
+
+        {prefill && (
+          <div style={prefillBannerStyle}>
+            Fiche pré-remplie depuis Doctolib — vérifiez chaque champ avant d'enregistrer. Source
+            déclarative, non datée.
+          </div>
+        )}
+        {prefillUnreadable && (
+          <div style={prefillUnreadableStyle}>
+            Préremplissage illisible — le formulaire s'est ouvert vide.
+          </div>
+        )}
 
         <EssentielCard mode={mode} form={form} onChange={patchForm} duplicates={duplicates} />
 
