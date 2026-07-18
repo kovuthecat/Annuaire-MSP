@@ -120,6 +120,13 @@ alter table public.contacts add column if not exists source_url        text;
 alter table public.contacts add column if not exists source_type       text;
 alter table public.contacts add column if not exists source_checked_at timestamptz;
 
+-- Position géographique (géocodage BAN, backfill hors app — cf. plans/P3).
+-- Pas d'index : le calcul de distance (Haversine) se fait côté client.
+alter table public.contacts add column if not exists latitude      double precision;
+alter table public.contacts add column if not exists longitude     double precision;
+alter table public.contacts add column if not exists geocode_score real;          -- confiance BAN 0..1
+alter table public.contacts add column if not exists geocoded_at   timestamptz;
+
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'contacts_source_type_check') then
