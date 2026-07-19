@@ -150,11 +150,17 @@ export interface Prefill {
   email_rdv?: string
   secteur_conv?: SecteurConv
   langues?: string
+  /** Actes / motifs remontés depuis Doctolib (`availableService`) -> tags de recherche. */
+  tags?: string[]
   source_url?: string
   latitude?: number
   longitude?: number
   geocode_score?: number
 }
+
+/** Bornes de l'assainissement des tags du prefill (tableau — cf. parsePrefill). */
+const PREFILL_MAX_TAGS = 20
+const PREFILL_TAG_MAX_LENGTH = 60
 
 /** Bornes de longueur par champ texte (assainissement — cf. T1 §Décision clé). Valeur par défaut
  * (200) appliquée si un champ texte futur n'est pas listé explicitement. */
@@ -236,6 +242,26 @@ export function parsePrefill(raw: string): Prefill | null {
   }
   // sinon (valeur hors `1|2|centre|non_conv`) : ignoré silencieusement, cf. T1 §Décision clé.
 
+  // Tags : tableau de chaînes (actes Doctolib). Assaini item par item — trim, borne de longueur,
+  // dédup insensible à la casse, plafond de nombre. Toute entrée non-chaîne/vide est ignorée ;
+  // une valeur non-tableau (clé absente) laisse `tags` indéfini.
+  const rawTags = source.tags
+  if (Array.isArray(rawTags)) {
+    const seen = new Set<string>()
+    const tags: string[] = []
+    for (const value of rawTags) {
+      if (typeof value !== 'string') continue
+      const trimmed = value.trim().slice(0, PREFILL_TAG_MAX_LENGTH)
+      if (!trimmed) continue
+      const key = trimmed.toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      tags.push(trimmed)
+      if (tags.length >= PREFILL_MAX_TAGS) break
+    }
+    if (tags.length) result.tags = tags
+  }
+
   for (const key of ['latitude', 'longitude', 'geocode_score'] as const) {
     const value = source[key]
     if (typeof value === 'number' && Number.isFinite(value)) result[key] = value
@@ -273,6 +299,7 @@ export function formFromPrefill(p: Prefill): FormState {
     emailRdv: p.email_rdv ?? base.emailRdv,
     secteurConv: p.secteur_conv ?? base.secteurConv,
     langues: p.langues ?? base.langues,
+    tags: p.tags ?? base.tags,
   }
 }
 

@@ -43,6 +43,7 @@ const APP_ORIGIN = 'https://annuaire-msp.vercel.app'
  * @property {string} [email_rdv]
  * @property {string} [secteur_conv]
  * @property {string} [langues]
+ * @property {string[]} [tags]
  * @property {string} [source_url]
  * @property {number} [latitude]
  * @property {number} [longitude]
@@ -54,9 +55,12 @@ const APP_ORIGIN = 'https://annuaire-msp.vercel.app'
 // fichier, `pickAllowedKeys` l'éliminerait avant l'ouverture de l'URL.
 const ALLOWED_KEYS = [
   'nom', 'prenom', 'civilite', 'profession', 'etablissement', 'adresse', 'arrondissement',
-  'doctolib', 'site_web', 'tel_secretariat', 'email_rdv', 'secteur_conv', 'langues',
+  'doctolib', 'site_web', 'tel_secretariat', 'email_rdv', 'secteur_conv', 'langues', 'tags',
   'source_url', 'latitude', 'longitude', 'geocode_score',
 ]
+
+/** Nombre max de tags/actes remontés (une page radiologue en liste ~17). */
+const MAX_TAGS = 20
 
 // -----------------------------------------------------------------------------------------------
 // 1. Lecture du JSON-LD
@@ -219,6 +223,37 @@ function mapLangues(node) {
 }
 
 /**
+ * `availableService` (liste de `MedicalProcedure`) -> tags de recherche : les actes proposés (IRM,
+ * Mammographie, Échographie…). Aligné sur la doctrine « motifs → tags de recherche ». Chaque item
+ * peut être une chaîne ou un objet `{ name }`. Dédupliqué (insensible à la casse), borné à MAX_TAGS.
+ * Le membre relit et élague avant d'enregistrer (comme tout le reste du prefill).
+ * @param {Record<string, unknown>} node
+ * @returns {string[] | undefined}
+ */
+function mapActes(node) {
+  const raw = node.availableService
+  if (!raw) return undefined
+  const toText = (v) => {
+    if (typeof v === 'string') return v.trim()
+    if (v && typeof v === 'object' && typeof v.name === 'string') return v.name.trim()
+    return ''
+  }
+  const list = Array.isArray(raw) ? raw : [raw]
+  const seen = new Set()
+  const tags = []
+  for (const v of list) {
+    const text = toText(v)
+    if (!text) continue
+    const key = text.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    tags.push(text)
+    if (tags.length >= MAX_TAGS) break
+  }
+  return tags.length ? tags : undefined
+}
+
+/**
  * URL(s) externes (`sameAs`/`url`) qui ne pointent PAS vers doctolib.fr -> site_web du cabinet.
  * On ne veut pas dupliquer le lien Doctolib lui-même dans `site_web`.
  * @param {Record<string, unknown>} node
@@ -238,6 +273,24 @@ function mapSiteWeb(node) {
     }
   })
   return external || undefined
+}
+
+/**
+ * Spécialité depuis le fil d'Ariane (`BreadcrumbList`) : sur une vraie page Doctolib (vérifié le
+ * 2026-07-19), le nœud `Physician` ne porte PAS de `medicalSpecialty` — la spécialité (« Radiologue »)
+ * est un item `@type: MedicalSpecialty` du breadcrumb. On la lit là, à défaut de `medicalSpecialty`.
+ * @param {Record<string, unknown>[]} nodes
+ */
+function specialtyFromBreadcrumb(nodes) {
+  const breadcrumb = nodes.find((n) => hasType(n, ['BreadcrumbList']))
+  if (!breadcrumb || !Array.isArray(breadcrumb.itemListElement)) return undefined
+  for (const li of breadcrumb.itemListElement) {
+    const item = li && typeof li === 'object' ? li.item : undefined
+    if (item && typeof item === 'object' && hasType(item, ['MedicalSpecialty'])) {
+      if (typeof item.name === 'string' && item.name.trim()) return item.name.trim()
+    }
+  }
+  return undefined
 }
 
 /**
@@ -356,11 +409,18 @@ function extractFromPage(document, location) {
         out.etablissement = workplace.name.trim()
       }
     }
+    // À défaut, `legalName` (entité juridique du cabinet, ex. « Institut médical de la femme »).
+    if (!out.etablissement && typeof primary.legalName === 'string' && primary.legalName.trim()) {
+      out.etablissement = primary.legalName.trim()
+    }
 
-    out.profession = mapProfession(primary)
+    // Profession : `medicalSpecialty`/`jobTitle` du nœud si présents, sinon le breadcrumb
+    // (`MedicalSpecialty`) — cf. specialtyFromBreadcrumb, la source réelle sur Doctolib.
+    out.profession = mapProfession(primary) || specialtyFromBreadcrumb(nodes)
     Object.assign(out, mapAddress(primary.address))
     Object.assign(out, mapGeo(primary.geo))
     out.langues = mapLangues(primary)
+    out.tags = mapActes(primary)
     out.doctolib = mapDoctolibUrl(primary)
     out.site_web = mapSiteWeb(primary)
     if (typeof primary.telephone === 'string' && primary.telephone.trim()) {
@@ -404,6 +464,12 @@ function pickAllowedKeys(candidate) {
     const value = candidate[key]
     if (value === undefined || value === null) continue
     if (typeof value === 'string' && value.trim() === '') continue
+    if (Array.isArray(value)) {
+      const arr = value.filter((x) => typeof x === 'string' && x.trim() !== '')
+      if (arr.length === 0) continue // tableau vide -> clé absente
+      result[key] = arr
+      continue
+    }
     result[key] = value
   }
   return result
