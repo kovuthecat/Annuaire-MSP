@@ -32,6 +32,9 @@ export interface FiltersBarProps {
   onSecteur1Change: (value: boolean) => void
   pediatrie: boolean
   onPediatrieChange: (value: boolean) => void
+  /** Fiches grisées « à compléter » (audit pré-partage #9) — cf. `contact.grise_reason`. */
+  incomplet: boolean
+  onIncompletChange: (value: boolean) => void
 
   /** Facette « Catégorie » — `''` = toutes. */
   categorie: Categorie | ''
@@ -41,6 +44,11 @@ export interface FiltersBarProps {
   onSortChange: (value: SortOption) => void
 
   resultCount: number
+
+  /** Replie le cartouche de filtres derrière un bouton sur mobile (audit pré-partage #9) : Filtres +
+   * Catégorie occupaient ~2 lignes chacun, soit près de la moitié de l'écran avant le premier
+   * résultat. Sur desktop, toujours déplié. */
+  isMobile?: boolean
 }
 
 const searchWrapperStyle: CSSProperties = {
@@ -149,6 +157,29 @@ const catColors: Record<Categorie, { fg: string; bg: string }> = {
   "Ligne d'avis": colors.sector.secteur1, // teal
   'Transport sanitaire': colors.sector.ame, // ambre
   Ressource: colors.sector.newpatients, // vert
+}
+
+/** Bouton de repli des filtres (mobile uniquement, cf. `FiltersBarProps.isMobile`). */
+const filtersToggleButtonStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  border: `1px solid ${colors.borderLight}`,
+  background: colors.white,
+  borderRadius: radii.lg,
+  padding: '9px 13px',
+  marginBottom: 14,
+  cursor: 'pointer',
+  font: '600 12px "Plus Jakarta Sans"',
+  color: colors.text.body,
+}
+
+const filtersToggleCountStyle: CSSProperties = {
+  padding: '1px 7px',
+  borderRadius: radii.pill,
+  background: colors.brand.teal,
+  color: colors.white,
+  font: '700 10.5px "Plus Jakarta Sans"',
 }
 
 /** Cartouche englobant la zone de filtres, pour la rendre plus grande et visible. */
@@ -398,12 +429,21 @@ export default function FiltersBar({
   onSecteur1Change,
   pediatrie,
   onPediatrieChange,
+  incomplet,
+  onIncompletChange,
   categorie,
   onCategorieChange,
   sort,
   onSortChange,
   resultCount,
+  isMobile = false,
 }: FiltersBarProps) {
+  const activeFilterCount = [secteur1, pediatrie, incomplet, categorie !== ''].filter(Boolean).length
+  // Replié par défaut sur mobile ; toujours ouvert dès qu'on bascule vers desktop (peu probable en
+  // session, mais évite un panneau replié orphelin après un redimensionnement).
+  const [filtersOpen, setFiltersOpen] = useState(!isMobile)
+  const showFiltersCard = !isMobile || filtersOpen
+
   return (
     <div>
       <style>{`.annuaire-search-input::placeholder { color: #9a9488; }`}</style>
@@ -446,6 +486,20 @@ export default function FiltersBar({
         </div>
       </div>
 
+      {isMobile && (
+        <button
+          type="button"
+          style={filtersToggleButtonStyle}
+          onClick={() => setFiltersOpen((v) => !v)}
+          aria-expanded={filtersOpen}
+        >
+          Filtres
+          {activeFilterCount > 0 && <span style={filtersToggleCountStyle}>{activeFilterCount}</span>}
+          <span aria-hidden>{filtersOpen ? '▲' : '▼'}</span>
+        </button>
+      )}
+
+      {showFiltersCard && (
       <div style={filtersCardStyle}>
         <div style={{ ...filtersRowStyle, marginBottom: 0 }}>
           <span style={filtersLabelStyle}>Filtres</span>
@@ -463,6 +517,13 @@ export default function FiltersBar({
             fg={colors.sector.pediatrie.fg}
             bg={colors.sector.pediatrie.bg}
           />
+          <BoolChip
+            label="À compléter"
+            active={incomplet}
+            onToggle={() => onIncompletChange(!incomplet)}
+            fg={colors.text.muted}
+            bg="#ece7dd"
+          />
         </div>
         <div style={{ ...filtersRowStyle, marginBottom: 0 }}>
           <span style={filtersLabelStyle}>Catégorie</span>
@@ -478,6 +539,7 @@ export default function FiltersBar({
           ))}
         </div>
       </div>
+      )}
 
       <div style={referenceBarStyle}>
         <ReferenceSelector />

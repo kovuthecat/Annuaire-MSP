@@ -37,6 +37,21 @@ nouvelles fonctionnalités cadrées à la demande de Thibault le 2026-07-17, imp
   la déviation IDFM). **4 colonnes géo ajoutées à `contacts`** (`supabase/schema.sql`, P3/S1 T1) — pas
   encore appliquées à une vraie base (cf. §Ce qui casse, le seed n'a jamais été exécuté).
 
+**Audit pré-partage #9 (2026-07-19) — carte/FAB/filtres/sélection/casse/« à compléter », câblé côté
+code.** Suite à un audit desktop+mobile de la V1 déployée (parcours, robustesse, ergonomie,
+frictions) : (1) la carte annuaire exclut désormais du cadrage automatique les contacts géocodés à
+plus de 60 km de la MSP (`MAP_FIT_RADIUS_KM`, `geo.ts`) — évitait un dézoom sur toute l'Europe à
+cause de quelques fiches éloignées ; (2) le bouton flottant « Un souci ? » passe à gauche sur mobile
+(hors Ajouter/Modifier) pour ne plus chevaucher le menu « ☰ Plus » de la barre de navigation basse ;
+(4) le cartouche de filtres (Filtres + Catégorie) est repliable sur mobile derrière un bouton
+« Filtres (N) », ouvert par défaut sur desktop ; (5) un lien « Tout vider » sur l'écran Sélection &
+impression vide la sélection en un clic (`useSelection().clear`, déjà existant, juste câblé côté
+UI) ; (6) le nom saisi à la création/édition est normalisé en Title Case si tapé tout en minuscules,
+sans jamais toucher un mot portant déjà une majuscule (sigle, casse mixte) — `normalizeNameCasing`,
+testé ; (7) nouvelle puce de filtre « À compléter » (fiches `grise_reason = 'incomplet'`), pour
+orienter l'enrichissement collaboratif. `build`/`typecheck`/64 tests OK. Validation visuelle humaine
+restante — cf. `VALIDATION.md` §Audit pré-partage #9.
+
 **Recueil de retours V1 (T-008) — câblé côté code le 2026-07-19, à activer côté base.** Avant le
 partage aux membres : bouton flottant « Un souci ? » sur chaque page (popover au survol) → panneau
 (catégorie + message + contexte de page capturé auto + capture d'écran `html2canvas`) → table

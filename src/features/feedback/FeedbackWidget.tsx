@@ -51,8 +51,6 @@ const CATEGORIES: readonly CategoryMeta[] = [
   },
 ]
 
-const fabWrapStyle: CSSProperties = { position: 'fixed', right: 24, bottom: 24, zIndex: 45 }
-
 /**
  * Décalage vertical du FAB selon ce qui occupe déjà le bas de l'écran :
  * - pages Ajouter/Modifier : barre d'action collante (« Enregistrer ») → on remonte le FAB ;
@@ -69,6 +67,21 @@ function fabBottomOffset(pathname: string, isMobile: boolean): number {
   return 24
 }
 
+/**
+ * Côté du FAB (audit pré-partage #9) : sur mobile, la barre de nav du bas porte un bouton « Plus »
+ * ancré à droite (`bottomPlusMenuStyle`, `Layout.tsx`) dont le popover s'ouvre juste au-dessus de
+ * lui — exactement là où le FAB se posait (`right: 24`), le recouvrant partiellement (z-index 45 >
+ * 41) et masquant ses entrées (« Membres », « Retours »). On passe le FAB à gauche sur mobile (hors
+ * pages Ajouter/Modifier, où il n'y a pas de barre de nav ni de conflit) pour libérer ce coin.
+ */
+function fabSide(pathname: string, isMobile: boolean): 'left' | 'right' {
+  return isMobile && !hasStickyActionBar(pathname) ? 'left' : 'right'
+}
+
+function fabWrapStyle(side: 'left' | 'right', bottom: number): CSSProperties {
+  return { position: 'fixed', [side]: 24, bottom, zIndex: 45 }
+}
+
 const fabStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -83,18 +96,20 @@ const fabStyle: CSSProperties = {
   boxShadow: '0 8px 22px rgba(15,159,142,.38)',
 }
 
-const tooltipStyle: CSSProperties = {
-  position: 'absolute',
-  bottom: 'calc(100% + 10px)',
-  right: 0,
-  width: 244,
-  padding: '11px 13px',
-  borderRadius: 12,
-  background: colors.text.primary,
-  color: '#fff',
-  font: '500 11.5px/1.55 "Plus Jakarta Sans"',
-  boxShadow: '0 8px 24px rgba(0,0,0,.24)',
-  pointerEvents: 'none',
+function tooltipStyle(side: 'left' | 'right'): CSSProperties {
+  return {
+    position: 'absolute',
+    bottom: 'calc(100% + 10px)',
+    [side]: 0,
+    width: 244,
+    padding: '11px 13px',
+    borderRadius: 12,
+    background: colors.text.primary,
+    color: '#fff',
+    font: '500 11.5px/1.55 "Plus Jakarta Sans"',
+    boxShadow: '0 8px 24px rgba(0,0,0,.24)',
+    pointerEvents: 'none',
+  }
 }
 
 const overlayStyle: CSSProperties = {
@@ -324,9 +339,14 @@ export default function FeedbackWidget() {
       <style>{`@media print { [${FEEDBACK_UI_ATTR}] { display: none !important; } }`}</style>
 
       {!open && (
-        <div style={{ ...fabWrapStyle, bottom: fabBottomOffset(location.pathname, isMobile) }}>
+        <div
+          style={fabWrapStyle(
+            fabSide(location.pathname, isMobile),
+            fabBottomOffset(location.pathname, isMobile),
+          )}
+        >
           {hovered && (
-            <div style={tooltipStyle}>
+            <div style={tooltipStyle(fabSide(location.pathname, isMobile))}>
               Un souci ou une idée sur cette page ? Signalez-le en un clic — l'adresse de la page et
               une capture d'écran sont jointes automatiquement pour aider à corriger.
             </div>

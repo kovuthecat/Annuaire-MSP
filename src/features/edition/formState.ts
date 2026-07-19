@@ -311,6 +311,30 @@ function emptyToNull(value: string): string | null {
 }
 
 /**
+ * Normalise la casse d'un nom saisi tout en minuscules (ex. « bordeaumonfun », import pré-partage
+ * mal formaté) en Title Case, mot par mot, en préservant tirets et apostrophes (« jean-pierre » →
+ * « Jean-Pierre »). Un mot portant **déjà** une majuscule est laissé strictement intact — sigle
+ * (« CSAPA », « HDJ », « IBCLC »), casse mixte (« McDonald »), civilité (« Dr ») : on ne corrige que
+ * la casse manifestement absente, jamais une casse déjà volontaire (même doctrine « ne jamais
+ * deviner » que T-005/DECISIONS.md, appliquée ici à la saisie plutôt qu'à l'enrichissement web).
+ * Collapse aussi les espaces internes multiples (l'auto-format porte sur `nom` uniquement — les
+ * autres champs texte restent tels quels, cf. `emptyToNull`).
+ */
+export function normalizeNameCasing(nom: string): string {
+  return nom
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((word) => {
+      if (word === '' || /[A-ZÀ-Ý]/.test(word)) return word
+      return word
+        .split(/([-'])/)
+        .map((part) => (part === '-' || part === "'" ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+        .join('')
+    })
+    .join(' ')
+}
+
+/**
  * Catégorie par défaut à la **création** (dérivée du type). Sans elle, une fiche créée dans l'app
  * avait `categorie = null` et disparaissait dès qu'un filtre de catégorie était actif. Les catégories
  * fines « Ligne d'avis » / « Transport sanitaire » ne sont pas posées ici (elles viennent de la
@@ -382,7 +406,7 @@ export function buildContactPayload(form: FormState, mode: 'create' | 'edit'): C
 
   return {
     type: form.type,
-    nom: form.nom.trim(),
+    nom: normalizeNameCasing(form.nom.trim()),
     profession: emptyToNull(form.profession),
     sous_type: emptyToNull(form.sousType),
     etablissement: emptyToNull(form.etablissement),

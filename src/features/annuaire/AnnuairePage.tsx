@@ -6,7 +6,7 @@ import { useSelection } from '../../app/SelectionProvider'
 import { useSessionState } from '../../app/useSessionState'
 import { useIsMobile } from '../../app/useMediaQuery'
 import { useReference } from '../proximite/ReferenceProvider'
-import { MSP_COORDS, coordsOf } from '../proximite/geo'
+import { MSP_COORDS, MAP_FIT_RADIUS_KM, coordsOf, haversineKm } from '../proximite/geo'
 import { filterContacts, queryTerms } from '../../data/search'
 import type { ContactFilters } from '../../data/search'
 import type { Categorie } from '../../types/db'
@@ -113,6 +113,9 @@ export default function AnnuairePage() {
   // Filtres réduits à 3 chips à forte valeur d'adressage (cf. DECISIONS.md 2026-07-18 §Filtres).
   const [secteur1, setSecteur1] = useSessionState('search:secteur1', false)
   const [pediatrie, setPediatrie] = useSessionState('search:pediatrie', false)
+  // Chip « À compléter » (audit pré-partage #9) : oriente vers les fiches grisées `incomplet` pour
+  // l'enrichissement collaboratif (cf. DECISIONS.md §Filtres — même logique que secteur1/pediatrie).
+  const [incomplet, setIncomplet] = useSessionState('search:incomplet', false)
   // Facette « Catégorie » (Praticien / Structure / Ligne d'avis / Transport / Ressource).
   const [categorie, setCategorie] = useSessionState<Categorie | ''>('search:categorie', '')
   const [sort, setSort] = useSessionState<SortOption>('search:sort', 'pertinence')
@@ -126,9 +129,10 @@ export default function AnnuairePage() {
       mineOnly,
       secteurConv: secteur1 ? '1' : undefined,
       pediatrie: pediatrie || undefined,
+      incomplet: incomplet || undefined,
       categorie: categorie || undefined,
     }),
-    [mineOnly, secteur1, pediatrie, categorie],
+    [mineOnly, secteur1, pediatrie, incomplet, categorie],
   )
 
   const filtered = useMemo(() => filterContacts(contacts, query, filters), [contacts, query, filters])
@@ -143,6 +147,11 @@ export default function AnnuairePage() {
 
   // Carte partagée (plans/P3/S3.md T2 étape 1) : MSP + référence active (si ≠ MSP) + les résultats
   // filtrés ayant des coordonnées. Les contacts sans coordonnées sont exclus (comptés à part).
+  // Audit pré-partage #9 : les contacts géocodés à plus de `MAP_FIT_RADIUS_KM` de la MSP sont eux
+  // aussi exclus de la carte (pas seulement du cadrage) — une poignée de fiches réellement
+  // éloignées forçait `fitBounds` à dézoomer sur toute l'Europe, rendant la carte inutilisable pour
+  // repérer les correspondants proches. Comptées à part (`contactsOutsideMapRadius`) pour rester
+  // visibles dans la liste, jamais silencieusement perdues.
   const mapPoints = useMemo<MapPoint[]>(() => {
     const points: MapPoint[] = [{ id: 'msp', coords: MSP_COORDS, label: 'MSP', kind: 'msp' }]
     if (isPatientAddress) {
@@ -150,13 +159,24 @@ export default function AnnuairePage() {
     }
     for (const contact of sorted) {
       const coords = coordsOf(contact)
-      if (coords) points.push({ id: contact.id, coords, label: contact.nom, kind: 'contact' })
+      if (coords && haversineKm(coords, MSP_COORDS) <= MAP_FIT_RADIUS_KM) {
+        points.push({ id: contact.id, coords, label: contact.nom, kind: 'contact' })
+      }
     }
     return points
   }, [sorted, reference, isPatientAddress])
 
   const contactsWithoutCoords = useMemo(
     () => sorted.filter((contact) => !coordsOf(contact)).length,
+    [sorted],
+  )
+
+  const contactsOutsideMapRadius = useMemo(
+    () =>
+      sorted.filter((contact) => {
+        const coords = coordsOf(contact)
+        return coords !== null && haversineKm(coords, MSP_COORDS) > MAP_FIT_RADIUS_KM
+      }).length,
     [sorted],
   )
 
@@ -167,12 +187,13 @@ export default function AnnuairePage() {
     row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [highlightedId])
 
-  const hasActiveFilters = query !== '' || secteur1 || pediatrie || categorie !== ''
+  const hasActiveFilters = query !== '' || secteur1 || pediatrie || incomplet || categorie !== ''
 
   const resetFilters = () => {
     setQuery('')
     setSecteur1(false)
     setPediatrie(false)
+    setIncomplet(false)
     setCategorie('')
   }
 
@@ -211,11 +232,14 @@ export default function AnnuairePage() {
         onSecteur1Change={setSecteur1}
         pediatrie={pediatrie}
         onPediatrieChange={setPediatrie}
+        incomplet={incomplet}
+        onIncompletChange={setIncomplet}
         categorie={categorie}
         onCategorieChange={setCategorie}
         sort={sort}
         onSortChange={setSort}
         resultCount={sorted.length}
+        isMobile={isMobile}
       />
 
       <div style={mapToggleRowStyle}>
@@ -225,6 +249,12 @@ export default function AnnuairePage() {
         {contactsWithoutCoords > 0 && (
           <span style={mapHintStyle}>
             {contactsWithoutCoords} fiche{contactsWithoutCoords > 1 ? 's' : ''} sans adresse localisée
+          </span>
+        )}
+        {contactsOutsideMapRadius > 0 && (
+          <span style={mapHintStyle}>
+            {contactsOutsideMapRadius} fiche{contactsOutsideMapRadius > 1 ? 's' : ''} trop loin de Paris
+            pour la carte (&gt; {MAP_FIT_RADIUS_KM} km)
           </span>
         )}
       </div>

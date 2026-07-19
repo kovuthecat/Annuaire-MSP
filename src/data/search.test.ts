@@ -256,6 +256,15 @@ describe('filterContacts — filtres (chips) combinés avec la recherche', () =>
     expect(names(filterContacts(contacts, '', { avis: true }))).toEqual(['A', 'B'])
   })
 
+  it('applique le filtre « à compléter » (audit pré-partage #9)', () => {
+    const contacts = [
+      makeContact({ nom: 'A', grise_reason: 'incomplet' }),
+      makeContact({ nom: 'B', grise_reason: 'parti' }),
+      makeContact({ nom: 'C', grise_reason: null }),
+    ]
+    expect(names(filterContacts(contacts, '', { incomplet: true }))).toEqual(['A'])
+  })
+
   it('applique le filtre secteur 1', () => {
     const contacts = [
       makeContact({ nom: 'A', secteur_conv: '1' }),

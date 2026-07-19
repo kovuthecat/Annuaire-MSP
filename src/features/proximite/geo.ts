@@ -29,6 +29,16 @@ export const MSP_COORDS: LatLng = {
 /** Rayon moyen de la Terre en km, pour la formule de Haversine. */
 const EARTH_RADIUS_KM = 6371
 
+/**
+ * Rayon (km) au-delà duquel un contact géocodé est exclu de l'auto-cadrage de la carte partagée de
+ * l'annuaire (cf. audit pré-partage #9, `AnnuairePage.tsx`). Sans ce plafond, une poignée de fiches
+ * réellement éloignées (correspondant en régions, adresse mal formatée…) force `fitBounds` à
+ * dézoomer sur toute l'Europe et rend la carte inutilisable pour l'usage réel (repérer les
+ * correspondants proches de Paris). Valeur alignée sur la bbox « Paris + communes limitrophes »
+ * déjà utilisée pour les arrêts de transport (DECISIONS.md 2026-07-18 §Arrêts de transport).
+ */
+export const MAP_FIT_RADIUS_KM = 60
+
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180
 }

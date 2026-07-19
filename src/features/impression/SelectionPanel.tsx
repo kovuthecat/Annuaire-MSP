@@ -14,6 +14,7 @@ interface SelectionPanelProps {
   onMoveUp: (id: string) => void
   onMoveDown: (id: string) => void
   onRemove: (id: string) => void
+  onClear: () => void
   avecEntete: boolean
   onAvecEnteteChange: (value: boolean) => void
   pourPatient: string
@@ -24,10 +25,28 @@ interface SelectionPanelProps {
 
 const columnStyle: CSSProperties = { width: 300, flex: 'none' }
 
+const titleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 8,
+  marginBottom: 12,
+}
+
 const titleStyle: CSSProperties = {
   font: '800 15px "Plus Jakarta Sans"',
   color: colors.text.primary,
-  marginBottom: 12,
+}
+
+// Même couleur que « Retirer » (audit pré-partage #9) : action destructive de la même famille,
+// juste sur toute la sélection plutôt qu'un contact — cf. `removeLinkStyle` ci-dessous.
+const clearAllLinkStyle: CSSProperties = {
+  border: 'none',
+  background: 'transparent',
+  padding: 0,
+  font: '600 11px "Plus Jakarta Sans"',
+  color: '#c1734a',
+  cursor: 'pointer',
 }
 
 const listStyle: CSSProperties = {
@@ -126,6 +145,7 @@ export default function SelectionPanel({
   onMoveUp,
   onMoveDown,
   onRemove,
+  onClear,
   avecEntete,
   onAvecEnteteChange,
   pourPatient,
@@ -135,7 +155,14 @@ export default function SelectionPanel({
 }: SelectionPanelProps) {
   return (
     <div style={columnStyle}>
-      <div style={titleStyle}>Sélection ({count})</div>
+      <div style={titleRowStyle}>
+        <div style={titleStyle}>Sélection ({count})</div>
+        {items.length > 0 && (
+          <button type="button" onClick={onClear} style={clearAllLinkStyle}>
+            Tout vider
+          </button>
+        )}
+      </div>
       <div style={listStyle}>
         {items.length === 0 ? (
           <div style={emptyHintStyle}>Aucun contact sélectionné — cochez des lignes dans l'annuaire.</div>

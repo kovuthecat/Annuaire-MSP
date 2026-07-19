@@ -78,7 +78,7 @@ const backLinkStyle: CSSProperties = {
 }
 
 export default function ImpressionPage() {
-  const { selectedIds, remove } = useSelection()
+  const { selectedIds, remove, clear } = useSelection()
   const { contacts, loading, error, reload } = useDirectory()
 
   const [orderedIds, setOrderedIds] = useState<string[]>(() => [...selectedIds])
@@ -167,6 +167,7 @@ export default function ImpressionPage() {
         onMoveUp={moveUp}
         onMoveDown={moveDown}
         onRemove={remove}
+        onClear={clear}
         avecEntete={avecEntete}
         onAvecEnteteChange={setAvecEntete}
         pourPatient={pourPatient}

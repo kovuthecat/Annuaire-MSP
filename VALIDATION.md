@@ -280,3 +280,30 @@ catégorie est couvert par la logique `matchesFilters`).
 - [ ] **Premier login** (« Mes contacts » vide, sans recherche) : message d'accueil + bouton « Voir tous
       les contacts », au lieu de « Aucun résultat ».
 - [ ] Compteur carte : « N fiches sans adresse localisée ».
+
+## Audit pré-partage #9 — carte, FAB mobile, filtres repliables, sélection, casse, « à compléter »
+
+**Automatique (fait) :** `npm run build` + `npm run typecheck` OK ; `npm run test` 64/64 vert (7 cas
+`normalizeNameCasing`, 1 cas filtre `incomplet`).
+
+**Visuel à vérifier (humain) :**
+- [ ] **Carte annuaire** : avec un filtre large (ex. aucun filtre), « Afficher la carte » cadre sur
+      Paris/petite couronne — **plus de dézoom sur toute l'Europe**. Si des fiches sont géocodées à
+      plus de 60 km de la MSP, un second compteur apparaît (« N fiches trop loin de Paris pour la
+      carte (> 60 km) ») à côté de « N fiches sans adresse localisée ».
+- [ ] **Mobile, bouton « Un souci ? »** : passé à **gauche** en bas (au lieu de droite) sur toutes les
+      pages sauf Ajouter/Modifier. Ouvrir le menu **« ☰ Plus »** (bottom nav) : ses entrées (Membres,
+      Retours) sont **entièrement visibles**, plus aucun chevauchement avec le FAB. Le popover
+      d'explication au survol s'ouvre bien côté gauche (pas de débordement hors écran).
+- [ ] **Mobile, filtres repliables** : sous le bandeau recherche/Mes contacts, un bouton **« Filtres
+      ▼ »** (avec une pastille du nombre de filtres actifs) remplace le cartouche complet. Cliquer
+      l'ouvre/le referme ; sur desktop, le cartouche reste toujours ouvert (pas de bouton visible).
+- [ ] **Impression, « Tout vider »** : avec ≥ 1 fiche sélectionnée, un lien **« Tout vider »** apparaît
+      à côté de « Sélection (N) » ; cliquer vide la sélection et bascule sur l'état « Aucun contact
+      sélectionné ». Absent quand la sélection est vide.
+- [ ] **Casse du nom à l'enregistrement** : créer une fiche avec un nom tapé tout en minuscules (ex.
+      « jean dupont ») → enregistrée en **« Jean Dupont »**. Un sigle en majuscules (« CSAPA Test »)
+      ou une casse déjà posée (« McDonald ») **n'est pas modifié**.
+- [ ] **Filtre « À compléter »** : nouvelle puce grise à côté de « Pédiatrie » dans le cartouche de
+      filtres ; l'activer ne montre que les fiches grisées `incomplet` (celles qui portent déjà la
+      puce « À compléter » sur leur ligne).

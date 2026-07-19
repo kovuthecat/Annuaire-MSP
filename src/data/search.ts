@@ -31,6 +31,10 @@ export interface ContactFilters {
   pediatrie?: boolean
   /** Propose un avis / une télé-expertise (chip « Avis ») — cf. `isAvis`. */
   avis?: boolean
+  /** Fiche grisée « à compléter » (chip « À compléter », audit pré-partage #9) — cf.
+   * `contact.grise_reason`. Sert à orienter l'enrichissement collaboratif plutôt qu'à les cacher :
+   * ce sont les fiches les plus utiles à corriger, pas à masquer par défaut. */
+  incomplet?: boolean
   /** Catégorie d'annuaire (facette « Catégorie », cf. 2026-07-19) — égalité stricte. */
   categorie?: Categorie
 }
@@ -252,6 +256,7 @@ function matchesFilters(contact: ContactWithMeta, filters: ContactFilters): bool
   if (filters.secteurConv && contact.secteur_conv !== filters.secteurConv) return false
   if (filters.pediatrie && !isPediatrie(contact)) return false
   if (filters.avis && !isAvis(contact)) return false
+  if (filters.incomplet && contact.grise_reason !== 'incomplet') return false
   if (filters.categorie && contact.categorie !== filters.categorie) return false
   return true
 }
