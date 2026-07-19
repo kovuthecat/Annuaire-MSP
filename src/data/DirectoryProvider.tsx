@@ -44,6 +44,8 @@ export function DirectoryProvider({ children }: { children: ReactNode }) {
   // Id du membre pour lequel le dataset actuel a été chargé — sert à ignorer les évènements
   // d'auth qui ne changent pas d'utilisateur (ex. rafraîchissement de token).
   const loadedForUid = useRef<string | null | undefined>(undefined)
+  // Horodatage du dernier chargement réussi — sert à throttler le rafraîchissement au focus.
+  const lastLoadedAt = useRef(0)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -52,10 +54,29 @@ export function DirectoryProvider({ children }: { children: ReactNode }) {
       const data = await loadDirectory()
       setContacts(data.contacts)
       setMembers(data.members)
+      lastLoadedAt.current = Date.now()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur de chargement de l'annuaire.")
     } finally {
       setLoading(false)
+    }
+  }, [])
+
+  /**
+   * Rafraîchissement SILENCIEUX (sans `setLoading`, donc sans flash) : remplace les données en place
+   * si le fetch réussit, garde l'existant sinon. Utilisé au retour de focus sur l'onglet — l'annuaire
+   * étant partagé, un membre doit voir les ajouts des autres sans recharger la page (cf. le cas
+   * « fiche créée ailleurs, invisible ici »).
+   */
+  const refreshSilently = useCallback(async () => {
+    try {
+      const data = await loadDirectory()
+      setContacts(data.contacts)
+      setMembers(data.members)
+      setError(null)
+      lastLoadedAt.current = Date.now()
+    } catch {
+      // Échec silencieux : on conserve les données déjà affichées.
     }
   }, [])
 
@@ -81,6 +102,25 @@ export function DirectoryProvider({ children }: { children: ReactNode }) {
       unsubscribe()
     }
   }, [reload])
+
+  // Rafraîchissement au retour de focus sur l'onglet (throttlé) : couvre le cas d'un annuaire
+  // partagé où un membre a ajouté/modifié une fiche depuis un autre appareil/navigateur. Pas de
+  // temps réel (Supabase Realtime) pour l'instant — le focus suffit à la plupart des usages.
+  useEffect(() => {
+    const STALE_MS = 20_000
+    const onFocusOrVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      if (loadedForUid.current === undefined) return // chargement initial pas encore fait
+      if (Date.now() - lastLoadedAt.current < STALE_MS) return
+      void refreshSilently()
+    }
+    document.addEventListener('visibilitychange', onFocusOrVisible)
+    window.addEventListener('focus', onFocusOrVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onFocusOrVisible)
+      window.removeEventListener('focus', onFocusOrVisible)
+    }
+  }, [refreshSilently])
 
   const value = useMemo<DirectoryContextValue>(
     () => ({

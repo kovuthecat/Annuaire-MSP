@@ -19,6 +19,7 @@ import CommentDraftList from './CommentDraftList'
 import type { DraftComment } from './CommentDraftList'
 import {
   buildContactPayload,
+  defaultCategorieForType,
   emptyForm,
   formFromContact,
   formFromPrefill,
@@ -285,24 +286,32 @@ export default function EditionPage() {
       const payload = buildContactPayload(form, mode)
       let contactId: string | null = null
       if (mode === 'create') {
+        // Catégorie dérivée du type à la création (cf. defaultCategorieForType) : sans elle, la
+        // fiche restait `categorie = null` et était masquée par tout filtre de catégorie.
+        const withCategorie = { ...payload, categorie: defaultCategorieForType(payload.type) }
         // Provenance (T1 §Étapes 2) : posée uniquement quand la fiche part d'un `prefill` valide —
         // jamais en saisie manuelle (le payload standard, lui, ne porte aucune colonne de provenance).
         const created = await createContact(
           prefill
             ? {
-                ...payload,
+                ...withCategorie,
                 source_url: prefill.source_url ?? null,
                 source_type: 'doctolib',
                 statut: 'a_verifier',
               }
-            : payload,
+            : withCategorie,
         )
         contactId = created.id
         for (const draft of drafts) {
           await addComment(created.id, draft.type, draft.texte)
         }
       } else if (existingContact) {
-        await updateContact(existingContact.id, payload)
+        // Rattrapage : une fiche créée avant la pose de `categorie` (ou importée sans) l'obtient à
+        // la 1re édition. On ne réécrit jamais une catégorie déjà fixée (affinée à l'import).
+        const patch = existingContact.categorie
+          ? payload
+          : { ...payload, categorie: defaultCategorieForType(payload.type) }
+        await updateContact(existingContact.id, patch)
         contactId = existingContact.id
       }
 

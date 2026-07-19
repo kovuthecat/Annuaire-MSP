@@ -1,4 +1,5 @@
 import type {
+  Categorie,
   Contact,
   ContactType,
   PrendNouveaux,
@@ -307,6 +308,25 @@ export function formFromPrefill(p: Prefill): FormState {
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim()
   return trimmed === '' ? null : trimmed
+}
+
+/**
+ * Catégorie par défaut à la **création** (dérivée du type). Sans elle, une fiche créée dans l'app
+ * avait `categorie = null` et disparaissait dès qu'un filtre de catégorie était actif. Les catégories
+ * fines « Ligne d'avis » / « Transport sanitaire » ne sont pas posées ici (elles viennent de la
+ * réconciliation d'import) ; un membre peut les affiner ensuite. En édition, la catégorie existante
+ * est préservée (jamais réécrite depuis le type).
+ */
+export function defaultCategorieForType(type: ContactType): Categorie {
+  switch (type) {
+    case 'praticien':
+      return 'Praticien'
+    case 'structure':
+    case 'labo':
+      return 'Structure de soins'
+    case 'autre':
+      return 'Ressource'
+  }
 }
 
 /** Payload complet (toutes les colonnes saisissables sauf provenance/méta) — assignable à
