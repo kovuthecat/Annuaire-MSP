@@ -7,6 +7,41 @@
 > **Comment tester** : sur le déploiement Vercel, ou en local `npm run dev`.
 > **Pré-requis** : avoir rejoué `supabase/schema.sql` et avoir un compte (Auth → Users → Add user).
 
+## Recueil de retours V1 — bouton « Un souci ? » + écran /retours (T-008)
+
+> **Pré-requis spécifiques** : avoir **rejoué `supabase/schema.sql`** (nouvelle section 6) et avoir
+> **au moins un compte `role='referent'`** (le vôtre) pour tester `/retours`.
+
+Bouton flottant (toutes les pages sauf connexion) :
+
+- [ ] Le bouton **« 💬 Un souci ? »** est visible en **bas à droite** de l'Annuaire, la Fiche,
+      l'Édition, l'Impression, les Membres — et **absent** de l'écran de **connexion**.
+- [ ] **Au survol**, un **popover** explique la fonction (contexte + capture joints automatiquement).
+- [ ] **Au clic** : le panneau s'ouvre, on choisit une **catégorie** (Problème / Donnée erronée /
+      Suggestion), on tape un message ; **« Capture de la page en cours… »** puis une **vignette**
+      d'aperçu apparaît avec la case **« Joindre cette capture »** cochée.
+- [ ] La ligne de contexte affiche le **bon libellé d'écran** et le **chemin** (ex. depuis une fiche :
+      « 📄 Fiche contact · /contact/… »).
+- [ ] **Envoyer** → message **« Merci ! Votre retour a bien été envoyé. »** puis fermeture auto.
+- [ ] Envoyer avec un message **vide** est refusé (message d'erreur sous la zone de texte).
+- [ ] **Sur une fiche avec carte** (Leaflet) : la capture peut montrer la carte **vide/incomplète** —
+      c'est **attendu** (html2canvas redessine le DOM, cf. `DECISIONS.md`). Le reste de la page doit
+      être lisible.
+- [ ] **Impression** (Ctrl+P sur n'importe quelle page, et l'écran Sélection & impression) : le
+      bouton et le panneau **n'apparaissent pas** sur l'aperçu d'impression.
+
+Écran /retours (référent) :
+
+- [ ] La pastille **« Retours »** apparaît dans la barre du haut **uniquement pour un référent** ;
+      un membre non référent qui ouvre `/retours` est **redirigé** vers l'annuaire.
+- [ ] La liste montre les retours **les plus récents d'abord**, avec **catégorie**, **statut**,
+      **auteur + date**, message, contexte (📄 écran · URL), et 🖥️ le viewport.
+- [ ] Changer le **statut** (Nouveau → En cours → Résolu) met à jour les **compteurs** des filtres.
+- [ ] **« Voir la capture »** (présent seulement si une capture existe) ouvre l'image en grand ;
+      clic pour fermer.
+- [ ] **« Ouvrir la fiche concernée »** (si le retour venait d'une fiche) mène à la bonne fiche.
+- [ ] **Supprimer** demande confirmation puis retire le retour de la liste.
+
 ## Données — seconde passe open data CNAM (P2/S1)
 
 > Cette session ne touche aucun écran : elle change ce que les écrans **affichent**. À vérifier

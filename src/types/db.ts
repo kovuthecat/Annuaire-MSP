@@ -22,6 +22,9 @@ export type Categorie =
 export type GriseReason = 'parti' | 'incomplet'
 export type CommentType = 'reco' | 'alerte' | 'spec' | 'info'
 export type Role = 'membre' | 'referent'
+/** Retour d'un membre sur la V1 (table `feedback`). */
+export type FeedbackCategory = 'probleme' | 'donnee' | 'suggestion'
+export type FeedbackStatus = 'nouveau' | 'en_cours' | 'resolu'
 /** Provenance d'une fiche enrichie (migration T-005) — d'où viennent les coordonnées. */
 export type SourceType = 'doctolib' | 'annuaire_sante' | 'site_officiel' | 'carnet_membre' | 'autre'
 
@@ -128,6 +131,27 @@ export interface ListEntry {
   member_id: string
   contact_id: string
   added_at: string
+}
+
+/**
+ * public.feedback — retour d'un membre sur la V1 (« Signaler un souci »).
+ * `screenshot` (data URL, volumineux) n'est jamais chargé dans la liste : la vue référent le
+ * récupère à la demande via `loadFeedbackScreenshot` (cf. src/data/feedback.ts).
+ */
+export interface Feedback {
+  id: string
+  author_id: string | null
+  category: FeedbackCategory
+  message: string
+  status: FeedbackStatus
+  url: string | null
+  page_label: string | null
+  contact_id: string | null
+  viewport: string | null
+  user_agent: string | null
+  screenshot: string | null
+  has_screenshot: boolean
+  created_at: string
 }
 
 // ---------------------------------------------------------------------------

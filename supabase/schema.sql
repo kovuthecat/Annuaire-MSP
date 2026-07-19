@@ -385,9 +385,14 @@ create table if not exists public.feedback (
   -- Capture d'écran (data URL JPEG redimensionnée+compressée côté client), optionnelle et
   -- volumineuse : jamais sélectionnée dans la liste des retours, chargée à la demande au détail.
   screenshot  text,
+  -- Drapeau léger « ce retour a une capture » : la liste référent l'affiche sans charger l'image.
+  has_screenshot boolean not null default false,
 
   created_at  timestamptz not null default now()
 );
+
+-- Idempotent (base déjà créée avant l'ajout du drapeau).
+alter table public.feedback add column if not exists has_screenshot boolean not null default false;
 
 create index if not exists feedback_status_idx  on public.feedback (status, created_at desc);
 create index if not exists feedback_contact_idx on public.feedback (contact_id);

@@ -37,6 +37,16 @@ nouvelles fonctionnalités cadrées à la demande de Thibault le 2026-07-17, imp
   la déviation IDFM). **4 colonnes géo ajoutées à `contacts`** (`supabase/schema.sql`, P3/S1 T1) — pas
   encore appliquées à une vraie base (cf. §Ce qui casse, le seed n'a jamais été exécuté).
 
+**Recueil de retours V1 (T-008) — câblé côté code le 2026-07-19, à activer côté base.** Avant le
+partage aux membres : bouton flottant « Un souci ? » sur chaque page (popover au survol) → panneau
+(catégorie + message + contexte de page capturé auto + capture d'écran `html2canvas`) → table
+`feedback`. Vue référent `/retours` (statut, capture à la demande, suppression). `DECISIONS.md`
+(2026-07-19) détaille les 2 arbitrages (capture auto ; vue in-app référent). `build`/`typecheck`/45
+tests OK. **Bloquant avant usage : rejouer `supabase/schema.sql`** (nouvelle section 6 : table
+`feedback`, fonction `is_referent()`, RLS) **et s'assurer que le compte de Thibault est
+`role='referent'`** — sinon `/retours` redirige et la liste est vide. Validation visuelle humaine
+restante (cf. `VALIDATION.md`).
+
 ## Ce qui fonctionne
 
 - Fichiers de contexte instanciés (brief, architecture, décisions).

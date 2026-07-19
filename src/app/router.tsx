@@ -7,6 +7,7 @@ import FichePage from '../features/fiche/FichePage'
 import EditionPage from '../features/edition/EditionPage'
 import ImpressionPage from '../features/impression/ImpressionPage'
 import MembresPage from '../features/membres/MembresPage'
+import RetoursPage from '../features/feedback/RetoursPage'
 
 /**
  * Routes définitives (cf. plans/P1/S1.md T2 — S3-S7 ne touchent que leur dossier de feature) :
@@ -30,6 +31,8 @@ export const router = createBrowserRouter([
       { path: '/contact/:id/modifier', element: <EditionPage /> },
       { path: '/impression', element: <ImpressionPage /> },
       { path: '/membres', element: <MembresPage /> },
+      // Retours des membres (réservé au référent : garde dans RetoursPage + RLS feedback_select).
+      { path: '/retours', element: <RetoursPage /> },
     ],
   },
 ])

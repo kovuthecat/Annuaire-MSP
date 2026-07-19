@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { colors } from '../theme/tokens'
 import { useAuth } from '../features/auth/AuthProvider'
 import { useSelection } from './SelectionProvider'
+import FeedbackWidget from '../features/feedback/FeedbackWidget'
 import type { Member } from '../types/db'
 
 /**
@@ -202,6 +203,8 @@ function ProfileMenu() {
 export default function Layout() {
   const matchModifier = useMatch('/contact/:id/modifier')
   const { count: selectedCount } = useSelection()
+  const { member } = useAuth()
+  const isReferent = member?.role === 'referent'
 
   return (
     <div>
@@ -224,6 +227,11 @@ export default function Layout() {
           <NavLink to="/membres" style={({ isActive }) => pillStyle(isActive)}>
             Membres
           </NavLink>
+          {isReferent && (
+            <NavLink to="/retours" style={({ isActive }) => pillStyle(isActive)}>
+              Retours
+            </NavLink>
+          )}
         </div>
 
         <div style={rightGroupStyle}>
@@ -240,6 +248,9 @@ export default function Layout() {
       </div>
 
       <Outlet />
+
+      {/* Bouton flottant « Un souci ? » présent sur chaque page authentifiée (cf. FeedbackWidget). */}
+      <FeedbackWidget />
     </div>
   )
 }

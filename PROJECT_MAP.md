@@ -26,9 +26,10 @@ src/
     ma-liste/      # adoption d'une fiche, indicateur "dans ma liste"
     impression/    # sélection + feuille patient (coords patient seules)
     membres/       # invitations, profil, référent
+    feedback/      # bouton flottant « Un souci ? » (widget + capture contexte/écran) + vue référent /retours
   components/      # UI partagée
   lib/             # client Supabase, helpers
-  types/           # types partagés (Contact, Commentaire, Membre)
+  types/           # types partagés (Contact, Commentaire, Membre, Feedback)
 ```
 
 ---
@@ -43,6 +44,14 @@ Points de vigilance : performance et tolérance de la recherche (accents/fautes)
 
 ### Feature — impression
 Rôle : produire la feuille patient. **Ne doit jamais inclure coords pro ni commentaires.**
+
+### Feature — feedback (retours V1)
+Rôle : recueillir les retours des membres à faible friction. Bouton flottant monté dans le `Layout`
+(`FeedbackWidget`, marqué `data-feedback-ui` → ignoré à la capture et masqué à l'impression) ;
+`context.ts` capture le contexte de page (pur, testé) et l'écran (`html2canvas`, import dynamique) ;
+`src/data/feedback.ts` écrit dans la table `feedback` (RLS insert=membre, lecture=référent) ; écran
+`/retours` réservé au référent. Point de vigilance : `schema.sql` §6 doit être rejoué et le compte
+référent défini. Cf. `DECISIONS.md` 2026-07-19.
 
 ---
 
