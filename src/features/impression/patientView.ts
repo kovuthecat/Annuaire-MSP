@@ -16,9 +16,13 @@ export interface PatientContactView {
   detailLine: string
 }
 
-/** Doctolib (lien) sinon email de RDV public sinon site web — jamais une coordonnée pro. */
+/**
+ * Modalité de RDV pour la feuille patient — jamais une coordonnée pro. Doctolib : on affiche le
+ * libellé du canal, pas l'URL (une feuille imprimée n'est pas cliquable, et le champ contient parfois
+ * juste « Doctolib » ou une URL à rallonge — cf. audit pré-partage #5).
+ */
 function rdvModalite(contact: Contact): string | null {
-  if (contact.doctolib) return `Doctolib : ${contact.doctolib}`
+  if (contact.doctolib) return 'RDV : Doctolib'
   if (contact.email_rdv) return `RDV : ${contact.email_rdv}`
   if (contact.site_web) return `Site : ${contact.site_web}`
   return null

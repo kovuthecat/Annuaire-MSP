@@ -1,6 +1,7 @@
 import type { CSSProperties, FormEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useIsMobile } from '../../app/useMediaQuery'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { memberDisplayName } from '../../data/directory'
 import { findSimilarContacts } from '../../data/search'
@@ -172,6 +173,7 @@ export default function EditionPage() {
   const { id } = useParams<{ id: string }>()
   const mode: 'create' | 'edit' = id ? 'edit' : 'create'
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const [searchParams] = useSearchParams()
   const { contacts, loading, createContact, updateContact, addComment, reload } = useDirectory()
   const { member } = useAuth()
@@ -400,7 +402,11 @@ export default function EditionPage() {
       </div>
 
       <div style={stickyBarStyle}>
-        <span style={stickyHintStyle}>Vous pourrez compléter la fiche à tout moment.</span>
+        {/* Hint masqué sur mobile (audit pré-partage #6) : il serrait les boutons. Le span garde
+            son flex: 1 pour maintenir Annuler/Enregistrer alignés à droite. */}
+        <span style={stickyHintStyle}>
+          {!isMobile && 'Vous pourrez compléter la fiche à tout moment.'}
+        </span>
         <Button type="button" variant="ghost" onClick={() => navigate('/')}>
           Annuler
         </Button>

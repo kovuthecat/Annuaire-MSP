@@ -256,3 +256,27 @@ catégorie est couvert par la logique `matchesFilters`).
       le texte d'alerte (ex. « déménagé à Bordeaux »).
 - [ ] Sur une fiche grisée `incomplet`, ajouter une adresse/téléphone (édition) puis recharger →
       elle **n'est plus grisée** (dégrisage auto par le trigger `contacts_clear_grise`).
+
+## Audit pré-partage — ergonomie mobile + desktop (2026-07-19)
+
+**Automatique (fait) :** `npm run build` + `npm run typecheck` OK ; `npm test` 50/50 vert.
+
+**Visuel à vérifier (humain), en particulier sur téléphone (≤ 640 px) :**
+- [ ] **Barre de navigation en bas** (mobile) : Annuaire / Ajouter / Impression (+ pastille du nombre
+      sélectionné) / « ☰ Plus » ; « Plus » ouvre Membres (+ Retours si référent) ; l'onglet actif est en
+      bleu. La barre du haut ne garde que le logo + le profil (plus de nav empilée sur 5 lignes).
+- [ ] **Ligne de résultat sur mobile** : repliée en deux niveaux (nom/sous-titre en haut, badges ·
+      distance · icônes · tél · étoile en dessous) — **plus aucun chevauchement** du badge « À compléter »
+      sur le sous-titre. Desktop : toujours sur une seule ligne.
+- [ ] **Toute la ligne ouvre la fiche** (survol = léger relief bleu) ; cliquer la case, le téléphone,
+      l'étoile ou une icône de commentaire n'ouvre **pas** la fiche.
+- [ ] **Initiales** dans les avatars (annuaire + fiche).
+- [ ] **Icônes de commentaires** : survol/tap ouvre le popover titré ; l'infobulle native indique le
+      type et le nombre.
+- [ ] **Feuille d'impression** : la modalité RDV affiche « RDV : Doctolib » (plus « Doctolib : Doctolib »
+      ni d'URL à rallonge).
+- [ ] **Ajouter sur mobile** : le hint « Vous pourrez compléter… » est masqué ; Annuler/Enregistrer au
+      complet ; le bouton « Un souci ? » ne masque ni la barre d'enregistrement ni la barre du bas.
+- [ ] **Premier login** (« Mes contacts » vide, sans recherche) : message d'accueil + bouton « Voir tous
+      les contacts », au lieu de « Aucun résultat ».
+- [ ] Compteur carte : « N fiches sans adresse localisée ».

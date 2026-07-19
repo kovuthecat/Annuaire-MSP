@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
 import { useSessionState } from '../../app/useSessionState'
+import { useIsMobile } from '../../app/useMediaQuery'
 import { useReference } from '../proximite/ReferenceProvider'
 import { MSP_COORDS, coordsOf } from '../proximite/geo'
 import { filterContacts, queryTerms } from '../../data/search'
@@ -101,6 +102,7 @@ export default function AnnuairePage() {
   const { selectedIds, toggle } = useSelection()
   const { reference, isPatientAddress } = useReference()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   // État de recherche persisté en session (cf. useSessionState) : ouvrir une fiche puis revenir
   // (bouton Retour ou navigation arrière) remonte l'annuaire — sans persistance, tous les critères
@@ -221,7 +223,9 @@ export default function AnnuairePage() {
           {mapOpen ? 'Masquer la carte' : 'Afficher la carte'}
         </Button>
         {contactsWithoutCoords > 0 && (
-          <span style={mapHintStyle}>{contactsWithoutCoords} sans position</span>
+          <span style={mapHintStyle}>
+            {contactsWithoutCoords} fiche{contactsWithoutCoords > 1 ? 's' : ''} sans adresse localisée
+          </span>
         )}
       </div>
 
@@ -247,6 +251,19 @@ export default function AnnuairePage() {
             </div>
             <Button variant="primary" onClick={() => navigate('/nouveau')}>
               + Ajouter un contact
+            </Button>
+          </div>
+        ) : mineOnly && !hasActiveFilters ? (
+          // Premier login (audit pré-partage #8) : « Mes contacts » vide, sans recherche ni filtre
+          // → message d'accueil plutôt qu'un « Aucun résultat » trompeur.
+          <div style={messageCardStyle}>
+            <div style={messageTitleStyle}>Bienvenue dans l'annuaire de la MSP</div>
+            <div style={messageBodyStyle}>
+              Votre liste « Mes contacts » est encore vide. Basculez sur « Tous » pour explorer
+              l'annuaire partagé, puis ajoutez à votre liste les fiches que vous utilisez le plus.
+            </div>
+            <Button variant="primary" onClick={() => setMineOnly(false)}>
+              Voir tous les contacts
             </Button>
           </div>
         ) : (
@@ -280,6 +297,7 @@ export default function AnnuairePage() {
                 selected={selectedIds.has(contact.id)}
                 highlighted={highlightedId === contact.id}
                 queryTerms={terms}
+                isMobile={isMobile}
                 onToggleSelect={() => toggle(contact.id)}
                 onToggleStar={() =>
                   void (contact.starred ? unadoptContact(contact.id) : adoptContact(contact.id))

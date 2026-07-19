@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useLocation } from 'react-router-dom'
 import { colors } from '../../theme/tokens'
+import { useIsMobile } from '../../app/useMediaQuery'
 import { submitFeedback } from '../../data/feedback'
 import type { FeedbackCategory } from '../../types/db'
 import { FEEDBACK_UI_ATTR, capturePageContext, captureScreenshot, pageLabelFor } from './context'
@@ -53,12 +54,19 @@ const CATEGORIES: readonly CategoryMeta[] = [
 const fabWrapStyle: CSSProperties = { position: 'fixed', right: 24, bottom: 24, zIndex: 45 }
 
 /**
- * Pages portant une barre d'action collante en bas (Ajouter / Modifier : « Enregistrer la fiche ») :
- * le FAB, fixé en bas-droite, viendrait masquer le bouton d'enregistrement. On le remonte au-dessus
- * de cette barre sur ces routes uniquement.
+ * Décalage vertical du FAB selon ce qui occupe déjà le bas de l'écran :
+ * - pages Ajouter/Modifier : barre d'action collante (« Enregistrer ») → on remonte le FAB ;
+ * - mobile (hors ces pages) : barre de navigation fixe (cf. Layout BottomNav) → on le remonte aussi ;
+ * - sinon (desktop) : position basse par défaut.
  */
 function hasStickyActionBar(pathname: string): boolean {
   return pathname === '/nouveau' || pathname.endsWith('/modifier')
+}
+
+function fabBottomOffset(pathname: string, isMobile: boolean): number {
+  if (hasStickyActionBar(pathname)) return 84
+  if (isMobile) return 74 // au-dessus de la barre de navigation du bas
+  return 24
 }
 
 const fabStyle: CSSProperties = {
@@ -235,6 +243,7 @@ function chipStyle(active: boolean, color: { fg: string; bg: string }): CSSPrope
 
 export default function FeedbackWidget() {
   const location = useLocation()
+  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
   const [category, setCategory] = useState<FeedbackCategory>('probleme')
@@ -315,7 +324,7 @@ export default function FeedbackWidget() {
       <style>{`@media print { [${FEEDBACK_UI_ATTR}] { display: none !important; } }`}</style>
 
       {!open && (
-        <div style={hasStickyActionBar(location.pathname) ? { ...fabWrapStyle, bottom: 84 } : fabWrapStyle}>
+        <div style={{ ...fabWrapStyle, bottom: fabBottomOffset(location.pathname, isMobile) }}>
           {hovered && (
             <div style={tooltipStyle}>
               Un souci ou une idée sur cette page ? Signalez-le en un clic — l'adresse de la page et

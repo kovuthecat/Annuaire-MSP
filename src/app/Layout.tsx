@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { colors } from '../theme/tokens'
 import { useAuth } from '../features/auth/AuthProvider'
 import { useSelection } from './SelectionProvider'
+import { useIsMobile } from './useMediaQuery'
 import FeedbackWidget from '../features/feedback/FeedbackWidget'
 import logoMsp from '../assets/logo-msp-menilmontant.png'
 import type { Member } from '../types/db'
@@ -195,11 +196,139 @@ function ProfileMenu() {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Navigation mobile (audit pré-partage #1) : sous 640 px, la barre du haut ne peut pas porter toute
+// la nav (elle s'empilait sur ~5 lignes, ~230 px avant le contenu). On la remplace par une barre
+// FIXE en bas avec les 3 destinations les plus fréquentes + un menu « … » (Membres / Retours).
+// Desktop : inchangé (nav dans la barre du haut). La barre du bas est masquée sur les écrans
+// Ajouter/Modifier (leur propre barre d'action collante occupe déjà le bas).
+// ---------------------------------------------------------------------------
+
+const bottomNavStyle: CSSProperties = {
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: 58,
+  background: '#fff',
+  borderTop: `1px solid ${colors.borderLight}`,
+  boxShadow: '0 -2px 10px rgba(0,0,0,.05)',
+  display: 'flex',
+  zIndex: 40,
+}
+
+function bottomItemStyle(active: boolean): CSSProperties {
+  return {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    font: '600 10px "Plus Jakarta Sans"',
+    color: active ? colors.brand.blue : colors.text.muted,
+    position: 'relative',
+  }
+}
+
+const bottomIconStyle: CSSProperties = { fontSize: 17, lineHeight: 1 }
+
+const bottomBadgeStyle: CSSProperties = {
+  position: 'absolute',
+  top: 5,
+  left: 'calc(50% + 5px)',
+  minWidth: 15,
+  height: 15,
+  padding: '0 4px',
+  borderRadius: 8,
+  background: colors.brand.blue,
+  color: '#fff',
+  font: '700 9px "Plus Jakarta Sans"',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
+const bottomPlusMenuStyle: CSSProperties = {
+  position: 'absolute',
+  bottom: 62,
+  right: 8,
+  minWidth: 160,
+  background: '#fff',
+  border: `1px solid ${colors.borderLight}`,
+  borderRadius: 12,
+  boxShadow: '0 6px 20px rgba(0,0,0,.16)',
+  padding: 6,
+  display: 'flex',
+  flexDirection: 'column',
+  zIndex: 41,
+}
+
+function BottomNav({ isReferent, selectedCount }: { isReferent: boolean; selectedCount: number }) {
+  const [plusOpen, setPlusOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!plusOpen) return
+    const onDown = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) setPlusOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [plusOpen])
+
+  return (
+    <div ref={wrapperRef} style={bottomNavStyle}>
+      <NavLink to="/" end style={({ isActive }) => bottomItemStyle(isActive)} onClick={() => setPlusOpen(false)}>
+        <span style={bottomIconStyle} aria-hidden>🔍</span>
+        Annuaire
+      </NavLink>
+      <NavLink to="/nouveau" style={({ isActive }) => bottomItemStyle(isActive)} onClick={() => setPlusOpen(false)}>
+        <span style={bottomIconStyle} aria-hidden>＋</span>
+        Ajouter
+      </NavLink>
+      <NavLink to="/impression" style={({ isActive }) => bottomItemStyle(isActive)} onClick={() => setPlusOpen(false)}>
+        <span style={bottomIconStyle} aria-hidden>🖨️</span>
+        Impression
+        {selectedCount > 0 && <span style={bottomBadgeStyle}>{selectedCount}</span>}
+      </NavLink>
+      <button type="button" style={bottomItemStyle(plusOpen)} onClick={() => setPlusOpen((v) => !v)}>
+        <span style={bottomIconStyle} aria-hidden>☰</span>
+        Plus
+      </button>
+      {plusOpen && (
+        <div style={bottomPlusMenuStyle}>
+          <NavLink to="/membres" style={profileMenuItemStyle} onClick={() => setPlusOpen(false)}>
+            Membres
+          </NavLink>
+          {isReferent && (
+            <NavLink to="/retours" style={profileMenuItemStyle} onClick={() => setPlusOpen(false)}>
+              Retours
+            </NavLink>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Contenu décalé au-dessus de la barre du bas (mobile) pour ne pas être masqué par elle. */
+const contentAboveBottomNavStyle: CSSProperties = { paddingBottom: 66 }
+
 export default function Layout() {
   const matchModifier = useMatch('/contact/:id/modifier')
+  const matchNouveau = useMatch('/nouveau')
   const { count: selectedCount } = useSelection()
   const { member } = useAuth()
   const isReferent = member?.role === 'referent'
+  const isMobile = useIsMobile()
+  // Écrans Ajouter/Modifier : barre d'action collante en bas → pas de barre de nav en plus.
+  const isEditionRoute = Boolean(matchModifier || matchNouveau)
+  const showBottomNav = isMobile && !isEditionRoute
 
   return (
     <div>
@@ -210,28 +339,30 @@ export default function Layout() {
           </span>
         </Link>
 
-        <div style={navGroupStyle}>
-          <NavLink to="/" end style={({ isActive }) => pillStyle(isActive)}>
-            Annuaire
-          </NavLink>
-          <NavLink to="/nouveau" style={({ isActive }) => pillStyle(isActive || !!matchModifier)}>
-            Ajouter / Modifier
-          </NavLink>
-          <NavLink to="/impression" style={({ isActive }) => pillStyle(isActive)}>
-            Sélection & impression
-          </NavLink>
-          <NavLink to="/membres" style={({ isActive }) => pillStyle(isActive)}>
-            Membres
-          </NavLink>
-          {isReferent && (
-            <NavLink to="/retours" style={({ isActive }) => pillStyle(isActive)}>
-              Retours
+        {!isMobile && (
+          <div style={navGroupStyle}>
+            <NavLink to="/" end style={({ isActive }) => pillStyle(isActive)}>
+              Annuaire
             </NavLink>
-          )}
-        </div>
+            <NavLink to="/nouveau" style={({ isActive }) => pillStyle(isActive || !!matchModifier)}>
+              Ajouter / Modifier
+            </NavLink>
+            <NavLink to="/impression" style={({ isActive }) => pillStyle(isActive)}>
+              Sélection & impression
+            </NavLink>
+            <NavLink to="/membres" style={({ isActive }) => pillStyle(isActive)}>
+              Membres
+            </NavLink>
+            {isReferent && (
+              <NavLink to="/retours" style={({ isActive }) => pillStyle(isActive)}>
+                Retours
+              </NavLink>
+            )}
+          </div>
+        )}
 
         <div style={rightGroupStyle}>
-          {selectedCount > 0 && (
+          {!isMobile && selectedCount > 0 && (
             <Link to="/impression" style={selectionIndicatorStyle}>
               {selectedCount} sélectionné(s) → Imprimer
             </Link>
@@ -240,7 +371,11 @@ export default function Layout() {
         </div>
       </div>
 
-      <Outlet />
+      <div style={showBottomNav ? contentAboveBottomNavStyle : undefined}>
+        <Outlet />
+      </div>
+
+      {showBottomNav && <BottomNav isReferent={isReferent} selectedCount={selectedCount} />}
 
       {/* Bouton flottant « Un souci ? » présent sur chaque page authentifiée (cf. FeedbackWidget). */}
       <FeedbackWidget />

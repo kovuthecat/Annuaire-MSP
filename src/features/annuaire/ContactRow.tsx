@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, Badge, CommentIcons, StarToggle } from '../../components'
 import type { CommentEntries, CommentCounts } from '../../components'
@@ -12,10 +13,10 @@ import { highlightSegments } from './highlight'
 /**
  * Une ligne de l'annuaire — reproduit la maquette lignes 89-158 (cf. les 2 PNG de
  * `design/maquettes/design-annuaire-msp/project/uploads/` pour le rendu attendu).
- * Ordre des enfants du flex row (gap 14, tous alignés sur une ligne, cf. maquette) :
- * case à cocher · avatar · bloc nom/profession (cliquable → fiche) · badges conditionnels ·
- * pastille de distance (plans/P3/S2.md T4) · icônes de commentaires (variant compact) ·
- * téléphone patient · étoile "dans ma liste".
+ * Desktop : case à cocher · avatar · bloc nom/profession · badges · distance · icônes de
+ * commentaires · téléphone · étoile, tous sur UNE ligne. Mobile (`isMobile`, audit pré-partage #2) :
+ * repliée en deux niveaux (nom en haut, méta en dessous) pour ne plus déborder. La ligne entière
+ * ouvre la fiche (#4) ; les éléments interactifs (case, tél, étoile, icônes) stoppent la propagation.
  */
 interface ContactRowProps {
   contact: ContactWithMeta
@@ -24,23 +25,47 @@ interface ContactRowProps {
   highlighted?: boolean
   /** Mots de la recherche courante, surlignés dans le nom et la ligne meta (cf. Highlight). */
   queryTerms?: string[]
+  /** Rendu replié pour téléphone (borne calculée une fois dans AnnuairePage, pas par ligne). */
+  isMobile?: boolean
   onToggleSelect: () => void
   onToggleStar: () => void
 }
 
-function rowStyle(highlighted: boolean, grise: boolean): CSSProperties {
+function rowStyle(highlighted: boolean, grise: boolean, hovered: boolean, isMobile: boolean): CSSProperties {
   return {
     // Fiche grisée (départ/cessation ou coordonnées introuvables) : fond en retrait — cf. revue
     // 2026-07-19. L'alerte reste, elle, en pleine couleur (voir GriseAlerte).
     background: grise ? '#f6f4ef' : colors.white,
-    border: `1px solid ${highlighted ? colors.brand.blue : colors.borderLight}`,
+    border: `1px solid ${highlighted || hovered ? colors.brand.blue : colors.borderLight}`,
     borderRadius: radii.xxl,
     padding: '14px 16px',
     display: 'flex',
-    alignItems: 'center',
-    gap: 14,
-    boxShadow: highlighted ? '0 0 0 3px rgba(31,127,214,.14)' : '0 1px 3px rgba(0,0,0,.03)',
+    flexDirection: isMobile ? 'column' : 'row',
+    alignItems: isMobile ? 'stretch' : 'center',
+    gap: isMobile ? 8 : 14,
+    cursor: 'pointer',
+    boxShadow: highlighted
+      ? '0 0 0 3px rgba(31,127,214,.14)'
+      : hovered
+        ? '0 2px 8px rgba(0,0,0,.08)'
+        : '0 1px 3px rgba(0,0,0,.03)',
   }
+}
+
+/** Niveau haut sur mobile : case + avatar + bloc nom (le reste passe en dessous). */
+const mobileTopRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}
+
+/** Niveau bas sur mobile : méta (badges, distance, icônes, tél, étoile), indenté sous le nom. */
+const mobileMetaRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 8,
+  paddingLeft: 50,
 }
 
 /** Puce d'alerte d'une fiche grisée (survol = motif). `parti` en ambre (« ne pas adresser »),
@@ -73,7 +98,6 @@ const checkboxStyle: CSSProperties = {
 
 const nameBlockStyle: CSSProperties = {
   flex: 1,
-  cursor: 'pointer',
   minWidth: 0,
 }
 
@@ -153,16 +177,23 @@ function toEntries(comments: Comment[], authorNames: Record<string, string>) {
   }))
 }
 
+/** Stoppe la propagation : un contrôle interne (case/tél/étoile/icône) ne doit pas ouvrir la fiche. */
+function stop(event: { stopPropagation: () => void }) {
+  event.stopPropagation()
+}
+
 export default function ContactRow({
   contact,
   selected,
   highlighted = false,
   queryTerms = [],
+  isMobile = false,
   onToggleSelect,
   onToggleStar,
 }: ContactRowProps) {
   const navigate = useNavigate()
   const open = () => navigate(`/contact/${contact.id}`)
+  const [hovered, setHovered] = useState(false)
   const { reference, isPatientAddress } = useReference()
 
   const counts: CommentCounts = contact.counts
@@ -177,6 +208,13 @@ export default function ContactRow({
   const displayName = isPraticien
     ? `${contact.nom.toUpperCase()}${contact.prenom ? ` ${contact.prenom}` : ''}`
     : contact.nom
+  // Initiales pour l'avatar (audit pré-partage #7 — scannabilité) : NP pour un praticien, 2
+  // premières lettres pour une structure.
+  const initials = (
+    isPraticien
+      ? `${contact.nom[0] ?? ''}${contact.prenom?.[0] ?? ''}`
+      : contact.nom.slice(0, 2)
+  ).toUpperCase()
   const norm = (s: string | null | undefined) => (s ?? '').trim().toLowerCase()
   // Sous-titre : spécialité + établissement (ex. « Cardiologie · Hôpital Saint-Antoine ») +
   // arrondissement. On masque profession/établissement s'ils répètent le nom.
@@ -208,32 +246,28 @@ export default function ContactRow({
     ? { ...nameBlockStyle, opacity: 0.6 }
     : nameBlockStyle
 
-  return (
-    <div style={rowStyle(highlighted, grise)}>
-      <input
-        type="checkbox"
-        checked={selected}
-        onChange={onToggleSelect}
-        style={checkboxStyle}
-        aria-label={`Sélectionner ${contact.nom} pour l'impression`}
-      />
-      <Avatar onClick={open} />
-      <div onClick={open} style={nameBlockGriseStyle}>
-        <div style={nameStyle}>
-          <Highlight text={displayName} terms={queryTerms} />
-          {categorieTag && <span style={catTagStyle}>{categorieTag}</span>}
-        </div>
-        {metaParts.length > 0 && (
-          <div style={metaLineStyle}>
-            {metaParts.map((part, i) => (
-              <span key={i}>
-                {i > 0 && ' · '}
-                <Highlight text={part} terms={queryTerms} />
-              </span>
-            ))}
-          </div>
-        )}
+  const nameBlock = (
+    <div style={nameBlockGriseStyle}>
+      <div style={nameStyle}>
+        <Highlight text={displayName} terms={queryTerms} />
+        {categorieTag && <span style={catTagStyle}>{categorieTag}</span>}
       </div>
+      {metaParts.length > 0 && (
+        <div style={metaLineStyle}>
+          {metaParts.map((part, i) => (
+            <span key={i}>
+              {i > 0 && ' · '}
+              <Highlight text={part} terms={queryTerms} />
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  // Méta commune aux deux dispositions (desktop = fin de ligne ; mobile = second niveau).
+  const meta = (
+    <>
       {grise && contact.grise_reason && (
         <GriseAlerte reason={contact.grise_reason} alerte={contact.grise_alerte} />
       )}
@@ -244,13 +278,60 @@ export default function ContactRow({
       <span style={distanceStyle} title={distanceTitle}>
         {coords && isPatientAddress ? `${distanceLabel} du patient` : distanceLabel}
       </span>
-      <CommentIcons counts={counts} comments={comments} variant="compact" />
+      <span onClick={stop}>
+        <CommentIcons counts={counts} comments={comments} variant="compact" />
+      </span>
       {!grise && contact.tel_secretariat && (
-        <a href={`tel:${contact.tel_secretariat}`} style={phoneStyle}>
+        <a href={`tel:${contact.tel_secretariat}`} style={phoneStyle} onClick={stop}>
           {contact.tel_secretariat}
         </a>
       )}
-      <StarToggle starred={contact.starred} onToggle={onToggleStar} variant="dot" />
+      <span onClick={stop}>
+        <StarToggle starred={contact.starred} onToggle={onToggleStar} variant="dot" />
+      </span>
+    </>
+  )
+
+  const checkbox = (
+    <input
+      type="checkbox"
+      checked={selected}
+      onChange={onToggleSelect}
+      onClick={stop}
+      style={checkboxStyle}
+      aria-label={`Sélectionner ${contact.nom} pour l'impression`}
+    />
+  )
+
+  return (
+    <div
+      style={rowStyle(highlighted, grise, hovered, isMobile)}
+      onClick={open}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      role="link"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') open()
+      }}
+    >
+      {isMobile ? (
+        <>
+          <div style={mobileTopRowStyle}>
+            {checkbox}
+            <Avatar initials={initials} />
+            {nameBlock}
+          </div>
+          <div style={mobileMetaRowStyle}>{meta}</div>
+        </>
+      ) : (
+        <>
+          {checkbox}
+          <Avatar initials={initials} />
+          {nameBlock}
+          {meta}
+        </>
+      )}
     </div>
   )
 }

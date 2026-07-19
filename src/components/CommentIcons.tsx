@@ -150,8 +150,8 @@ function CommentIcon({
         setClicked(false)
       }}
       onClick={() => setClicked((v) => !v)}
-      style={{ position: 'relative', cursor: 'default' }}
-      title={meta.singular}
+      style={{ position: 'relative', cursor: 'pointer' }}
+      title={`${count} ${meta.singular}${count > 1 ? 's' : ''} — survolez ou touchez pour lire`}
     >
       <div
         style={{

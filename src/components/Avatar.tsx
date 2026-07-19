@@ -26,7 +26,8 @@ export default function Avatar({ size = 38, initials, onClick }: AvatarProps) {
         alignItems: initials ? 'center' : undefined,
         justifyContent: initials ? 'center' : undefined,
         color: '#fff',
-        font: '700 12px "Plus Jakarta Sans"',
+        // Taille des initiales proportionnelle au diamètre (38px→~15, 56px→~22, 36px→~14).
+        font: `700 ${Math.round(size * 0.4)}px "Plus Jakarta Sans"`,
       }}
     >
       {initials}

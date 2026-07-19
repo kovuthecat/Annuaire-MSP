@@ -397,6 +397,12 @@ export default function FichePage() {
   }
 
   const identity = [contact.civilite, contact.prenom, contact.nom].filter(Boolean).join(' ')
+  // Initiales de l'avatar (audit pré-partage #7) : NP pour un praticien, 2 lettres pour une structure.
+  const avatarInitials = (
+    contact.type === 'praticien'
+      ? `${contact.nom[0] ?? ''}${contact.prenom?.[0] ?? ''}`
+      : contact.nom.slice(0, 2)
+  ).toUpperCase()
   const metaParts = [
     contact.profession,
     contact.arrondissement ? `${contact.arrondissement} arr.` : null,
@@ -428,7 +434,7 @@ export default function FichePage() {
       </button>
       <div style={cardStyle}>
         <div style={headerRowStyle}>
-          <Avatar size={56} />
+          <Avatar size={56} initials={avatarInitials} />
           <div style={identityBlockStyle}>
             <div style={nameStyle}>{identity}</div>
             {metaParts.length > 0 && <div style={metaLineStyle}>{metaParts.join(' · ')}</div>}
