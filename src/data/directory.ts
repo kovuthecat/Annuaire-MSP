@@ -36,31 +36,45 @@ export function memberDisplayName(member: Member | undefined | null): string {
   return full || member.email || 'Membre inconnu'
 }
 
+// Le client Supabase (PostgREST) plafonne une requête à ~1000 lignes. Au-delà (1226 contacts,
+// 1567 commentaires…), la fin du jeu de données manquerait silencieusement. On pagine donc par
+// tranches de 1000 tant qu'une page est pleine. `build()` doit recréer la requête à chaque appel
+// (une requête n'est consommable qu'une fois).
+const PAGE_SIZE = 1000
+
+async function fetchAll<T>(build: () => any): Promise<T[]> {
+  const all: T[] = []
+  let from = 0
+  for (;;) {
+    const { data, error } = await build().range(from, from + PAGE_SIZE - 1)
+    if (error) throw new Error(error.message)
+    const rows = (data ?? []) as unknown as T[]
+    all.push(...rows)
+    if (rows.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+  return all
+}
+
 /**
  * Charge tout le jeu de données (contacts, commentaires, "ma liste" du membre courant, membres)
  * et compose les `ContactWithMeta`. Sans session, la RLS renvoie des tableaux vides pour chaque
  * requête (pas une erreur) : la fonction résout alors `{ contacts: [], members: [] }`.
+ * Les tables volumineuses (contacts, commentaires, liste) sont paginées (cf. `fetchAll`).
  */
 export async function loadDirectory(): Promise<DirectoryData> {
   const uid = await getCurrentUserId()
 
-  const [contactsRes, commentsRes, listEntriesRes, membersRes] = await Promise.all([
-    supabase.from('contacts').select('*'),
-    supabase.from('comments').select('*'),
+  const [contacts, comments, listEntries, membersRes] = await Promise.all([
+    fetchAll<Contact>(() => supabase.from('contacts').select('*')),
+    fetchAll<Comment>(() => supabase.from('comments').select('*')),
     uid
-      ? supabase.from('list_entries').select('*').eq('member_id', uid)
-      : Promise.resolve({ data: [] as ListEntry[], error: null }),
+      ? fetchAll<ListEntry>(() => supabase.from('list_entries').select('*').eq('member_id', uid))
+      : Promise.resolve([] as ListEntry[]),
     supabase.from('members').select('*'),
   ])
 
-  if (contactsRes.error) throw new Error(contactsRes.error.message)
-  if (commentsRes.error) throw new Error(commentsRes.error.message)
-  if (listEntriesRes.error) throw new Error(listEntriesRes.error.message)
   if (membersRes.error) throw new Error(membersRes.error.message)
-
-  const contacts = (contactsRes.data ?? []) as unknown as Contact[]
-  const comments = (commentsRes.data ?? []) as unknown as Comment[]
-  const listEntries = (listEntriesRes.data ?? []) as unknown as ListEntry[]
   const members = (membersRes.data ?? []) as unknown as Member[]
 
   const membersById = new Map(members.map((member) => [member.id, member]))
