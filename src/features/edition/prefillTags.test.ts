@@ -9,8 +9,12 @@ import { parsePrefill } from './formState'
 
 /** Encode un objet en `?prefill=<base64url>` comme le fait le bookmarklet (extract.js toBase64Url). */
 function encode(obj: unknown): string {
-  const b64 = Buffer.from(JSON.stringify(obj), 'utf-8').toString('base64')
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  const bytes = new TextEncoder().encode(JSON.stringify(obj))
+  let binary = ''
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b)
+  })
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
 describe('parsePrefill — tags', () => {
