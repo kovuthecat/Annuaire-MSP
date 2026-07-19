@@ -119,26 +119,55 @@ const filtersLabelStyle: CSSProperties = {
 }
 
 const chipBaseStyle: CSSProperties = {
-  padding: '5px 10px',
-  borderRadius: radii.sm,
+  padding: '7px 13px',
+  borderRadius: radii.md,
   border: 'none',
   cursor: 'pointer',
 }
 
 const chipInactiveStyle: CSSProperties = {
   ...chipBaseStyle,
-  font: '500 11px "Plus Jakarta Sans"',
-  color: colors.text.muted,
-  background: '#f1ede4',
+  font: '600 12px "Plus Jakarta Sans"',
+  color: colors.text.secondary,
+  background: '#ece7dd',
 }
 
 function chipActiveStyle(fg: string, bg: string): CSSProperties {
   return {
     ...chipBaseStyle,
-    font: '600 11px "Plus Jakarta Sans"',
+    font: '600 12px "Plus Jakarta Sans"',
     color: fg,
     background: bg,
   }
+}
+
+/** Cartouche englobant la zone de filtres, pour la rendre plus grande et visible. */
+const filtersCardStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  background: colors.white,
+  border: `1px solid ${colors.borderLight}`,
+  borderRadius: radii.xl,
+  padding: '12px 14px',
+  marginBottom: 14,
+}
+
+/** Pastille de catégorie active (sélection unique) : bleu de marque plein. */
+const catChipActiveStyle: CSSProperties = {
+  ...chipBaseStyle,
+  font: '600 12px "Plus Jakarta Sans"',
+  color: colors.white,
+  background: colors.brand.blue,
+}
+
+/** Rangée « Distances depuis / résultats / tri », sous le cartouche de filtres. */
+const referenceBarStyle: CSSProperties = {
+  display: 'flex',
+  gap: 12,
+  marginBottom: 16,
+  flexWrap: 'wrap',
+  alignItems: 'center',
 }
 
 const resultCountStyle: CSSProperties = {
@@ -157,19 +186,6 @@ const sortSelectStyle: CSSProperties = {
   cursor: 'pointer',
   font: '500 11px "Plus Jakarta Sans"',
   color: colors.text.muted,
-}
-
-/** Facette « Catégorie » : un select compact, aligné sur les chips (même hauteur/teinte inactive). */
-function categorieSelectStyle(active: boolean): CSSProperties {
-  return {
-    ...chipBaseStyle,
-    padding: '5px 8px',
-    font: active ? '600 11px "Plus Jakarta Sans"' : '500 11px "Plus Jakarta Sans"',
-    color: active ? colors.brand.blue : colors.text.muted,
-    background: active ? 'rgba(31,127,214,.12)' : '#f1ede4',
-    cursor: 'pointer',
-    outline: 'none',
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -342,6 +358,23 @@ function BoolChip({ label, active, onToggle, fg, bg }: BoolChipProps) {
   )
 }
 
+/** Pastille de catégorie (sélection unique parmi les 5 : un clic sélectionne, un 2e efface). */
+function CatChip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onToggle()
+      }}
+      style={active ? catChipActiveStyle : chipInactiveStyle}
+    >
+      {label}
+    </span>
+  )
+}
+
 export default function FiltersBar({
   query,
   onQueryChange,
@@ -401,46 +434,46 @@ export default function FiltersBar({
         </div>
       </div>
 
-      <div style={filtersRowStyle}>
-        <span style={filtersLabelStyle}>Filtres :</span>
-        <BoolChip
-          label="Secteur 1"
-          active={secteur1}
-          onToggle={() => onSecteur1Change(!secteur1)}
-          fg={colors.sector.secteur1.fg}
-          bg={colors.sector.secteur1.bg}
-        />
-        <BoolChip
-          label="Pédiatrie"
-          active={pediatrie}
-          onToggle={() => onPediatrieChange(!pediatrie)}
-          fg={colors.sector.pediatrie.fg}
-          bg={colors.sector.pediatrie.bg}
-        />
-        <BoolChip
-          label="Avis"
-          active={avis}
-          onToggle={() => onAvisChange(!avis)}
-          fg={colors.sector.avis.fg}
-          bg={colors.sector.avis.bg}
-        />
-        <select
-          value={categorie}
-          onChange={(e) => onCategorieChange(e.target.value as Categorie | '')}
-          style={categorieSelectStyle(categorie !== '')}
-          aria-label="Filtrer par catégorie"
-          title="Catégorie"
-        >
-          <option value="">Toutes catégories</option>
+      <div style={filtersCardStyle}>
+        <div style={{ ...filtersRowStyle, marginBottom: 0 }}>
+          <span style={filtersLabelStyle}>Filtres</span>
+          <BoolChip
+            label="Secteur 1"
+            active={secteur1}
+            onToggle={() => onSecteur1Change(!secteur1)}
+            fg={colors.sector.secteur1.fg}
+            bg={colors.sector.secteur1.bg}
+          />
+          <BoolChip
+            label="Pédiatrie"
+            active={pediatrie}
+            onToggle={() => onPediatrieChange(!pediatrie)}
+            fg={colors.sector.pediatrie.fg}
+            bg={colors.sector.pediatrie.bg}
+          />
+          <BoolChip
+            label="Avis"
+            active={avis}
+            onToggle={() => onAvisChange(!avis)}
+            fg={colors.sector.avis.fg}
+            bg={colors.sector.avis.bg}
+          />
+        </div>
+        <div style={{ ...filtersRowStyle, marginBottom: 0 }}>
+          <span style={filtersLabelStyle}>Catégorie</span>
           {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+            <CatChip
+              key={c}
+              label={c}
+              active={categorie === c}
+              onToggle={() => onCategorieChange(categorie === c ? '' : c)}
+            />
           ))}
-        </select>
+        </div>
+      </div>
 
+      <div style={referenceBarStyle}>
         <ReferenceSelector />
-
         <span style={resultCountStyle}>
           {resultCount} résultat{resultCount !== 1 ? 's' : ''} · Tri
           <select

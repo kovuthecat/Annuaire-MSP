@@ -4,8 +4,8 @@ Exécuter les fichiers **dans l'ordre du préfixe numérique** (00, 01, 02, ...)
 Chacun est autonome et rejouable sans doublon.
 
 - `seed_00_guard.sql`  (6 lignes, 1 Ko)
-- `seed_01_contacts_01.sql`  (808 lignes, 394 Ko)
-- `seed_01_contacts_02.sql`  (418 lignes, 188 Ko)
+- `seed_01_contacts_01.sql`  (737 lignes, 394 Ko)
+- `seed_01_contacts_02.sql`  (489 lignes, 242 Ko)
 - `seed_02_createdby_01.sql`  (1137 lignes, 91 Ko)
 - `seed_03_comments_01.sql`  (1458 lignes, 399 Ko)
 - `seed_03_comments_02.sql`  (109 lignes, 40 Ko)

@@ -87,6 +87,19 @@ const metaLineStyle: CSSProperties = {
   color: colors.text.secondary,
 }
 
+/** Étiquette de catégorie (Structure / Ressource / Ligne d'avis / Transport) à côté du nom —
+ * discrète, pour identifier une fiche non-praticien sans l'ouvrir. */
+const catTagStyle: CSSProperties = {
+  marginLeft: 8,
+  padding: '1px 7px',
+  borderRadius: radii.sm,
+  font: '600 10px "Plus Jakarta Sans"',
+  color: colors.text.muted,
+  background: '#f1ede4',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+
 const phoneStyle: CSSProperties = {
   font: '500 12px "Plus Jakarta Sans"',
   color: colors.brand.blue,
@@ -158,10 +171,27 @@ export default function ContactRow({
     comments[type] = toEntries(contact.comments[type], contact.authorNames)
   }
 
+  // Affichage normalisé du nom : « NOM Prénom » pour les praticiens (l'annuaire d'origine est
+  // hétéroclite), nom brut pour structures/ressources (ce ne sont pas des personnes).
+  const isPraticien = contact.type === 'praticien'
+  const displayName = isPraticien
+    ? `${contact.nom.toUpperCase()}${contact.prenom ? ` ${contact.prenom}` : ''}`
+    : contact.nom
+  const norm = (s: string | null | undefined) => (s ?? '').trim().toLowerCase()
+  // Sous-titre : spécialité + établissement (ex. « Cardiologie · Hôpital Saint-Antoine ») +
+  // arrondissement. On masque profession/établissement s'ils répètent le nom.
   const metaParts = [
-    contact.profession,
+    norm(contact.profession) && norm(contact.profession) !== norm(contact.nom)
+      ? contact.profession
+      : null,
+    norm(contact.etablissement) && norm(contact.etablissement) !== norm(contact.nom)
+      ? contact.etablissement
+      : null,
     contact.arrondissement ? `${contact.arrondissement} arr.` : null,
   ].filter((part): part is string => Boolean(part))
+  // Étiquette de catégorie pour tout ce qui n'est pas un praticien — l'identifier sans ouvrir.
+  const categorieTag =
+    contact.categorie && contact.categorie !== 'Praticien' ? contact.categorie : null
 
   // Pastille de distance (plans/P3/S2.md T4 étape 1) : « — » discret si la fiche n'a pas encore de
   // coordonnées (backfill non passé ou géocodage échoué) — jamais une distance inventée.
@@ -190,7 +220,8 @@ export default function ContactRow({
       <Avatar onClick={open} />
       <div onClick={open} style={nameBlockGriseStyle}>
         <div style={nameStyle}>
-          <Highlight text={contact.nom} terms={queryTerms} />
+          <Highlight text={displayName} terms={queryTerms} />
+          {categorieTag && <span style={catTagStyle}>{categorieTag}</span>}
         </div>
         {metaParts.length > 0 && (
           <div style={metaLineStyle}>

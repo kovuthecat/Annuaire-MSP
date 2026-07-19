@@ -49,14 +49,19 @@ COLS = ["type","sous_type","civilite","nom","prenom","profession","orientation",
         "email_avis","mssante","consignes_pro","prend_nouveaux","delai","vad",
         "ame_cmu","pmr","langues","tele_expertise","tarif","tags","statut",
         "categorie","grise_reason","grise_alerte","rpps",
-        "source_url","source_type","source_checked_at"]
+        "source_url","source_type","source_checked_at",
+        "latitude","longitude","geocode_score","geocoded_at"]
 BOOLS = {"vad", "ame_cmu", "pmr"}
+NUMS = {"latitude", "longitude", "geocode_score"}  # géocodage BAN (backfill), numériques
 
 def cell(c, k):
     if k == "tags":
         return qarr(c.get("tags") or [])
     if k in BOOLS:
         return q(bool(c.get(k)))
+    if k in NUMS:
+        v = c.get(k)
+        return "null" if v in (None, "") else repr(float(v))
     if k == "source_type":
         # Sans enrichissement web, la donnée vient du carnet d'un médecin.
         return q(c.get("source_type") or "carnet_membre")
