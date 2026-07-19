@@ -49,6 +49,20 @@ as $$
   select exists (select 1 from public.members where id = auth.uid());
 $$;
 
+-- Test « est référent » (security definer, même motif que is_member) : sert la RLS des retours
+-- (table feedback, section 6) — seul un référent lit / traite les retours des membres.
+create or replace function public.is_referent()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.members where id = auth.uid() and role = 'referent'
+  );
+$$;
+
 -- ---------------------------------------------------------------------------
 -- 2. CONTACTS (fiche flexible : praticien OU structure/ressource)
 -- ---------------------------------------------------------------------------
@@ -152,16 +166,23 @@ do $$ begin
   end if;
 end $$;
 
--- Dégrisage automatique : une fiche 'incomplet' redevient normale dès qu'on lui ajoute une
--- coordonnée exploitable (adresse OU un moyen de contact). 'parti' n'est jamais effacé auto.
+-- Dégrisage automatique : une fiche 'incomplet' redevient normale quand un membre lui AJOUTE
+-- une coordonnée exploitable — c.-à-d. une transition « vide -> non vide » sur adresse ou un
+-- moyen de contact. Volontairement en UPDATE SEULEMENT (pas à l'INSERT : le chargement initial
+-- pose un état grisé délibéré) et sur transition (une fiche 'incomplet' qui possède déjà une
+-- coordonnée — ex. doute d'identité — n'est PAS dégrisée). 'parti' n'est jamais effacé auto.
 create or replace function public.clear_grise_on_complete()
 returns trigger language plpgsql as $$
 begin
-  if new.grise_reason = 'incomplet'
-     and (coalesce(new.adresse,'') <> '' or coalesce(new.tel_secretariat,'') <> ''
-          or coalesce(new.doctolib,'') <> '' or coalesce(new.site_web,'') <> ''
-          or coalesce(new.ligne_directe,'') <> '' or coalesce(new.portable,'') <> ''
-          or coalesce(new.email_rdv,'') <> '') then
+  if new.grise_reason = 'incomplet' and (
+       (coalesce(old.adresse,'')        = '' and coalesce(new.adresse,'')        <> '')
+    or (coalesce(old.tel_secretariat,'')= '' and coalesce(new.tel_secretariat,'')<> '')
+    or (coalesce(old.doctolib,'')       = '' and coalesce(new.doctolib,'')       <> '')
+    or (coalesce(old.site_web,'')       = '' and coalesce(new.site_web,'')       <> '')
+    or (coalesce(old.ligne_directe,'')  = '' and coalesce(new.ligne_directe,'')  <> '')
+    or (coalesce(old.portable,'')       = '' and coalesce(new.portable,'')       <> '')
+    or (coalesce(old.email_rdv,'')      = '' and coalesce(new.email_rdv,'')      <> '')
+  ) then
     new.grise_reason := null;
     new.grise_alerte := null;
   end if;
@@ -170,7 +191,7 @@ end;
 $$;
 drop trigger if exists contacts_clear_grise on public.contacts;
 create trigger contacts_clear_grise
-  before insert or update on public.contacts
+  before update on public.contacts
   for each row execute function public.clear_grise_on_complete();
 
 do $$
@@ -336,6 +357,56 @@ create policy list_entries_insert on public.list_entries
 drop policy if exists list_entries_delete on public.list_entries;
 create policy list_entries_delete on public.list_entries
   for delete using (member_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- 6. RETOURS (feedback des membres sur la V1 — « Signaler un souci »)
+--    Un membre dépose un retour signé (bouton flottant présent sur chaque page) ; seul le
+--    référent les relit et les traite (écran /retours). Contexte de la page capturé
+--    automatiquement (URL, fiche concernée, écran, navigateur) + capture d'écran optionnelle.
+-- ---------------------------------------------------------------------------
+create table if not exists public.feedback (
+  id          uuid primary key default gen_random_uuid(),
+  -- author_id = auth.uid() par défaut (retour signé, comme les commentaires). on delete set null :
+  -- si le compte part, le retour reste lisible (utile pour corriger la V1).
+  author_id   uuid references public.members (id) on delete set null default auth.uid(),
+  category    text not null default 'probleme'
+                check (category in ('probleme','donnee','suggestion')),
+  message     text not null,
+  status      text not null default 'nouveau'
+                check (status in ('nouveau','en_cours','resolu')),
+
+  -- Contexte capturé automatiquement à l'envoi (aide à reproduire / corriger).
+  url         text,                    -- URL complète (pathname + query)
+  page_label  text,                    -- nom lisible de l'écran (« Fiche », « Annuaire »…)
+  -- Fiche concernée si le retour est émis depuis /contact/:id — set null si la fiche est supprimée.
+  contact_id  uuid references public.contacts (id) on delete set null,
+  viewport    text,                    -- « 1440×900 »
+  user_agent  text,
+  -- Capture d'écran (data URL JPEG redimensionnée+compressée côté client), optionnelle et
+  -- volumineuse : jamais sélectionnée dans la liste des retours, chargée à la demande au détail.
+  screenshot  text,
+
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists feedback_status_idx  on public.feedback (status, created_at desc);
+create index if not exists feedback_contact_idx on public.feedback (contact_id);
+
+alter table public.feedback enable row level security;
+
+-- Tout membre dépose un retour signé ; seul le référent lit, traite (statut) et supprime.
+drop policy if exists feedback_insert on public.feedback;
+create policy feedback_insert on public.feedback
+  for insert with check (public.is_member() and author_id = auth.uid());
+drop policy if exists feedback_select on public.feedback;
+create policy feedback_select on public.feedback
+  for select using (public.is_referent());
+drop policy if exists feedback_update on public.feedback;
+create policy feedback_update on public.feedback
+  for update using (public.is_referent()) with check (public.is_referent());
+drop policy if exists feedback_delete on public.feedback;
+create policy feedback_delete on public.feedback
+  for delete using (public.is_referent());
 
 -- ============================================================================
 -- APRÈS EXÉCUTION :
