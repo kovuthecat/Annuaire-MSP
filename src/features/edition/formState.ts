@@ -402,13 +402,36 @@ export function assertPayloadTypes(payload: ContactPayload): {
   return { forCreate: payload, forUpdate: payload }
 }
 
+/**
+ * Un moyen de contact est-il renseigné ? — le champ de saisie rapide « Un moyen de contact » OU
+ * n'importe quelle coordonnée détaillée (patient ou pro). Sans ce test élargi, une fiche préremplie
+ * depuis Doctolib (qui pose le téléphone dans `telSecretariat` et le lien dans `doctolib`, jamais
+ * dans le champ rapide) était refusée à l'enregistrement bien qu'elle porte un contact.
+ */
+function hasAnyContactMeans(form: FormState): boolean {
+  return [
+    form.moyenDeContact,
+    form.telSecretariat,
+    form.emailRdv,
+    form.doctolib,
+    form.siteWeb,
+    form.ligneDirecte,
+    form.bip,
+    form.portable,
+    form.fax,
+    form.emailAvis,
+    form.mssante,
+    form.teleExpertise,
+  ].some((value) => value.trim() !== '')
+}
+
 /** Validation "Essentiel" (S5 §Décision clé) — retourne un message d'erreur, ou `null` si ok. */
 export function validateForm(form: FormState, mode: 'create' | 'edit'): string | null {
   if (!form.type) return 'Choisissez un type de contact.'
   if (!form.nom.trim()) return 'Le nom est obligatoire.'
   if (!form.profession.trim()) return 'La profession / spécialité est obligatoire.'
-  if (mode === 'create' && !form.moyenDeContact.trim()) {
-    return 'Indiquez au moins un moyen de contact (téléphone ou email).'
+  if (mode === 'create' && !hasAnyContactMeans(form)) {
+    return 'Indiquez au moins un moyen de contact (téléphone, email, Doctolib…).'
   }
   return null
 }
