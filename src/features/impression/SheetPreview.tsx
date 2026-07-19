@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { colors, radii } from '../../theme/tokens'
 import type { ContactWithMeta } from '../../types/db'
 import { toPatientView } from './patientView'
-import logoMsp from '../../assets/logo-msp-menilmontant.jpg'
+import logoMsp from '../../assets/logo-msp-menilmontant.png'
 
 /**
  * Aperçu de la feuille d'adressage patient (maquette l.422-437, cf. plans/P1/S6.md T9 §Étape 4).

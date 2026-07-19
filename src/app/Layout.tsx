@@ -5,6 +5,7 @@ import { colors } from '../theme/tokens'
 import { useAuth } from '../features/auth/AuthProvider'
 import { useSelection } from './SelectionProvider'
 import FeedbackWidget from '../features/feedback/FeedbackWidget'
+import logoMsp from '../assets/logo-msp-menilmontant.png'
 import type { Member } from '../types/db'
 
 /**
@@ -36,19 +37,21 @@ const logoLinkStyle: CSSProperties = {
   color: '#fff',
 }
 
-const logoBoxStyle: CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 8,
-  background: 'rgba(255,255,255,.22)',
+// Logo officiel dans une pastille blanche : le lockup couleur (fond blanc, contient déjà le nom)
+// serait illisible posé à même la barre dégradée teal→bleu. La pastille garantit contraste et
+// lisibilité, et le fond blanc du PNG s'y fond sans bord visible.
+const logoPillStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  font: '800 13px/1 "Plus Jakarta Sans"',
+  background: '#fff',
+  borderRadius: 8,
+  padding: '5px 9px',
 }
 
-const logoTitleStyle: CSSProperties = {
-  font: '700 14px/1 "Plus Jakarta Sans"',
+const logoImgStyle: CSSProperties = {
+  height: 26,
+  width: 'auto',
+  display: 'block',
 }
 
 const navGroupStyle: CSSProperties = {
@@ -201,9 +204,10 @@ export default function Layout() {
   return (
     <div>
       <div style={topBarStyle}>
-        <Link to="/" style={logoLinkStyle}>
-          <div style={logoBoxStyle}>M</div>
-          <div style={logoTitleStyle}>MSP Ménilmontant</div>
+        <Link to="/" style={logoLinkStyle} aria-label="MSP Ménilmontant — accueil">
+          <span style={logoPillStyle}>
+            <img src={logoMsp} alt="MSP Ménilmontant" style={logoImgStyle} />
+          </span>
         </Link>
 
         <div style={navGroupStyle}>
