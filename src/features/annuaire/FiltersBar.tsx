@@ -32,8 +32,6 @@ export interface FiltersBarProps {
   onSecteur1Change: (value: boolean) => void
   pediatrie: boolean
   onPediatrieChange: (value: boolean) => void
-  avis: boolean
-  onAvisChange: (value: boolean) => void
 
   /** Facette « Catégorie » — `''` = toutes. */
   categorie: Categorie | ''
@@ -125,20 +123,32 @@ const chipBaseStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-const chipInactiveStyle: CSSProperties = {
-  ...chipBaseStyle,
-  font: '600 12px "Plus Jakarta Sans"',
-  color: colors.text.secondary,
-  background: '#ece7dd',
-}
-
-function chipActiveStyle(fg: string, bg: string): CSSProperties {
+/**
+ * Style de chip unifié (filtres booléens ET catégories) : chaque chip porte SA couleur en
+ * permanence — teinte claire quand inactif, aplat plein quand actif — pour qu'ils restent
+ * distinguables au premier coup d'œil (cf. retour visuel 2026-07-19). `fg`/`bg` viennent de la
+ * palette `colors.sector` (aucune couleur inventée).
+ */
+function chipStyle(fg: string, bg: string, active: boolean): CSSProperties {
   return {
     ...chipBaseStyle,
     font: '600 12px "Plus Jakarta Sans"',
-    color: fg,
-    background: bg,
+    color: active ? colors.white : fg,
+    background: active ? fg : bg,
   }
+}
+
+/**
+ * Couleur propre à chaque catégorie (5 teintes distinctes de la palette). Comme la facette est en
+ * sélection unique, ces teintes permanentes servent surtout à différencier les pastilles à l'œil,
+ * pas seulement à marquer l'active.
+ */
+const catColors: Record<Categorie, { fg: string; bg: string }> = {
+  Praticien: colors.sector.vad, // bleu
+  'Structure de soins': colors.sector.secteur2, // violet
+  "Ligne d'avis": colors.sector.secteur1, // teal
+  'Transport sanitaire': colors.sector.ame, // ambre
+  Ressource: colors.sector.newpatients, // vert
 }
 
 /** Cartouche englobant la zone de filtres, pour la rendre plus grande et visible. */
@@ -151,14 +161,6 @@ const filtersCardStyle: CSSProperties = {
   borderRadius: radii.xl,
   padding: '12px 14px',
   marginBottom: 14,
-}
-
-/** Pastille de catégorie active (sélection unique) : bleu de marque plein. */
-const catChipActiveStyle: CSSProperties = {
-  ...chipBaseStyle,
-  font: '600 12px "Plus Jakarta Sans"',
-  color: colors.white,
-  background: colors.brand.blue,
 }
 
 /** Rangée « Distances depuis / résultats / tri », sous le cartouche de filtres. */
@@ -351,7 +353,7 @@ function BoolChip({ label, active, onToggle, fg, bg }: BoolChipProps) {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onToggle()
       }}
-      style={active ? chipActiveStyle(fg, bg) : chipInactiveStyle}
+      style={chipStyle(fg, bg, active)}
     >
       {label}
     </span>
@@ -359,7 +361,19 @@ function BoolChip({ label, active, onToggle, fg, bg }: BoolChipProps) {
 }
 
 /** Pastille de catégorie (sélection unique parmi les 5 : un clic sélectionne, un 2e efface). */
-function CatChip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+function CatChip({
+  label,
+  active,
+  onToggle,
+  fg,
+  bg,
+}: {
+  label: string
+  active: boolean
+  onToggle: () => void
+  fg: string
+  bg: string
+}) {
   return (
     <span
       role="button"
@@ -368,7 +382,7 @@ function CatChip({ label, active, onToggle }: { label: string; active: boolean; 
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onToggle()
       }}
-      style={active ? catChipActiveStyle : chipInactiveStyle}
+      style={chipStyle(fg, bg, active)}
     >
       {label}
     </span>
@@ -384,8 +398,6 @@ export default function FiltersBar({
   onSecteur1Change,
   pediatrie,
   onPediatrieChange,
-  avis,
-  onAvisChange,
   categorie,
   onCategorieChange,
   sort,
@@ -451,13 +463,6 @@ export default function FiltersBar({
             fg={colors.sector.pediatrie.fg}
             bg={colors.sector.pediatrie.bg}
           />
-          <BoolChip
-            label="Avis"
-            active={avis}
-            onToggle={() => onAvisChange(!avis)}
-            fg={colors.sector.avis.fg}
-            bg={colors.sector.avis.bg}
-          />
         </div>
         <div style={{ ...filtersRowStyle, marginBottom: 0 }}>
           <span style={filtersLabelStyle}>Catégorie</span>
@@ -467,6 +472,8 @@ export default function FiltersBar({
               label={c}
               active={categorie === c}
               onToggle={() => onCategorieChange(categorie === c ? '' : c)}
+              fg={catColors[c].fg}
+              bg={catColors[c].bg}
             />
           ))}
         </div>

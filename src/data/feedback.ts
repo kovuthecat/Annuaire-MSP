@@ -69,6 +69,25 @@ export async function loadFeedback(): Promise<FeedbackListItem[]> {
   return (data ?? []) as unknown as FeedbackListItem[]
 }
 
+/** Ligne complète pour l'export batch : tout `FeedbackListItem` + la capture (data URL) incluse. */
+export interface FeedbackExportItem extends FeedbackListItem {
+  screenshot: string | null
+}
+
+/**
+ * Tous les retours AVEC leur capture, pour l'export téléchargeable (référent — RLS). Contrairement à
+ * `loadFeedback`, sélectionne aussi la colonne `screenshot` (volumineuse) : c'est le seul cas où on
+ * la charge en masse, assumé car destiné à un fichier remis hors app.
+ */
+export async function loadFeedbackForExport(): Promise<FeedbackExportItem[]> {
+  const { data, error } = await supabase
+    .from('feedback')
+    .select(`${LIST_COLUMNS},screenshot`)
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as unknown as FeedbackExportItem[]
+}
+
 /** Capture d'écran d'un retour, chargée à la demande (colonne volumineuse). */
 export async function loadFeedbackScreenshot(id: string): Promise<string | null> {
   const { data, error } = await supabase

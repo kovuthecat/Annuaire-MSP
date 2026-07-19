@@ -3,6 +3,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
+import { useSessionState } from '../../app/useSessionState'
 import { useReference } from '../proximite/ReferenceProvider'
 import { MSP_COORDS, coordsOf } from '../proximite/geo'
 import { filterContacts, queryTerms } from '../../data/search'
@@ -101,16 +102,18 @@ export default function AnnuairePage() {
   const { reference, isPatientAddress } = useReference()
   const navigate = useNavigate()
 
-  const [query, setQuery] = useState('')
+  // État de recherche persisté en session (cf. useSessionState) : ouvrir une fiche puis revenir
+  // (bouton Retour ou navigation arrière) remonte l'annuaire — sans persistance, tous les critères
+  // seraient à ressaisir. Survit aussi à un rechargement d'onglet.
+  const [query, setQuery] = useSessionState('search:query', '')
   // Mes contacts actif par défaut (cf. maquette — état initial `mesContacts: true`).
-  const [mineOnly, setMineOnly] = useState(true)
+  const [mineOnly, setMineOnly] = useSessionState('search:mineOnly', true)
   // Filtres réduits à 3 chips à forte valeur d'adressage (cf. DECISIONS.md 2026-07-18 §Filtres).
-  const [secteur1, setSecteur1] = useState(false)
-  const [pediatrie, setPediatrie] = useState(false)
-  const [avis, setAvis] = useState(false)
+  const [secteur1, setSecteur1] = useSessionState('search:secteur1', false)
+  const [pediatrie, setPediatrie] = useSessionState('search:pediatrie', false)
   // Facette « Catégorie » (Praticien / Structure / Ligne d'avis / Transport / Ressource).
-  const [categorie, setCategorie] = useState<Categorie | ''>('')
-  const [sort, setSort] = useState<SortOption>('pertinence')
+  const [categorie, setCategorie] = useSessionState<Categorie | ''>('search:categorie', '')
+  const [sort, setSort] = useSessionState<SortOption>('search:sort', 'pertinence')
   // Panneau carte : replié par défaut (mobile ET desktop, cf. plan T2 étape 3 — la liste prime).
   const [mapOpen, setMapOpen] = useState(false)
   // Épingle cliquée → ligne mise en évidence (plan T2 étape 2, « au minimum épingle → ligne »).
@@ -121,10 +124,9 @@ export default function AnnuairePage() {
       mineOnly,
       secteurConv: secteur1 ? '1' : undefined,
       pediatrie: pediatrie || undefined,
-      avis: avis || undefined,
       categorie: categorie || undefined,
     }),
-    [mineOnly, secteur1, pediatrie, avis, categorie],
+    [mineOnly, secteur1, pediatrie, categorie],
   )
 
   const filtered = useMemo(() => filterContacts(contacts, query, filters), [contacts, query, filters])
@@ -163,13 +165,12 @@ export default function AnnuairePage() {
     row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [highlightedId])
 
-  const hasActiveFilters = query !== '' || secteur1 || pediatrie || avis || categorie !== ''
+  const hasActiveFilters = query !== '' || secteur1 || pediatrie || categorie !== ''
 
   const resetFilters = () => {
     setQuery('')
     setSecteur1(false)
     setPediatrie(false)
-    setAvis(false)
     setCategorie('')
   }
 
@@ -208,8 +209,6 @@ export default function AnnuairePage() {
         onSecteur1Change={setSecteur1}
         pediatrie={pediatrie}
         onPediatrieChange={setPediatrie}
-        avis={avis}
-        onAvisChange={setAvis}
         categorie={categorie}
         onCategorieChange={setCategorie}
         sort={sort}

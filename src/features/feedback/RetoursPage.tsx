@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider'
 import {
   deleteFeedback,
   loadFeedback,
+  loadFeedbackForExport,
   loadFeedbackScreenshot,
   updateFeedbackStatus,
 } from '../../data/feedback'
@@ -39,10 +40,32 @@ const STATUS_ORDER: readonly FeedbackStatus[] = ['nouveau', 'en_cours', 'resolu'
 type StatusFilter = FeedbackStatus | 'tous'
 
 const pageStyle: CSSProperties = { padding: '24px 28px 80px', maxWidth: 760, margin: '0 auto' }
+const headerRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 12,
+  flexWrap: 'wrap',
+}
 const titleStyle: CSSProperties = {
   font: '800 18px "Plus Jakarta Sans"',
   color: colors.text.primary,
   marginBottom: 4,
+}
+const exportBtnStyle: CSSProperties = {
+  marginLeft: 'auto',
+  border: 'none',
+  borderRadius: 10,
+  padding: '9px 15px',
+  background: colors.gradientPrimary,
+  color: '#fff',
+  cursor: 'pointer',
+  font: '700 12px "Plus Jakarta Sans"',
+  whiteSpace: 'nowrap',
+}
+const exportErrStyle: CSSProperties = {
+  font: '600 11px "Plus Jakarta Sans"',
+  color: colors.comment.alerte.fg,
+  marginBottom: 12,
 }
 const subtitleStyle: CSSProperties = {
   font: '500 12px "Plus Jakarta Sans"',
@@ -250,6 +273,8 @@ export default function RetoursPage() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<StatusFilter>('tous')
   const [lightbox, setLightbox] = useState<string | 'loading' | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -297,6 +322,53 @@ export default function RetoursPage() {
     }
   }
 
+  /**
+   * Export batch de TOUS les retours (indépendant du filtre affiché) dans un unique fichier JSON
+   * auto-porteur : infos techniques + message + capture (data URL) par retour. Destiné à être remis
+   * hors app (au dev / à Claude) pour traitement. Généré côté client, aucun envoi réseau.
+   */
+  const handleExport = async () => {
+    setExporting(true)
+    setExportError(null)
+    try {
+      const rows = await loadFeedbackForExport()
+      const payload = {
+        export: 'annuaire-msp-retours',
+        generated_at: new Date().toISOString(),
+        count: rows.length,
+        items: rows.map((r) => ({
+          id: r.id,
+          created_at: r.created_at,
+          category: r.category,
+          status: r.status,
+          message: r.message,
+          author: r.author,
+          author_id: r.author_id,
+          page_label: r.page_label,
+          url: r.url,
+          contact_id: r.contact_id,
+          viewport: r.viewport,
+          user_agent: r.user_agent,
+          has_screenshot: r.has_screenshot,
+          screenshot: r.screenshot,
+        })),
+      }
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const objectUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = `retours-annuaire-msp-${new Date().toISOString().slice(0, 10)}.json`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Échec de l'export.")
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const handleViewShot = async (id: string) => {
     setLightbox('loading')
     try {
@@ -315,10 +387,25 @@ export default function RetoursPage() {
 
   return (
     <div style={pageStyle}>
-      <div style={titleStyle}>Retours des membres</div>
-      <div style={subtitleStyle}>
-        Les signalements envoyés depuis le bouton « Un souci ? ». Vous seul (référent) y avez accès.
+      <div style={headerRowStyle}>
+        <div>
+          <div style={titleStyle}>Retours des membres</div>
+          <div style={subtitleStyle}>
+            Les signalements envoyés depuis le bouton « Un souci ? ». Vous seul (référent) y avez accès.
+          </div>
+        </div>
+        <button
+          type="button"
+          style={exportBtnStyle}
+          onClick={() => void handleExport()}
+          disabled={exporting || counts.tous === 0}
+          title="Télécharger tous les retours (infos techniques + message + capture) dans un fichier JSON"
+        >
+          {exporting ? 'Export…' : '⬇ Exporter tout (.json)'}
+        </button>
       </div>
+
+      {exportError && <div style={exportErrStyle}>{exportError}</div>}
 
       <div style={filterRowStyle}>
         {(['tous', ...STATUS_ORDER] as StatusFilter[]).map((f) => (

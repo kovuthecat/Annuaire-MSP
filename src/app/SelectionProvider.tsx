@@ -1,11 +1,27 @@
 import type { ReactNode } from 'react'
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+
+const STORAGE_KEY = 'annuaire:selection'
+
+/** Lecture tolérante de la sélection persistée (mode privé / quota / données corrompues → vide). */
+function loadSelection(): Set<string> {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return new Set()
+    const arr = JSON.parse(raw) as unknown
+    return Array.isArray(arr) ? new Set(arr.filter((x): x is string => typeof x === 'string')) : new Set()
+  } catch {
+    return new Set()
+  }
+}
 
 /**
- * État client transitoire de la sélection d'impression (cf. plans/P1/S3.md T6 §Décision clé et
+ * État client de la sélection d'impression (cf. plans/P1/S3.md T6 §Décision clé et
  * ARCHITECTURE.md §Découpage) : coché sur l'annuaire (case à cocher par ligne), lu par l'indicateur
  * de la barre du haut (« N sélectionné(s) → Imprimer », cf. `Layout.tsx`), et consommé plus tard par
- * l'écran impression (S6). Rien n'est persisté — un rafraîchissement de page vide la sélection.
+ * l'écran impression (S6). **Persisté en `sessionStorage`** (portée onglet) : ouvrir une fiche puis
+ * revenir, ou recharger l'onglet, garde les fiches cochées en vue d'une impression. Effacé à la
+ * fermeture de l'onglet — c'est un panier de travail, pas une préférence durable.
  */
 interface SelectionContextValue {
   selectedIds: Set<string>
@@ -18,7 +34,15 @@ interface SelectionContextValue {
 const SelectionContext = createContext<SelectionContextValue | null>(null)
 
 export function SelectionProvider({ children }: { children: ReactNode }) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(loadSelection)
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedIds]))
+    } catch {
+      /* stockage indisponible — la sélection reste en mémoire pour la session courante */
+    }
+  }, [selectedIds])
 
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) => {

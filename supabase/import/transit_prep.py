@@ -92,7 +92,11 @@ GTFS_ZIP = os.environ.get("GTFS_ZIP") or os.path.join(HERE, "gtfs", "IDFM-gtfs.z
 REPO_ROOT = os.path.dirname(os.path.dirname(HERE))
 OUT_PATH = os.path.join(REPO_ROOT, "src", "features", "proximite", "data", "arrets.json")
 
-ENCODING = "cp1252"  # vérifié empiriquement sur ce dump (les accents en UTF-8 sont mojibake)
+# Le GTFS IDFM est en UTF-8. Le lire en cp1252 produisait du mojibake (« Ménilmontant » →
+# « MÃ©nilmontant », « Élysées » → « Ã‰lysÃ©es ») : 845 noms d'arrêts étaient corrompus dans
+# arrets.json, réparés a posteriori le 2026-07-19 (cf. arrets.json.bak-mojibake). ENCODING corrigé
+# ici pour qu'une régénération reparte d'un texte sain — ne pas remettre cp1252.
+ENCODING = "utf-8"
 
 # Emprise Paris intra-muros + marge de sécurité ~2-3 km (cf. docstring). Bbox, pas un polygone
 # administratif exact — sciemment approximatif, documenté, jamais deviné champ par champ.

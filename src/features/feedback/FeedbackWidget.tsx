@@ -52,6 +52,15 @@ const CATEGORIES: readonly CategoryMeta[] = [
 
 const fabWrapStyle: CSSProperties = { position: 'fixed', right: 24, bottom: 24, zIndex: 45 }
 
+/**
+ * Pages portant une barre d'action collante en bas (Ajouter / Modifier : « Enregistrer la fiche ») :
+ * le FAB, fixé en bas-droite, viendrait masquer le bouton d'enregistrement. On le remonte au-dessus
+ * de cette barre sur ces routes uniquement.
+ */
+function hasStickyActionBar(pathname: string): boolean {
+  return pathname === '/nouveau' || pathname.endsWith('/modifier')
+}
+
 const fabStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -306,7 +315,7 @@ export default function FeedbackWidget() {
       <style>{`@media print { [${FEEDBACK_UI_ATTR}] { display: none !important; } }`}</style>
 
       {!open && (
-        <div style={fabWrapStyle}>
+        <div style={hasStickyActionBar(location.pathname) ? { ...fabWrapStyle, bottom: 84 } : fabWrapStyle}>
           {hovered && (
             <div style={tooltipStyle}>
               Un souci ou une idée sur cette page ? Signalez-le en un clic — l'adresse de la page et

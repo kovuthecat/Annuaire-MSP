@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Suspense, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDirectory } from '../../data/DirectoryProvider'
 import { useSelection } from '../../app/SelectionProvider'
 import { Avatar, Badge, StarToggle } from '../../components'
@@ -31,6 +31,19 @@ const pageStyle: CSSProperties = {
   padding: '24px 28px 60px',
   maxWidth: 820,
   margin: '0 auto',
+}
+
+const backButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  marginBottom: 14,
+  border: 'none',
+  background: 'transparent',
+  padding: 0,
+  cursor: 'pointer',
+  font: '600 12.5px "Plus Jakarta Sans"',
+  color: colors.brand.blue,
 }
 
 const cardStyle: CSSProperties = {
@@ -330,9 +343,18 @@ function TransitBlock({ contact }: { contact: ContactWithMeta }) {
 
 export default function FichePage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { contacts, loading, error, reload, adoptContact, unadoptContact, updateContact } = useDirectory()
   const { selectedIds, toggle } = useSelection()
   const [addOpen, setAddOpen] = useState(false)
+
+  // Retour à l'écran précédent (l'annuaire, avec ses critères de recherche restaurés depuis la
+  // session — cf. AnnuairePage/useSessionState). Si la fiche a été ouverte directement (lien
+  // partagé, pas d'historique interne), on retombe sur l'annuaire.
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1)
+    else navigate('/')
+  }
 
   const contact = contacts.find((c) => c.id === id)
 
@@ -401,6 +423,9 @@ export default function FichePage() {
 
   return (
     <div style={pageStyle}>
+      <button type="button" onClick={goBack} style={backButtonStyle}>
+        <span aria-hidden="true">←</span> Retour à l'annuaire
+      </button>
       <div style={cardStyle}>
         <div style={headerRowStyle}>
           <Avatar size={56} />

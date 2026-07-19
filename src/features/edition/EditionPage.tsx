@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { Button } from '../../components/ui'
 import { colors, radii } from '../../theme/tokens'
 import type { CommentType } from '../../types/db'
+import DoctolibImportPanel from './DoctolibImportPanel'
 import EssentielCard from './EssentielCard'
 import LieuSection from './LieuSection'
 import AdressageSection from './AdressageSection'
@@ -370,6 +371,10 @@ export default function EditionPage() {
             Préremplissage illisible — le formulaire s'est ouvert vide.
           </div>
         )}
+
+        {/* Découverte de l'import Doctolib (P4/T-007) : seulement en création manuelle, pas quand la
+            fiche arrive déjà préremplie depuis le favori (le bandeau ci-dessus suffit alors). */}
+        {mode === 'create' && !prefill && <DoctolibImportPanel />}
 
         <EssentielCard mode={mode} form={form} onChange={patchForm} duplicates={duplicates} />
 

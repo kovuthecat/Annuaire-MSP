@@ -89,14 +89,6 @@ const selectionIndicatorStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-const addLinkStyle: CSSProperties = {
-  font: '600 12px "Plus Jakarta Sans"',
-  cursor: 'pointer',
-  color: '#fff',
-  textDecoration: 'none',
-  whiteSpace: 'nowrap',
-}
-
 const profilePastilleStyle: CSSProperties = {
   width: 26,
   height: 26,
@@ -240,9 +232,6 @@ export default function Layout() {
               {selectedCount} sélectionné(s) → Imprimer
             </Link>
           )}
-          <Link to="/nouveau" style={addLinkStyle}>
-            + Ajouter
-          </Link>
           <ProfileMenu />
         </div>
       </div>
