@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { colors, radii } from '../../theme/tokens'
 import type { ContactWithMeta } from '../../types/db'
 import { toPatientView } from './patientView'
+import logoMsp from '../../assets/logo-msp-menilmontant.jpg'
 
 /**
  * Aperçu de la feuille d'adressage patient (maquette l.422-437, cf. plans/P1/S6.md T9 §Étape 4).
@@ -17,7 +18,7 @@ interface SheetPreviewProps {
 }
 
 const MSP_NOM = 'MSP Ménilmontant'
-const MSP_ADRESSE = '4 rue de Ménilmontant, 75020 Paris'
+const MSP_ADRESSE = '24 rue des Plâtrières, 75020 Paris'
 
 const sheetStyle: CSSProperties = {
   flex: 1,
@@ -30,24 +31,20 @@ const sheetStyle: CSSProperties = {
 
 const headerRowStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
-  gap: 10,
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 8,
   paddingBottom: 14,
   borderBottom: '1px solid #f1ede4',
   marginBottom: 16,
 }
 
-const headerBadgeStyle: CSSProperties = {
-  width: 30,
-  height: 30,
-  borderRadius: radii.sm,
-  background: colors.gradientPrimaryDiagonal,
-  flex: 'none',
-}
-
-const headerTitleStyle: CSSProperties = {
-  font: '800 13px "Plus Jakarta Sans"',
-  color: colors.text.primary,
+// Logo officiel MSP (lockup couleur sur fond blanc — contient déjà le nom, cf.
+// src/assets/logo-msp-menilmontant.jpg). Remplace l'ancien carré dégradé + titre texte.
+const headerLogoStyle: CSSProperties = {
+  height: 40,
+  width: 'auto',
+  maxWidth: 240,
 }
 
 const headerSubtitleStyle: CSSProperties = {
@@ -97,12 +94,9 @@ export default function SheetPreview({ items, avecEntete, pourPatient, noteLibre
     <div className="impression-sheet" style={sheetStyle}>
       {avecEntete && (
         <div style={headerRowStyle}>
-          <div style={headerBadgeStyle} />
-          <div>
-            <div style={headerTitleStyle}>{MSP_NOM}</div>
-            <div style={headerSubtitleStyle}>
-              {MSP_ADRESSE} · Établi le {dateEtablie}
-            </div>
+          <img src={logoMsp} alt={MSP_NOM} style={headerLogoStyle} />
+          <div style={headerSubtitleStyle}>
+            {MSP_ADRESSE} · Établi le {dateEtablie}
           </div>
         </div>
       )}
