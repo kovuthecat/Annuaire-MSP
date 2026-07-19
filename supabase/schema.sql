@@ -127,6 +127,52 @@ alter table public.contacts add column if not exists longitude     double precis
 alter table public.contacts add column if not exists geocode_score real;          -- confiance BAN 0..1
 alter table public.contacts add column if not exists geocoded_at   timestamptz;
 
+-- Catégorie d'annuaire (facette de filtre, cf. revue 2026-07-19) — dérivée à l'import de
+-- type/sous_type/tags, jamais saisie à la main. 5 valeurs : le praticien qu'on adresse, le
+-- lieu de soin, la ligne d'avis (pro→pro), le transport sanitaire, la ressource (asso/outil).
+alter table public.contacts add column if not exists categorie text;
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'contacts_categorie_check') then
+    alter table public.contacts add constraint contacts_categorie_check check (categorie in
+      ('Praticien','Structure de soins','Ligne d''avis','Transport sanitaire','Ressource'));
+  end if;
+end $$;
+create index if not exists contacts_categorie_idx on public.contacts (categorie);
+
+-- État « grisé » : fiche non exploitable en l'état, affichée en retrait. RÉVERSIBLE (cf. décision
+-- Thibault 2026-07-19). Deux motifs :
+--   'parti'     : le pro a cessé / quitté Paris / fermé → alerte « ne pas adresser » (levée à la main).
+--   'incomplet' : coordonnées introuvables → un membre la DÉGRISE en la complétant (trigger ci-dessous).
+alter table public.contacts add column if not exists grise_reason text;
+alter table public.contacts add column if not exists grise_alerte text;
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'contacts_grise_reason_check') then
+    alter table public.contacts add constraint contacts_grise_reason_check
+      check (grise_reason in ('parti','incomplet'));
+  end if;
+end $$;
+
+-- Dégrisage automatique : une fiche 'incomplet' redevient normale dès qu'on lui ajoute une
+-- coordonnée exploitable (adresse OU un moyen de contact). 'parti' n'est jamais effacé auto.
+create or replace function public.clear_grise_on_complete()
+returns trigger language plpgsql as $$
+begin
+  if new.grise_reason = 'incomplet'
+     and (coalesce(new.adresse,'') <> '' or coalesce(new.tel_secretariat,'') <> ''
+          or coalesce(new.doctolib,'') <> '' or coalesce(new.site_web,'') <> ''
+          or coalesce(new.ligne_directe,'') <> '' or coalesce(new.portable,'') <> ''
+          or coalesce(new.email_rdv,'') <> '') then
+    new.grise_reason := null;
+    new.grise_alerte := null;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists contacts_clear_grise on public.contacts;
+create trigger contacts_clear_grise
+  before insert or update on public.contacts
+  for each row execute function public.clear_grise_on_complete();
+
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'contacts_source_type_check') then

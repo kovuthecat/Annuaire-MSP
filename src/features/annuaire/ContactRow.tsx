@@ -28,9 +28,11 @@ interface ContactRowProps {
   onToggleStar: () => void
 }
 
-function rowStyle(highlighted: boolean): CSSProperties {
+function rowStyle(highlighted: boolean, grise: boolean): CSSProperties {
   return {
-    background: colors.white,
+    // Fiche grisée (départ/cessation ou coordonnées introuvables) : fond en retrait — cf. revue
+    // 2026-07-19. L'alerte reste, elle, en pleine couleur (voir GriseAlerte).
+    background: grise ? '#f6f4ef' : colors.white,
     border: `1px solid ${highlighted ? colors.brand.blue : colors.borderLight}`,
     borderRadius: radii.xxl,
     padding: '14px 16px',
@@ -39,6 +41,27 @@ function rowStyle(highlighted: boolean): CSSProperties {
     gap: 14,
     boxShadow: highlighted ? '0 0 0 3px rgba(31,127,214,.14)' : '0 1px 3px rgba(0,0,0,.03)',
   }
+}
+
+/** Puce d'alerte d'une fiche grisée (survol = motif). `parti` en ambre (« ne pas adresser »),
+ * `incomplet` en gris (« à compléter »). Couleurs = tokens existants (jamais inventées). */
+function GriseAlerte({ reason, alerte }: { reason: 'parti' | 'incomplet'; alerte: string | null }) {
+  const parti = reason === 'parti'
+  const style: CSSProperties = {
+    flex: 'none',
+    padding: '3px 8px',
+    borderRadius: radii.sm,
+    font: '600 10.5px "Plus Jakarta Sans"',
+    whiteSpace: 'nowrap',
+    cursor: 'help',
+    color: parti ? colors.comment.alerte.fg : colors.text.muted,
+    background: parti ? colors.comment.alerte.bg : '#ece7dd',
+  }
+  return (
+    <span style={style} title={alerte ?? undefined}>
+      {parti ? '⚠ Ne pas adresser' : 'À compléter'}
+    </span>
+  )
 }
 
 const checkboxStyle: CSSProperties = {
@@ -148,8 +171,15 @@ export default function ContactRow({
     ? `Distance depuis ${reference.label} (non enregistrée)`
     : 'Distance depuis la MSP'
 
+  // Fiche grisée (départ/cessation ou coordonnées introuvables) : contenu en retrait, alerte au
+  // survol, et on n'affiche pas le téléphone (ne pas inviter à adresser). Cf. revue 2026-07-19.
+  const grise = Boolean(contact.grise_reason)
+  const nameBlockGriseStyle: CSSProperties = grise
+    ? { ...nameBlockStyle, opacity: 0.6 }
+    : nameBlockStyle
+
   return (
-    <div style={rowStyle(highlighted)}>
+    <div style={rowStyle(highlighted, grise)}>
       <input
         type="checkbox"
         checked={selected}
@@ -158,7 +188,7 @@ export default function ContactRow({
         aria-label={`Sélectionner ${contact.nom} pour l'impression`}
       />
       <Avatar onClick={open} />
-      <div onClick={open} style={nameBlockStyle}>
+      <div onClick={open} style={nameBlockGriseStyle}>
         <div style={nameStyle}>
           <Highlight text={contact.nom} terms={queryTerms} />
         </div>
@@ -173,6 +203,9 @@ export default function ContactRow({
           </div>
         )}
       </div>
+      {grise && contact.grise_reason && (
+        <GriseAlerte reason={contact.grise_reason} alerte={contact.grise_alerte} />
+      )}
       {contact.secteur_conv === '1' && <Badge variant="secteur1" />}
       {contact.secteur_conv === '2' && <Badge variant="secteur2" />}
       {contact.ame_cmu && <Badge variant="ame" />}
@@ -181,7 +214,7 @@ export default function ContactRow({
         {coords && isPatientAddress ? `${distanceLabel} du patient` : distanceLabel}
       </span>
       <CommentIcons counts={counts} comments={comments} variant="compact" />
-      {contact.tel_secretariat && (
+      {!grise && contact.tel_secretariat && (
         <a href={`tel:${contact.tel_secretariat}`} style={phoneStyle}>
           {contact.tel_secretariat}
         </a>

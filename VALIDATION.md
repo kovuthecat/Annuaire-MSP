@@ -204,3 +204,20 @@
       *Important : sans nom, tes commentaires s'afficheront avec ton email.*
 - [ ] Changement de mot de passe effectif (se déconnecter puis se reconnecter avec le nouveau).
 - [ ] « + Inviter un membre » visible **uniquement en référent** → encart explicatif, aucun appel réseau.
+
+## Facette « Catégorie » + fiches grisées (2026-07-19)
+
+**Automatique (fait) :** `npm run build` + `npm run typecheck` OK ; `npm test` 40/40 vert (le filtre
+catégorie est couvert par la logique `matchesFilters`).
+
+**Visuel à vérifier (humain) — écran Annuaire :**
+- [ ] Le select **« Toutes catégories »** apparaît dans la rangée de filtres, après la puce « Avis ».
+- [ ] Choisir **Ressource** / **Transport sanitaire** (ou une autre) restreint bien la liste ; le
+      select passe en surbrillance bleue quand une catégorie est active ; « Réinitialiser les filtres »
+      le remet à « Toutes ».
+- [ ] Une **fiche grisée** (ex. rechercher « Spolnik » ou « Les Lilas ») s'affiche sur fond beige,
+      nom/spécialité en retrait, **sans téléphone**, avec une puce **« ⚠ Ne pas adresser »** (ambre,
+      motif `parti`) ou **« À compléter »** (gris, motif `incomplet`) ; le **survol** de la puce montre
+      le texte d'alerte (ex. « déménagé à Bordeaux »).
+- [ ] Sur une fiche grisée `incomplet`, ajouter une adresse/téléphone (édition) puis recharger →
+      elle **n'est plus grisée** (dégrisage auto par le trigger `contacts_clear_grise`).

@@ -47,7 +47,8 @@ COLS = ["type","sous_type","civilite","nom","prenom","profession","orientation",
         "etablissement","adresse","arrondissement","secteur_conv","tel_secretariat",
         "doctolib","site_web","email_rdv","ligne_directe","bip","portable","fax",
         "email_avis","mssante","consignes_pro","prend_nouveaux","delai","vad",
-        "ame_cmu","pmr","langues","tele_expertise","tarif","tags","statut","rpps",
+        "ame_cmu","pmr","langues","tele_expertise","tarif","tags","statut",
+        "categorie","grise_reason","grise_alerte","rpps",
         "source_url","source_type","source_checked_at"]
 BOOLS = {"vad", "ame_cmu", "pmr"}
 
@@ -59,6 +60,11 @@ def cell(c, k):
     if k == "source_type":
         # Sans enrichissement web, la donnée vient du carnet d'un médecin.
         return q(c.get("source_type") or "carnet_membre")
+    # Grisage : rangé dans _meta.grise = {reason, alerte} (cf. revue d'arbitrage 2026-07-19).
+    if k == "grise_reason":
+        return q((c.get("_meta", {}).get("grise") or {}).get("reason"))
+    if k == "grise_alerte":
+        return q((c.get("_meta", {}).get("grise") or {}).get("alerte"))
     return q(c.get(k))
 
 out = []

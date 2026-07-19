@@ -1,8 +1,18 @@
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import { colors, radii } from '../../theme/tokens'
+import type { Categorie } from '../../types/db'
 import { useReference } from '../proximite/ReferenceProvider'
 import type { SortOption } from './sort'
+
+/** Ordre d'affichage de la facette « Catégorie » (cf. revue d'arbitrage 2026-07-19). */
+export const CATEGORIES: readonly Categorie[] = [
+  'Praticien',
+  'Structure de soins',
+  "Ligne d'avis",
+  'Transport sanitaire',
+  'Ressource',
+]
 
 /**
  * Barre de recherche + bascule Mes contacts/Tous + rangée de filtres. Filtres réduits à 3 chips à
@@ -24,6 +34,10 @@ export interface FiltersBarProps {
   onPediatrieChange: (value: boolean) => void
   avis: boolean
   onAvisChange: (value: boolean) => void
+
+  /** Facette « Catégorie » — `''` = toutes. */
+  categorie: Categorie | ''
+  onCategorieChange: (value: Categorie | '') => void
 
   sort: SortOption
   onSortChange: (value: SortOption) => void
@@ -143,6 +157,19 @@ const sortSelectStyle: CSSProperties = {
   cursor: 'pointer',
   font: '500 11px "Plus Jakarta Sans"',
   color: colors.text.muted,
+}
+
+/** Facette « Catégorie » : un select compact, aligné sur les chips (même hauteur/teinte inactive). */
+function categorieSelectStyle(active: boolean): CSSProperties {
+  return {
+    ...chipBaseStyle,
+    padding: '5px 8px',
+    font: active ? '600 11px "Plus Jakarta Sans"' : '500 11px "Plus Jakarta Sans"',
+    color: active ? colors.brand.blue : colors.text.muted,
+    background: active ? 'rgba(31,127,214,.12)' : '#f1ede4',
+    cursor: 'pointer',
+    outline: 'none',
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -326,6 +353,8 @@ export default function FiltersBar({
   onPediatrieChange,
   avis,
   onAvisChange,
+  categorie,
+  onCategorieChange,
   sort,
   onSortChange,
   resultCount,
@@ -395,6 +424,20 @@ export default function FiltersBar({
           fg={colors.sector.avis.fg}
           bg={colors.sector.avis.bg}
         />
+        <select
+          value={categorie}
+          onChange={(e) => onCategorieChange(e.target.value as Categorie | '')}
+          style={categorieSelectStyle(categorie !== '')}
+          aria-label="Filtrer par catégorie"
+          title="Catégorie"
+        >
+          <option value="">Toutes catégories</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
 
         <ReferenceSelector />
 

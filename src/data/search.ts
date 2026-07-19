@@ -1,5 +1,5 @@
 import { COMMENT_TYPES } from '../types/db'
-import type { ContactWithMeta, SecteurConv } from '../types/db'
+import type { Categorie, ContactWithMeta, SecteurConv } from '../types/db'
 
 /**
  * Recherche/filtres **côté client** (fonctions pures, testables) — cf. DECISIONS.md §Recherche :
@@ -31,6 +31,8 @@ export interface ContactFilters {
   pediatrie?: boolean
   /** Propose un avis / une télé-expertise (chip « Avis ») — cf. `isAvis`. */
   avis?: boolean
+  /** Catégorie d'annuaire (facette « Catégorie », cf. 2026-07-19) — égalité stricte. */
+  categorie?: Categorie
 }
 
 // Plage Unicode U+0300–U+036F (diacritiques combinants), retirée après normalisation NFD.
@@ -250,6 +252,7 @@ function matchesFilters(contact: ContactWithMeta, filters: ContactFilters): bool
   if (filters.secteurConv && contact.secteur_conv !== filters.secteurConv) return false
   if (filters.pediatrie && !isPediatrie(contact)) return false
   if (filters.avis && !isAvis(contact)) return false
+  if (filters.categorie && contact.categorie !== filters.categorie) return false
   return true
 }
 

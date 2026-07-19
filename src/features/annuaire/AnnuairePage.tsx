@@ -7,6 +7,7 @@ import { useReference } from '../proximite/ReferenceProvider'
 import { MSP_COORDS, coordsOf } from '../proximite/geo'
 import { filterContacts, queryTerms } from '../../data/search'
 import type { ContactFilters } from '../../data/search'
+import type { Categorie } from '../../types/db'
 import { Button } from '../../components/ui'
 import { ProximityMap } from '../../components/Map'
 import type { MapPoint } from '../../components/Map'
@@ -107,6 +108,8 @@ export default function AnnuairePage() {
   const [secteur1, setSecteur1] = useState(false)
   const [pediatrie, setPediatrie] = useState(false)
   const [avis, setAvis] = useState(false)
+  // Facette « Catégorie » (Praticien / Structure / Ligne d'avis / Transport / Ressource).
+  const [categorie, setCategorie] = useState<Categorie | ''>('')
   const [sort, setSort] = useState<SortOption>('pertinence')
   // Panneau carte : replié par défaut (mobile ET desktop, cf. plan T2 étape 3 — la liste prime).
   const [mapOpen, setMapOpen] = useState(false)
@@ -119,8 +122,9 @@ export default function AnnuairePage() {
       secteurConv: secteur1 ? '1' : undefined,
       pediatrie: pediatrie || undefined,
       avis: avis || undefined,
+      categorie: categorie || undefined,
     }),
-    [mineOnly, secteur1, pediatrie, avis],
+    [mineOnly, secteur1, pediatrie, avis, categorie],
   )
 
   const filtered = useMemo(() => filterContacts(contacts, query, filters), [contacts, query, filters])
@@ -159,13 +163,14 @@ export default function AnnuairePage() {
     row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [highlightedId])
 
-  const hasActiveFilters = query !== '' || secteur1 || pediatrie || avis
+  const hasActiveFilters = query !== '' || secteur1 || pediatrie || avis || categorie !== ''
 
   const resetFilters = () => {
     setQuery('')
     setSecteur1(false)
     setPediatrie(false)
     setAvis(false)
+    setCategorie('')
   }
 
   if (loading) {
@@ -205,6 +210,8 @@ export default function AnnuairePage() {
         onPediatrieChange={setPediatrie}
         avis={avis}
         onAvisChange={setAvis}
+        categorie={categorie}
+        onCategorieChange={setCategorie}
         sort={sort}
         onSortChange={setSort}
         resultCount={sorted.length}

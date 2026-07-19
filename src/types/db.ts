@@ -11,6 +11,15 @@ export type ContactType = 'praticien' | 'structure' | 'labo' | 'autre'
 export type PrendNouveaux = 'oui' | 'non' | 'liste_attente' | 'inconnu'
 export type SecteurConv = '1' | '2' | 'centre' | 'non_conv'
 export type Statut = 'actif' | 'a_verifier' | 'ne_prend_plus'
+/** Catégorie d'annuaire (facette de filtre) — dérivée de type/sous_type/tags à l'import. */
+export type Categorie =
+  | 'Praticien'
+  | 'Structure de soins'
+  | "Ligne d'avis"
+  | 'Transport sanitaire'
+  | 'Ressource'
+/** Motif de « grisage » d'une fiche (non exploitable en l'état). `null` = fiche normale. */
+export type GriseReason = 'parti' | 'incomplet'
 export type CommentType = 'reco' | 'alerte' | 'spec' | 'info'
 export type Role = 'membre' | 'referent'
 /** Provenance d'une fiche enrichie (migration T-005) — d'où viennent les coordonnées. */
@@ -67,6 +76,12 @@ export interface Contact {
   // Méta
   tags: string[]
   statut: Statut
+  /** Facette de filtre (Praticien / Structure de soins / Ligne d'avis / Transport / Ressource). */
+  categorie: Categorie | null
+  /** Fiche grisée (non exploitable) : `parti` (départ/cessation) ou `incomplet`. `null` = normale. */
+  grise_reason: GriseReason | null
+  /** Texte d'alerte affiché au survol d'une fiche grisée (ex. « déménagé à Bordeaux »). */
+  grise_alerte: string | null
   rpps: string | null
   created_by: string | null
   created_at: string
