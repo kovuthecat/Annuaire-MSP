@@ -5,10 +5,13 @@ ouvre l'écran « Ajouter » de l'annuaire, **prérempli**. Vous relisez, corrig
 enregistrez. Rien n'est envoyé sur le réseau par le bookmarklet lui-même : il ouvre juste un nouvel
 onglet vers l'annuaire, avec les informations dans le lien.
 
-> **Statut au 2026-07-18** : le bookmarklet est prêt, mais **pas encore testé sur une vraie page
-> Doctolib**. Avant de le proposer aux ~10 membres, il faut d'abord vérifier qu'il s'exécute bien
-> (certains sites bloquent les bookmarklets par leur politique de sécurité, la « CSP »). Voir
-> §Vérification avant diffusion ci-dessous.
+> **Statut au 2026-07-19** : l'extraction a été testée sur **2 vraies pages Doctolib** (un centre
+> sans praticien identifié, une praticienne individuelle) — voir §Vérification avant diffusion pour
+> le détail et un bug trouvé et corrigé (nom de structure redécoupé en faux prénom/nom sur les pages
+> centre/structure). **Reste à faire par un humain** : un clic réel sur le favori installé (le test
+> du 2026-07-19 a exécuté le même code que le favori, mais pas via un clic `javascript:` littéral
+> depuis la barre de favoris — cf. la nuance en fin de section ci-dessous) pour écarter tout blocage
+> CSP au clic.
 
 ## Installation (30 secondes, une fois pour toutes)
 
@@ -84,6 +87,31 @@ praticien, un centre) :
 
 Consigner le verdict (OK / bloqué par la CSP) dans `plans/P4/S2.md` §Bilan de session — c'est ce
 verdict qui décide si `plans/P4/S3.md` (mini-extension) doit être lancée.
+
+### Résultat du test du 2026-07-19 (audit pré-partage)
+
+Testé sur 2 pages réelles en exécutant le code de `extract.js` directement dans le contexte de la
+page ouverte (équivalent fonctionnel à un clic sur le favori, à une nuance près expliquée plus bas) :
+
+1. **Page praticienne individuelle** (`doctolib.fr/sage-femme/paris/anne-kammerer`) : extraction
+   quasi parfaite — nom/prénom séparés correctement, profession (via le fil d'Ariane), adresse,
+   arrondissement parisien bien déduit du code postal, téléphone patient, lien Doctolib canonique,
+   et **14 tags** repris depuis les actes proposés (`availableService`). Aucune coordonnée pro
+   remplie.
+2. **Page centre/structure sans praticien identifié**
+   (`doctolib.fr/cabinet-medical/boulogne-billancourt/centre-de-specialites-pediatriques-de-boulogne`) :
+   **bug trouvé et corrigé** — le nom de la structure se retrouvait redécoupé en un faux
+   prénom/nom de personne (« Centre » / « de Spécialités Pédiatriques de Boulogne ») par le repli
+   DOM, qui ne savait pas qu'un nœud `MedicalOrganization` avait déjà identifié la page comme une
+   structure. Corrigé le 2026-07-19 : `nom` reprend désormais le nom complet de la structure (comme
+   `etablissement`), le repli DOM ne tente plus de deviner un nom de personne quand JSON-LD a déjà
+   tranché. Re-testé sur la même page après correctif : conforme. Couvert par
+   `tools/doctolib-bookmarklet/extract.test.js` (fixtures = JSON-LD réel des 2 pages).
+
+**Nuance sur la méthode** : le test exécute le script avec les pleins privilèges de la page (comme
+les DevTools), ce qui prouve que l'extraction fonctionne, mais diffère légèrement d'un clic réel sur
+un favori `javascript:` depuis la barre de favoris. Les navigateurs bloquent rarement ce cas via CSP,
+mais un clic réel par un membre reste la vérification qui lève le doute à 100 % avant diffusion.
 
 ## Maintenance
 

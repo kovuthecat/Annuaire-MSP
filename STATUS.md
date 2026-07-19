@@ -29,10 +29,14 @@ nouvelles fonctionnalités cadrées à la demande de Thibault le 2026-07-17, imp
   (`DECISIONS.md`, entrée du 2026-07-18).
 - **P4 — Ajout assisté depuis Doctolib** (`plans/P4/`, T-007) : bookmarklet un-clic →
   `/nouveau?prefill=` (liste blanche patient-only, provenance « à vérifier »), extension en repli si
-  CSP. S1 (lecteur prefill) et S2 (extracteur + bookmarklet + notice) faits côté code. **Reste un test
-  humain bloquant** : essayer le bookmarklet sur ≥ 2 vraies pages Doctolib (notice dans
-  `tools/doctolib-bookmarklet/README.md`) — si la CSP de Doctolib le bloque, S3 (extension navigateur)
-  se déclenche ; sinon P4 est fonctionnellement complet.
+  CSP. S1 (lecteur prefill) et S2 (extracteur + bookmarklet + notice) faits côté code. **Testé le
+  2026-07-19 sur 2 vraies pages Doctolib** (audit pré-partage) : praticienne individuelle → quasi
+  parfait ; page centre/structure sans praticien → bug trouvé (nom de structure redécoupé en faux
+  prénom/nom) et **corrigé** (`extract.js` + `bookmarklet.txt` régénéré + tests
+  `extract.test.js`, fixtures = JSON-LD réel des 2 pages). **Reste un test humain bloquant** : un
+  clic réel sur le favori installé (le test du 2026-07-19 a exécuté le même code en injection
+  script, pas via un clic `javascript:` littéral) — si la CSP de Doctolib bloque ce clic, S3
+  (extension navigateur) se déclenche ; sinon P4 est fonctionnellement complet.
 - Décisions de cadrage consignées dans `DECISIONS.md` (2 entrées du 2026-07-17 + 1 du 2026-07-18 sur
   la déviation IDFM). **4 colonnes géo ajoutées à `contacts`** (`supabase/schema.sql`, P3/S1 T1) — pas
   encore appliquées à une vraie base (cf. §Ce qui casse, le seed n'a jamais été exécuté).

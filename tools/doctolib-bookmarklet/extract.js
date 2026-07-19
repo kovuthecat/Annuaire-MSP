@@ -397,9 +397,16 @@ function extractFromPage(document, location) {
       Object.assign(out, splitPersonName(person.name))
     } else if (org && typeof org.name === 'string') {
       // Nœud "structure" uniquement (page centre/établissement, pas de praticien identifié) :
-      // le nom va dans `etablissement`, jamais dans nom/prenom/civilite (on ne sait pas que
-      // c'est une personne).
-      out.etablissement = org.name.trim() || undefined
+      // le nom de la structure va dans `etablissement` ET dans `nom` tel quel, jamais découpé en
+      // civilité/prénom/nom (ce n'est pas une personne). `nom` doit être posé ici : le champ
+      // "Nom (personne ou structure)" est obligatoire à l'enregistrement (EssentielCard), et sans
+      // ce filet le repli DOM plus bas s'en chargerait en redécoupant le <h1> comme s'il s'agissait
+      // d'un nom de personne (bug confirmé le 2026-07-19 sur une page centre Doctolib réelle :
+      // "Centre de Spécialités Pédiatriques de Boulogne" éclaté en prénom "Centre" / nom "de
+      // Spécialités Pédiatriques de Boulogne").
+      const structureName = org.name.trim() || undefined
+      out.etablissement = structureName
+      out.nom = structureName
     }
 
     // Établissement rattaché à un praticien (ex. `worksFor`), si présent et distinct du nom perso.
@@ -430,6 +437,15 @@ function extractFromPage(document, location) {
 
   // Repli DOM : seulement pour les champs encore vides après le JSON-LD.
   const fallback = domFallback(document)
+  // Structure identifiée sans praticien (branche ci-dessus) : `nom` est déjà posé sur le nom de la
+  // structure. Le repli DOM ne doit alors JAMAIS proposer sa propre lecture civilité/prénom/nom du
+  // <h1> — il redécouperait le même texte comme si c'était une personne (cf. bug ci-dessus). Sans
+  // JSON-LD du tout (`org` absent), le repli reste le seul recours et s'applique normalement.
+  if (org && !person) {
+    delete fallback.civilite
+    delete fallback.prenom
+    delete fallback.nom
+  }
   for (const key of Object.keys(fallback)) {
     if (out[key] === undefined) out[key] = fallback[key]
   }
@@ -504,9 +520,21 @@ function buildPrefillUrl(prefill) {
 }
 
 // -----------------------------------------------------------------------------------------------
-// 6. Point d'entrée (bookmarklet)
+// 6bis. Export pour les tests (audit pré-partage) — n'affecte pas le bundle bookmarklet : `module`
+// n'existe pas dans l'IIFE navigateur produite par esbuild (`--format=iife`), la branche est morte
+// à l'exécution en page réelle. Sert uniquement à charger `extractFromPage` depuis Vitest (Node).
 // -----------------------------------------------------------------------------------------------
 
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { extractFromPage, splitPersonName, mapAddress }
+}
+
+// -----------------------------------------------------------------------------------------------
+// 6. Point d'entrée (bookmarklet) — n'auto-exécute qu'en contexte navigateur réel (cf. export
+// ci-dessus : `require()`-er ce fichier depuis un test Node ne doit pas ouvrir d'onglet).
+// -----------------------------------------------------------------------------------------------
+
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
 ;(function run() {
   try {
     const prefill = extractFromPage(document, location)
@@ -520,3 +548,4 @@ function buildPrefillUrl(prefill) {
     console.error('[annuaire-msp] extraction Doctolib échouée :', err)
   }
 })()
+}
