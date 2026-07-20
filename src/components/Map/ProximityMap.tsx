@@ -105,6 +105,12 @@ function wrapperStyle(height: number): CSSProperties {
     borderRadius: radii.xl,
     overflow: 'hidden',
     border: `1px solid ${colors.borderLight}`,
+    // Contexte d'empilement (retours V1 2026-07-20) : Leaflet donne à ses panneaux internes des
+    // z-index élevés (tuiles 200, marqueurs 600, contrôles 800). Sans contexte propre, ils vivent
+    // dans le contexte racine et passaient AU-DESSUS de la barre de navigation basse fixe (z-index
+    // 40) au défilement. `position:relative` + `zIndex:0` les confine sous la carte.
+    position: 'relative',
+    zIndex: 0,
   }
 }
 

@@ -71,9 +71,73 @@ function tokenize(normalized: string): string[] {
   return normalized.split(TOKEN_SEPARATOR).filter(Boolean)
 }
 
-/** Mots de recherche d'une requête utilisateur (normalisés, dédoublonnés d'espaces). */
+// ---------------------------------------------------------------------------
+// Canonicalisation d'arrondissement parisien (retours V1 2026-07-20)
+// ---------------------------------------------------------------------------
+// L'arrondissement est saisi de façons hétérogènes : « 75020 », « 20e », « 2e (+20e) »… et cherché
+// tout aussi librement : « Paris 20 », « 20e », « 75020 ». Résultat : « Endoc Paris 20 » ne rendait
+// PAS la même chose que « Endoc 75020 » (le mot « paris » n'est stocké nulle part, « 20 » ne matchait
+// que par sous-chaîne de « 75020 »). On ramène toutes ces formes à un jeton canonique unique — le code
+// postal « 750NN » — appliqué **des deux côtés** : au champ arrondissement de l'index ET à la requête.
+
+/** Code postal parisien canonique d'un numéro d'arrondissement (1–20 → « 750NN »), sinon `null`. */
+function parisArrCode(n: number): string | null {
+  return n >= 1 && n <= 20 ? '750' + String(n).padStart(2, '0') : null
+}
+
+// Forme ordinale d'un arrondissement : « 20e », « 20er », « 20eme » (accents déjà retirés par
+// `normalize`, donc « 20ème » → « 20eme »). Le suffixe est obligatoire ici pour ne pas happer un
+// numéro nu (« 20 » reste « 20 », matché en sous-chaîne comme avant).
+const ARR_ORDINAL_TERM = new RegExp('^(\\d{1,2})(?:er|eme|e)$')
+// Idem mais suffixe optionnel — pour le mot qui suit « paris » (« paris 20 » comme « paris 20e »).
+const ARR_AFTER_PARIS = new RegExp('^(\\d{1,2})(?:er|eme|e)?$')
+// Repérage des mentions ordinales d'arrondissement DANS un champ curé (« 20e », « 20eme »), pour
+// l'index. Inutile de gérer le code postal ici : un « 75020 » littéral est déjà indexé tel quel par
+// la tokenisation du champ ; seules les formes ordinales doivent être ramenées au code postal.
+const ARR_ORDINAL_IN_TEXT = new RegExp('(\\d{1,2})\\s*(?:er|eme|e)\\b', 'g')
+
+/**
+ * Jetons canoniques « 750NN » déduits des formes ordinales d'un champ arrondissement curé
+ * (« 20e » → `['75020']`, « 2e (+20e) » → `['75002','75020']`, « 75020 » → `[]` car déjà indexé).
+ * Ne s'applique qu'au champ arrondissement, pas à l'adresse libre (où « 3e étage » ne doit pas
+ * devenir un arrondissement).
+ */
+function arrondissementCodes(arrondissement: string | null | undefined): string[] {
+  if (!arrondissement) return []
+  const codes = new Set<string>()
+  for (const m of normalize(arrondissement).matchAll(ARR_ORDINAL_IN_TEXT)) {
+    const code = parisArrCode(Number(m[1]))
+    if (code) codes.add(code)
+  }
+  return [...codes]
+}
+
+/**
+ * Mots de recherche d'une requête utilisateur (normalisés). Les mentions d'arrondissement sont
+ * ramenées au code postal canonique : « paris 20 » / « paris 20e » / « 20e » / « 20eme » → « 75020 »
+ * (cf. §Canonicalisation). Un numéro nu (« 20 ») est laissé tel quel.
+ */
 export function queryTerms(query: string): string[] {
-  return tokenize(normalize(query))
+  const raw = tokenize(normalize(query))
+  const out: string[] = []
+  for (let i = 0; i < raw.length; i++) {
+    const term = raw[i]
+    // « paris 20 » / « paris 20e » → code postal (on consomme les deux mots).
+    if (term === 'paris' && i + 1 < raw.length) {
+      const next = ARR_AFTER_PARIS.exec(raw[i + 1])
+      const code = next ? parisArrCode(Number(next[1])) : null
+      if (code) {
+        out.push(code)
+        i += 1
+        continue
+      }
+    }
+    // « 20e » / « 20eme » isolé → code postal.
+    const ordinal = ARR_ORDINAL_TERM.exec(term)
+    const code = ordinal ? parisArrCode(Number(ordinal[1])) : null
+    out.push(code ?? term)
+  }
+  return out
 }
 
 /** Distance de Levenshtein (nombre minimal d'éditions caractère à caractère). */
@@ -133,10 +197,21 @@ interface SearchIndex {
 // un contact modifié obtient une nouvelle entrée et l'ancienne est ramassée par le GC.
 const indexCache = new WeakMap<ContactWithMeta, SearchIndex>()
 
-/** Construit un segment pondéré à partir de champs bruts (les vides sont ignorés). */
-function makeSegment(weight: number, fields: Array<string | null | undefined>): Segment {
-  const text = normalize(fields.filter((f): f is string => Boolean(f)).join(' '))
-  return { weight, text, words: [...new Set(tokenize(text))] }
+/**
+ * Construit un segment pondéré à partir de champs bruts (les vides sont ignorés). `extraTokens`
+ * (jetons déjà normalisés, ex. codes d'arrondissement canoniques) sont ajoutés au texte ET aux mots,
+ * pour être matchables en exact comme en sous-chaîne.
+ */
+function makeSegment(
+  weight: number,
+  fields: Array<string | null | undefined>,
+  extraTokens: string[] = [],
+): Segment {
+  const base = normalize(fields.filter((f): f is string => Boolean(f)).join(' '))
+  const text = extraTokens.length ? `${base} ${extraTokens.join(' ')}`.trim() : base
+  const words = new Set(tokenize(base))
+  for (const token of extraTokens) words.add(token)
+  return { weight, text, words: [...words] }
 }
 
 function buildIndex(contact: ContactWithMeta): SearchIndex {
@@ -154,7 +229,11 @@ function buildIndex(contact: ContactWithMeta): SearchIndex {
         contact.sous_type,
         ...contact.tags,
       ]),
-      makeSegment(FIELD_WEIGHTS.location, [contact.adresse, contact.arrondissement]),
+      makeSegment(
+        FIELD_WEIGHTS.location,
+        [contact.adresse, contact.arrondissement],
+        arrondissementCodes(contact.arrondissement),
+      ),
       makeSegment(FIELD_WEIGHTS.comment, commentTexts),
     ],
   }

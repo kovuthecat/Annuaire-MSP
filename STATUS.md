@@ -78,6 +78,19 @@
 - **Décisions de triage en attente** (buckets d'arbitrage du travail Doctolib/web, cf.
   `plans/P2/S2.md`) — quelques cas non tranchés restent à statuer avec Thibault.
 
+## Correctifs retours V1 mobile (2026-07-20, non encore déployés)
+
+4 retours iPhone (`~/Downloads/retours-annuaire-msp-2026-07-20.json`) corrigés côté code, build +
+typecheck + 73 tests verts, **validation visuelle humaine à faire** (cf. `VALIDATION.md` §Retours V1
+mobile 2026-07-20) puis déploiement :
+- **Popover de commentaires qui débordait l'écran** (`CommentIcons.tsx`) — recadrage horizontal mesuré
+  (useLayoutEffect) + largeur plafonnée à `100vw`. C'était **aussi** la cause du « ne s'adapte pas à la
+  largeur de l'écran » (le débordement élargissait le viewport iOS) — diagnostic confirmé en direct.
+- **Carte Leaflet au-dessus de la barre de nav basse** (`Map/ProximityMap.tsx`) — contexte d'empilement
+  (`position:relative; zIndex:0`) qui confine les z-index internes de Leaflet (200→800).
+- **« Paris 20 » ≠ « 75020 » à la recherche** (`data/search.ts`) — canonicalisation des arrondissements
+  parisiens (ordinal/ville → code postal), symétrique index ↔ requête. Couvert par 4 nouveaux tests.
+
 ## Bugs connus
 
 - **Détection de doublon — faux positif sur sous-chaîne** (`findSimilarContacts`,

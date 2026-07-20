@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { colors } from '../theme/tokens'
 
@@ -142,6 +142,35 @@ function CommentIcon({
   const cfg = VARIANT_CONFIG[variant]
   const suffix = cfg.showLabel ? ` ${meta.singular}(s)` : ''
 
+  // Recadrage horizontal du popover pour qu'il ne sorte jamais de l'écran (retours V1 2026-07-20) :
+  // ancré `right:0` (compact) ou `left:0` (detailed) sur une petite icône, il débordait le bord
+  // gauche sur mobile — et ce débordement élargissait le viewport iOS (page « collée à gauche »).
+  // On mesure après montage (useLayoutEffect = avant peinture, aucun flash) et on translate le
+  // popover juste ce qu'il faut pour rester à ≥ MARGIN de chaque bord.
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const [shiftX, setShiftX] = useState(0)
+  useLayoutEffect(() => {
+    if (!open) {
+      setShiftX(0)
+      return
+    }
+    const el = popoverRef.current
+    if (!el) return
+    const MARGIN = 8
+    const vw = document.documentElement.clientWidth
+    const rect = el.getBoundingClientRect()
+    // Position « naturelle » = position mesurée moins la translation déjà appliquée.
+    const naturalLeft = rect.left - shiftX
+    const naturalRight = rect.right - shiftX
+    let next = 0
+    if (naturalRight > vw - MARGIN) next = vw - MARGIN - naturalRight
+    if (naturalLeft + next < MARGIN) next = MARGIN - naturalLeft
+    if (next !== shiftX) setShiftX(next)
+    // Dépend uniquement de `open` : le recalcul complet repart de la position naturelle, donc une
+    // seule passe suffit (pas de boucle malgré la mise à jour de `shiftX`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -171,10 +200,12 @@ function CommentIcon({
       </div>
       {open && (
         <div
+          ref={popoverRef}
           style={{
             position: 'absolute',
             zIndex: 20,
-            width: cfg.popoverWidth,
+            // Largeur plafonnée à l'écran sur mobile ; recadrée par `shiftX` pour ne jamais déborder.
+            width: `min(${cfg.popoverWidth}px, calc(100vw - 16px))`,
             background: '#fff',
             border: '1px solid #e6e2d8',
             borderRadius: 12,
@@ -182,6 +213,7 @@ function CommentIcon({
             padding: cfg.popoverPadding,
             textAlign: 'left',
             ...cfg.popoverStyle,
+            transform: shiftX ? `translateX(${shiftX}px)` : undefined,
           }}
         >
           <div

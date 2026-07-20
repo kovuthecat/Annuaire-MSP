@@ -286,6 +286,27 @@ catégorie est couvert par la logique `matchesFilters`).
       les contacts », au lieu de « Aucun résultat ».
 - [ ] Compteur carte : « N fiches sans adresse localisée ».
 
+## Retours V1 mobile — 4 correctifs (2026-07-20, fichier `retours-annuaire-msp-2026-07-20.json`)
+
+**Automatique (fait) :** `npm run build` + `npm run typecheck` OK ; `npm run test` 73/73 vert
+(4 nouveaux cas d'équivalence d'arrondissement dans `search.test.ts`). Diagnostic overflow confirmé
+en direct dans le navigateur (popover à `left:-32px`, seul élément dépassant le viewport).
+
+**Visuel à vérifier (humain), sur iPhone :**
+- [ ] **Popover de commentaires (annuaire, mobile)** [retour #0] : taper une icône de commentaire d'une
+      ligne — le popover reste **entièrement dans l'écran** (ne déborde plus à gauche/droite), quel que
+      soit l'emplacement de l'icône. Idem sur la **fiche** (popover détaillé, largeur 320).
+- [ ] **Largeur d'écran (annuaire, iPhone)** [retour #2] : le contenu occupe **toute la largeur** (plus
+      de bande blanche à droite / contenu « collé à gauche »). *Cause identifiée : le popover ci-dessus
+      débordait et faisait élargir le viewport iOS ; son recadrage devrait suffire — si le symptôme
+      persiste sur un écran précis, le signaler avec la manip exacte.*
+- [ ] **Carte sur une fiche** [retour #3] : faire défiler une fiche avec carte jusqu'à la barre du bas —
+      la **carte ne passe plus au-dessus** de la barre de navigation basse ni du bouton retour (elle
+      reste sous la barre). Idem carte de l'annuaire.
+- [ ] **Recherche « Paris 20 » = « 75020 »** [retour #1] : « Endoc Paris 20 » et « Endoc 75020 »
+      renvoient la **même liste** ; « Endoc 20e » et « Endoc 20ème » aussi. Un autre arrondissement
+      (« Paris 11 ») ne ramène pas ceux du 20e.
+
 ## Audit pré-partage #9 — carte, FAB mobile, filtres repliables, sélection, casse, « à compléter »
 
 **Automatique (fait) :** `npm run build` + `npm run typecheck` OK ; `npm run test` 64/64 vert (7 cas

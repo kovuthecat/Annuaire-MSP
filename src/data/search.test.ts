@@ -165,6 +165,46 @@ describe('filterContacts — recherche texte', () => {
   })
 })
 
+describe('filterContacts — équivalence des formes d’arrondissement (retours V1 2026-07-20)', () => {
+  // Un endoc du 20e stocké au code postal, un autre en ordinal, un endoc hors 20e (11e), et un
+  // faux ami « 3e étage » dans l'adresse (ne doit PAS devenir l'arrondissement 3).
+  const endoc75020 = makeContact({ nom: 'Aubert', profession: 'Endocrinologue', arrondissement: '75020' })
+  const endoc20e = makeContact({ nom: 'Bernard', profession: 'Endocrinologue', arrondissement: '2e (+20e)' })
+  const endoc11e = makeContact({ nom: 'Colin', profession: 'Endocrinologue', arrondissement: '11e' })
+  const etage3 = makeContact({
+    nom: 'Denis',
+    profession: 'Endocrinologue',
+    arrondissement: '75020',
+    adresse: '5 rue des Amandiers, 3e étage',
+  })
+  const all = [endoc75020, endoc20e, endoc11e, etage3]
+
+  it('« Endoc Paris 20 » rend le même résultat que « Endoc 75020 »', () => {
+    const parVille = names(filterContacts(all, 'endoc paris 20'))
+    const parCode = names(filterContacts(all, 'endoc 75020'))
+    expect(parVille).toEqual(parCode)
+    expect(parCode).toEqual(['Aubert', 'Bernard', 'Denis'])
+  })
+
+  it('reconnaît la forme ordinale « 20e » comme le code postal « 75020 »', () => {
+    expect(names(filterContacts(all, 'endoc 20e'))).toEqual(['Aubert', 'Bernard', 'Denis'])
+    expect(names(filterContacts(all, 'endoc 20eme'))).toEqual(['Aubert', 'Bernard', 'Denis'])
+  })
+
+  it('ne confond pas un autre arrondissement', () => {
+    expect(names(filterContacts(all, 'endoc paris 11'))).toEqual(['Colin'])
+    expect(names(filterContacts(all, 'endoc 11e'))).toEqual(['Colin'])
+  })
+
+  it('n’interprète pas « 3e étage » (adresse) comme l’arrondissement 3', () => {
+    // Isolé : « 3e étage » est dans l'adresse (champ libre), pas dans l'arrondissement (« 75020 »).
+    // La canonicalisation ne lit que le champ arrondissement → aucun code « 75003 » créé.
+    expect(filterContacts([etage3], 'endoc paris 3')).toHaveLength(0)
+    // La fiche reste bien trouvable par son vrai arrondissement.
+    expect(names(filterContacts([etage3], 'endoc paris 20'))).toEqual(['Denis'])
+  })
+})
+
 describe('filterContacts — tolérance aux fautes de frappe', () => {
   const contacts = [
     makeContact({ nom: 'Durand', profession: 'Kinésithérapeute' }),
