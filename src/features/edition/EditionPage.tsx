@@ -145,6 +145,12 @@ const stickyHintStyle: CSSProperties = {
   flex: 1,
 }
 
+// #c1734a : même couleur « destructive » que « Retirer »/« Tout vider » (SelectionPanel), pour que
+// l'action se reconnaisse d'un coup d'œil dans toute l'app — pas de couleur inventée.
+const deleteButtonStyle: CSSProperties = {
+  color: '#c1734a',
+}
+
 const centeredMsgStyle: CSSProperties = {
   minHeight: '40vh',
   display: 'flex',
@@ -176,7 +182,8 @@ export default function EditionPage() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
   const [searchParams] = useSearchParams()
-  const { contacts, loading, createContact, updateContact, addComment, reload } = useDirectory()
+  const { contacts, loading, createContact, updateContact, deleteContact, addComment, reload } =
+    useDirectory()
   const { member } = useAuth()
 
   const existingContact = useMemo(
@@ -207,6 +214,7 @@ export default function EditionPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (mode === 'edit' && !initialized && existingContact) {
@@ -354,6 +362,24 @@ export default function EditionPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!existingContact) return
+    const confirmed = window.confirm(
+      `Supprimer définitivement la fiche « ${existingContact.nom} » ? Cette action est irréversible ` +
+        '— ses commentaires et son statut « ma liste » chez les autres membres seront supprimés avec elle.',
+    )
+    if (!confirmed) return
+    setSubmitError(null)
+    setDeleting(true)
+    try {
+      await deleteContact(existingContact.id)
+      navigate('/')
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Erreur lors de la suppression.')
+      setDeleting(false)
+    }
+  }
+
   const title = mode === 'create' ? 'Ajouter un correspondant' : 'Modifier un correspondant'
   const subtitle =
     mode === 'create'
@@ -411,15 +437,26 @@ export default function EditionPage() {
       </div>
 
       <div style={stickyBarStyle}>
+        {mode === 'edit' && existingContact && (
+          <Button
+            type="button"
+            variant="ghost"
+            style={deleteButtonStyle}
+            onClick={() => void handleDelete()}
+            disabled={deleting || submitting}
+          >
+            {deleting ? 'Suppression…' : 'Supprimer la fiche'}
+          </Button>
+        )}
         {/* Hint masqué sur mobile (audit pré-partage #6) : il serrait les boutons. Le span garde
             son flex: 1 pour maintenir Annuler/Enregistrer alignés à droite. */}
         <span style={stickyHintStyle}>
           {!isMobile && 'Vous pourrez compléter la fiche à tout moment.'}
         </span>
-        <Button type="button" variant="ghost" onClick={() => navigate('/')}>
+        <Button type="button" variant="ghost" onClick={() => navigate('/')} disabled={deleting}>
           Annuler
         </Button>
-        <Button type="submit" variant="primary" disabled={submitting}>
+        <Button type="submit" variant="primary" disabled={submitting || deleting}>
           {submitting ? 'Enregistrement…' : 'Enregistrer la fiche'}
         </Button>
       </div>
