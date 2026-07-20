@@ -46,16 +46,10 @@ const cardStyle = {
 } as const
 
 const logoStyle = {
-  width: 52,
-  height: 52,
-  borderRadius: 14,
-  background: colors.gradientPrimaryDiagonal,
+  width: 56,
+  height: 56,
   margin: '0 auto 18px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#fff',
-  font: '800 18px "Plus Jakarta Sans"',
+  display: 'block',
 } as const
 
 const titleStyle = {
@@ -126,7 +120,7 @@ export default function ConnexionPage() {
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
-        <div style={logoStyle}>M</div>
+        <img src="/icon-192.png" alt="" style={logoStyle} />
         <div style={titleStyle}>MSP Ménilmontant</div>
         <div style={subtitleStyle}>Réservé aux membres de la MSP</div>
 
