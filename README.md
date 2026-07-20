@@ -13,9 +13,15 @@ pluriprofessionnelle (Paris 20e, ~10 membres). Nom de travail — renommable.
 
 ## État
 
-**Phase 0 — cadrage.** Prochaine étape : maquette UI (Claude Design) → `design/maquettes/`, puis
-scaffolding et câblage. Voir `STATUS.md`.
+**V1 en production**, utilisée par les membres de la MSP avec des données réelles (1 226
+correspondants). Annuaire, fiche, ajout/édition, sélection & impression, membres, recueil de
+retours (« Un souci ? »), proximité/carte, ajout assisté depuis Doctolib : tous câblés et déployés.
+Détail à jour dans `STATUS.md` ; backlog dans `TASKS.md`.
 
-## Stack cible
+- Dépôt GitHub : `kovuthecat/Annuaire-MSP`.
+- Déploiement : Vercel, projet `kovu-s-projects/annuaire-msp` → https://annuaire-msp.vercel.app.
+- Données : Supabase (Postgres + Auth + RLS).
 
-Vite + React + TypeScript · Supabase (Postgres + Auth email/mot de passe + RLS) · Vercel.
+## Stack
+
+Vite + React + TypeScript · Supabase (Postgres + Auth email/mot de passe + RLS) · Vercel · Vitest.

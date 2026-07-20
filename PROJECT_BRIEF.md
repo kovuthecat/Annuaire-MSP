@@ -89,26 +89,33 @@ Spécifique au projet :
 Devenir le **réflexe d'adressage unique** de la MSP : retrouver en secondes le bon correspondant ou la
 bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patient une liste claire.
 
-### MVP
+### MVP — fait, en production
 
-- [ ] Annuaire : recherche + filtres + mes/tous + tags
-- [ ] Fiche flexible (praticien/structure) : coords patient vs pro, infos pratiques, tags
-- [ ] Ajout / édition collaborative (peu de champs requis, historique)
-- [ ] Mes contacts (créées + adoptées)
-- [ ] Commentaires typés, signés, datés
-- [ ] Impression / PDF liste patient
-- [ ] Auth email + mot de passe (session persistée) + provisionnement des membres
+- [x] Annuaire : recherche + filtres + mes/tous + tags
+- [x] Fiche flexible (praticien/structure) : coords patient vs pro, infos pratiques, tags
+- [x] Ajout / édition collaborative (peu de champs requis, historique)
+- [x] Mes contacts (créées + adoptées)
+- [x] Commentaires typés, signés, datés
+- [x] Impression / PDF liste patient
+- [x] Auth email + mot de passe (session persistée) + provisionnement des membres — connexion par
+      prénom (résolu en email côté client, cf. `DECISIONS.md` 2026-07-18)
 
-### Version 1
+### Version 1 — fait, en production
 
-- [ ] Import assisté des carnets : parse + **enrichissement web** des contacts incomplets, relu (migration one-shot)
-- [ ] Affinage des filtres et de la recherche à l'usage
-- [ ] Détection de doublons à la saisie
+- [x] Import assisté des carnets : parse + **enrichissement web** des contacts incomplets, relu
+      (migration one-shot) — base 1 226 fiches (4 carnets + répertoire partagé + 2 carnets
+      Elena/Maylis, croisés open data CNAM + Doctolib)
+- [x] Affinage des filtres et de la recherche à l'usage — recherche multi-termes/tolérante aux
+      fautes/pertinence, filtres recentrés (Secteur 1 / Pédiatrie / À compléter + facette Catégorie)
+- [x] Détection de doublons à la saisie
 
-### Version 2 / idées futures
+### Version 2 / idées réalisées ou en cours
 
+- [x] **Carte de proximité** — géocodage BAN, distance à vol d'oiseau, carte Leaflet/OSM (annuaire +
+      fiche), arrêts de transport IDFM (plan `plans/P3/`)
+- [x] **Ajout assisté depuis Doctolib** (bookmarklet, JSON-LD → préremplissage `/nouveau?prefill=`) —
+      reste un test humain (clic réel sur le favori) pour écarter tout blocage CSP (plan `plans/P4/`)
 - [ ] PWA / consultation hors-ligne
-- [ ] Carte de proximité
 - [ ] Base de mémos / protocoles
 - [ ] Statistiques d'usage
 
@@ -122,4 +129,6 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 
 - Sur-structurer les « infos pratiques » (garder un texte libre).
 - Rôles / permissions complexes (10 membres, confiance mutuelle).
-- Intégrations externes (Doctolib, logiciel métier).
+- Intégration serveur avec Doctolib ou un logiciel métier (scraping, API) — reste hors périmètre ;
+  le bookmarklet P4 lit uniquement la page déjà ouverte dans le navigateur du membre, sans requête
+  serveur vers Doctolib (cf. `DECISIONS.md` 2026-07-17).

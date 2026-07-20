@@ -6,6 +6,11 @@
 >
 > **Comment tester** : sur le déploiement Vercel, ou en local `npm run dev`.
 > **Pré-requis** : avoir rejoué `supabase/schema.sql` et avoir un compte (Auth → Users → Add user).
+>
+> **Note (2026-07-19)** : la V1 est en production et utilisée avec des données réelles — l'essentiel
+> a donc forcément été vu à l'usage. Cette checklist n'a jamais été formellement parcourue point par
+> point : les blocs restent `[ ]` par défaut de bonne foi (pas de faux `[x]` fabriqué), à cocher au
+> fil de l'eau si un doute se présente sur un écran précis, plutôt qu'à traiter comme un blocage.
 
 ## Recueil de retours V1 — bouton « Un souci ? » + écran /retours (T-008)
 

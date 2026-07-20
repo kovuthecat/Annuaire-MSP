@@ -175,7 +175,8 @@ Claude Design** pour dessiner la maquette écran par écran.
 
 ## Maquette UI
 
-- **Statut** : [ ] à dessiner · [x] **dessinée** (Claude Design, 2026-07-16) · [ ] câblée
+- **Statut** : [ ] à dessiner · [x] dessinée (Claude Design, 2026-07-16) · [x] **câblée** (plan P1,
+  puis étendue par P2-P4 et l'audit pré-partage — cf. `STATUS.md` pour l'état courant)
 - **Exports** : `design/maquettes/design-annuaire-msp/` — écran principal (tous les écrans via états) :
   `project/MSP Annuaire.dc.html` ; variante `project/MSP Annuaire - Options.dc.html` ; logo
   `project/uploads/Logo MSP Ménilmontant couleur.jpg` ; aperçus PNG des lignes d'annuaire.
