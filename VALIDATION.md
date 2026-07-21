@@ -12,6 +12,28 @@
 > point : les blocs restent `[ ]` par défaut de bonne foi (pas de faux `[x]` fabriqué), à cocher au
 > fil de l'eau si un doute se présente sur un écran précis, plutôt qu'à traiter comme un blocage.
 
+## Coordonnées des membres — tél. pro / perso au profil (2026-07-21)
+
+> **Pré-requis DB** : avoir rejoué `supabase/schema.sql` (ajoute `members.tel_pro` / `members.tel_perso`,
+> `alter … add column if not exists`, idempotent) sur la base de prod **avant** de tester l'écriture.
+> Sinon l'enregistrement du profil échouera (colonne inconnue).
+
+Écran Membres → carte **« Mon profil »** :
+
+- [ ] Deux nouveaux champs **« Téléphone pro »** et **« Téléphone perso (visible des membres) »**
+      apparaissent sous **Profession**, préremplis avec mes valeurs si déjà renseignées.
+- [ ] Je saisis un numéro dans chaque, **Enregistrer** → **« Profil mis à jour. »** ; après rechargement
+      de la page, les valeurs sont toujours là (persistées).
+- [ ] Vider un champ puis enregistrer le remet bien à vide (pas de valeur fantôme).
+
+Écran Membres → **liste des membres** :
+
+- [ ] Sous la ligne *profession · email*, une ligne **« Pro : … · Perso : … »** montre **uniquement**
+      les numéros renseignés (rien ne s'affiche si les deux sont vides ; un seul si un seul est rempli).
+- [ ] Les numéros sont des **liens cliquables** (bleu) ; sur mobile, taper dessus propose d'appeler.
+- [ ] Un autre membre voit bien **mes** numéros (annuaire interne) mais ne peut **pas** éditer ma fiche
+      (seul « Mon profil » est éditable).
+
 ## Recueil de retours V1 — bouton « Un souci ? » + écran /retours (T-008)
 
 > **Pré-requis spécifiques** : avoir **rejoué `supabase/schema.sql`** (nouvelle section 6) et avoir

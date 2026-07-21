@@ -91,6 +91,19 @@ mobile 2026-07-20) puis déploiement :
 - **« Paris 20 » ≠ « 75020 » à la recherche** (`data/search.ts`) — canonicalisation des arrondissements
   parisiens (ordinal/ville → code postal), symétrique index ↔ requête. Couvert par 4 nouveaux tests.
 
+## Coordonnées des membres — tél. pro / perso (2026-07-21, non encore déployé)
+
+Chaque membre peut renseigner un **téléphone pro** et un **téléphone perso** dans « Mon profil »
+(écran Membres) ; ces numéros s'affichent (liens `tel:` cliquables) dans la liste des membres, pour
+que les collègues se joignent. Annuaire **interne** : visibles de tous les membres connectés (RLS
+`members_select`), éditables par soi seul (`members_update_self`, déjà en place — aucune policy à
+changer). Sans rapport avec l'étanchéité patient/pro des `contacts`. Build + typecheck + 73 tests verts.
+- **Colonnes** `members.tel_pro` / `members.tel_perso` (`src/types/db.ts`, `supabase/schema.sql`).
+- **UI** `src/features/membres/MembresPage.tsx` (2 champs `type="tel"` + rangée d'affichage `MemberTels`).
+- **Migration prod à appliquer avant déploiement** : rejouer `supabase/schema.sql` (les 2
+  `alter … add column if not exists` suffisent, idempotents) — sinon l'enregistrement du profil échoue.
+- **Validation visuelle humaine à faire** (cf. `VALIDATION.md` §Coordonnées des membres) puis déploiement.
+
 ## Bugs connus
 
 - **Détection de doublon — faux positif sur sous-chaîne** (`findSimilarContacts`,

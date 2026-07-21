@@ -117,6 +117,33 @@ function initialsFor(member: Member): string {
   return member.email ? member.email[0]!.toUpperCase() : '?'
 }
 
+const telLinkStyle: CSSProperties = {
+  color: colors.brand.blue,
+  textDecoration: 'none',
+  fontWeight: 600,
+}
+
+/** Rangée « Pro : … · Perso : … » sous la profession — uniquement les numéros renseignés. */
+function MemberTels({ member }: { member: Member }) {
+  const parts: Array<{ label: string; value: string }> = []
+  if (member.tel_pro?.trim()) parts.push({ label: 'Pro', value: member.tel_pro.trim() })
+  if (member.tel_perso?.trim()) parts.push({ label: 'Perso', value: member.tel_perso.trim() })
+  if (parts.length === 0) return null
+  return (
+    <div style={memberMetaStyle}>
+      {parts.map((p, i) => (
+        <span key={p.label}>
+          {i > 0 && ' · '}
+          {p.label} :{' '}
+          <a href={`tel:${p.value.replace(/\s/g, '')}`} style={telLinkStyle}>
+            {p.value}
+          </a>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function MembersList({ members }: { members: Member[] }) {
   return (
     <div style={listStyle}>
@@ -128,6 +155,7 @@ function MembersList({ members }: { members: Member[] }) {
             <div style={memberMetaStyle}>
               {m.profession || '—'} · {m.email ?? '—'}
             </div>
+            <MemberTels member={m} />
           </div>
           {m.role === 'referent' && <Badge variant="vad" label="Référent" />}
         </div>
@@ -142,6 +170,8 @@ function MonProfilCard() {
   const [prenom, setPrenom] = useState(member?.prenom ?? '')
   const [nom, setNom] = useState(member?.nom ?? '')
   const [profession, setProfession] = useState(member?.profession ?? '')
+  const [telPro, setTelPro] = useState(member?.tel_pro ?? '')
+  const [telPerso, setTelPerso] = useState(member?.tel_perso ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
@@ -152,6 +182,8 @@ function MonProfilCard() {
     setPrenom(member?.prenom ?? '')
     setNom(member?.nom ?? '')
     setProfession(member?.profession ?? '')
+    setTelPro(member?.tel_pro ?? '')
+    setTelPerso(member?.tel_perso ?? '')
   }, [member])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -166,6 +198,8 @@ function MonProfilCard() {
         prenom: prenom.trim() || null,
         nom: nom.trim() || null,
         profession: profession.trim() || null,
+        tel_pro: telPro.trim() || null,
+        tel_perso: telPerso.trim() || null,
       })
       .eq('id', userId)
     setSaving(false)
@@ -196,6 +230,20 @@ function MonProfilCard() {
           label="Profession"
           value={profession}
           onChange={(event) => setProfession(event.target.value)}
+        />
+        <TextField
+          label="Téléphone pro"
+          type="tel"
+          value={telPro}
+          onChange={(event) => setTelPro(event.target.value)}
+          autoComplete="tel"
+        />
+        <TextField
+          label="Téléphone perso (visible des membres)"
+          type="tel"
+          value={telPerso}
+          onChange={(event) => setTelPerso(event.target.value)}
+          autoComplete="tel"
         />
         {error && <div style={feedbackErrorStyle}>{error}</div>}
         {savedMessage && <div style={feedbackOkStyle}>{savedMessage}</div>}

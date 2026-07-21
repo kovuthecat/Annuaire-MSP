@@ -13,9 +13,19 @@ create table if not exists public.members (
   nom        text,
   prenom     text,
   profession text,
+  -- Coordonnées internes : chaque membre renseigne ses propres numéros pour que les
+  -- collègues de la MSP le joignent. Visibles par tous les membres (annuaire interne,
+  -- RLS members_select), éditables par soi seul (members_update_self). Sans rapport avec
+  -- l'étanchéité patient/pro des `contacts` (tout ceci est réservé aux membres connectés).
+  tel_pro    text,                        -- ligne professionnelle
+  tel_perso  text,                        -- portable personnel (facultatif)
   role       text not null default 'membre' check (role in ('membre','referent')),
   created_at timestamptz not null default now()
 );
+
+-- Ajout idempotent pour une base déjà créée (create table if not exists ne les ajoute pas).
+alter table public.members add column if not exists tel_pro   text;
+alter table public.members add column if not exists tel_perso text;
 
 -- À la création d'un compte auth, on crée automatiquement sa fiche membre.
 -- (Provisionnement = inviter l'utilisateur dans Supabase → Auth → Users.)

@@ -122,6 +122,10 @@ export interface Member {
   nom: string | null
   prenom: string | null
   profession: string | null
+  /** Ligne pro du membre — visible des autres membres (annuaire interne), éditée par soi. */
+  tel_pro: string | null
+  /** Portable perso du membre (facultatif) — même visibilité que `tel_pro`. */
+  tel_perso: string | null
   role: Role
   created_at: string
 }
