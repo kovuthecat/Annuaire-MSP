@@ -32,10 +32,17 @@ export function sortContacts(
   if (sort === 'pertinence') {
     // Sans requête, aucun signal de pertinence : on garde l'ordre de `filterContacts`.
     if (!query.trim()) return contacts
-    // Score calculé une fois par contact (décoration), puis tri décroissant, nom en départage.
+    // Score calculé une fois par contact (décoration), puis tri décroissant ; à score égal, les
+    // fiches avec au moins une recommandation passent devant (signal de confiance), nom en dernier
+    // recours (cf. retour utilisateur 2026-07-28).
     return contacts
       .map((contact) => ({ contact, score: relevanceScore(contact, query) }))
-      .sort((a, b) => b.score - a.score || normalize(a.contact.nom).localeCompare(normalize(b.contact.nom)))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          Number(b.contact.counts.reco > 0) - Number(a.contact.counts.reco > 0) ||
+          normalize(a.contact.nom).localeCompare(normalize(b.contact.nom)),
+      )
       .map((entry) => entry.contact)
   }
 
