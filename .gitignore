@@ -29,3 +29,6 @@ output/
 # Python (scripts d'import)
 __pycache__/
 *.pyc
+
+# Marqueur local de vague parallèle (WORKFLOW.md §4b) — jamais versionné
+.claude/wave.lock

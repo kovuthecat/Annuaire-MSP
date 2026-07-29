@@ -1,0 +1,41 @@
+{
+  "_comment": "Copier tel quel dans .claude/settings.json du projet (cf. README.md §Séquence de création). Les hooks pointent vers Templates/ : les modifier là-bas les met à jour partout. effortLevel est le défaut du projet — le bandeau d'une session S<k>.md peut demander plus, il se règle alors à la main au lancement.",
+  "effortLevel": "medium",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\sessionstart-contexte.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\pretooluse-git.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\stop-contexte.mjs\"",
+            "timeout": 20,
+            "statusMessage": "Vérification du contexte…"
+          }
+        ]
+      }
+    ]
+  }
+}
