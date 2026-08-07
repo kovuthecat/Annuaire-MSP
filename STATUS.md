@@ -48,6 +48,12 @@ données sur Supabase. `npm run build` / `typecheck` / `test` passent à 0 erreu
 - **Téléphone pro/perso des membres** (2026-07-21) : colonnes + UI faites, build/typecheck/test
   verts. **Migration prod à appliquer avant déploiement** (rejouer `supabase/schema.sql`, idempotent)
   + validation visuelle à faire.
+- **Listes d'impression nommées et favorites** (2026-08-07) : tables `print_lists`/`print_list_items`/
+  `print_list_favorites` + RLS, écrans `/listes` et `/listes/:id`, raccourci « Enregistrer comme
+  liste » depuis l'écran impression — cf. `docs/decisions/2026-08-07-…`. Build/typecheck/test verts ;
+  N1 partiel (écran de connexion vérifié au navigateur, flux authentifié non testé — pas
+  d'identifiants). **Migration prod à appliquer avant déploiement** (rejouer `supabase/schema.sql`) +
+  validation visuelle humaine à faire (cf. `VALIDATION.md`).
 
 ## Bugs connus
 

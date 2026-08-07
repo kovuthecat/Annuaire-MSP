@@ -138,6 +138,46 @@ export interface ListEntry {
 }
 
 /**
+ * public.print_lists — liste d'impression NOMMÉE et partagée (ex. « Adressage cardio »), distincte
+ * de `ListEntry` (adoption d'une seule fiche). Visible de tous, éditable par son créateur seul.
+ */
+export interface PrintList {
+  id: string
+  name: string
+  owner_id: string
+  created_at: string
+  updated_at: string
+}
+
+/** public.print_list_items — contenu ordonné d'une `PrintList`. */
+export interface PrintListItem {
+  list_id: string
+  contact_id: string
+  position: number
+  added_at: string
+}
+
+/** public.print_list_favorites — mise en favori d'une `PrintList` par un membre (même principe que `ListEntry` pour les contacts). */
+export interface PrintListFavorite {
+  member_id: string
+  list_id: string
+  added_at: string
+}
+
+/** `PrintList` enrichie pour l'affichage — construite par `loadPrintLists()` (src/data/printLists.ts). */
+export interface PrintListWithMeta {
+  id: string
+  name: string
+  ownerId: string
+  ownerName: string
+  createdAt: string
+  updatedAt: string
+  contactIds: string[]
+  favorited: boolean
+  isMine: boolean
+}
+
+/**
  * public.feedback — retour d'un membre sur la V1 (« Signaler un souci »).
  * `screenshot` (data URL, volumineux) n'est jamais chargé dans la liste : la vue référent le
  * récupère à la demande via `loadFeedbackScreenshot` (cf. src/data/feedback.ts).

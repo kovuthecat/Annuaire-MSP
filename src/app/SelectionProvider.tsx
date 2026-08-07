@@ -28,6 +28,8 @@ interface SelectionContextValue {
   toggle: (id: string) => void
   remove: (id: string) => void
   clear: () => void
+  /** Remplace toute la sélection (ex. « Imprimer cette liste » depuis une liste nommée). */
+  setSelection: (ids: string[]) => void
   count: number
 }
 
@@ -64,9 +66,11 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setSelectedIds(new Set()), [])
 
+  const setSelection = useCallback((ids: string[]) => setSelectedIds(new Set(ids)), [])
+
   const value = useMemo<SelectionContextValue>(
-    () => ({ selectedIds, toggle, remove, clear, count: selectedIds.size }),
-    [selectedIds, toggle, remove, clear],
+    () => ({ selectedIds, toggle, remove, clear, setSelection, count: selectedIds.size }),
+    [selectedIds, toggle, remove, clear, setSelection],
   )
 
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>

@@ -1,5 +1,8 @@
 import type { CSSProperties } from 'react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, TextField } from '../../components/ui'
+import { usePrintLists } from '../../data/PrintListsProvider'
 import { colors, radii } from '../../theme/tokens'
 import type { ContactWithMeta } from '../../types/db'
 import { toPatientView } from './patientView'
@@ -139,6 +142,131 @@ const textareaStyle: CSSProperties = {
 
 const buttonsRowStyle: CSSProperties = { display: 'flex', gap: 8 }
 
+// ---------------------------------------------------------------------------
+// Enregistrer comme liste (nommée, favorisable, cf. src/features/listes/) — raccourci pour ne pas
+// forcer un aller-retour par /listes : la sélection d'impression est un panier de travail
+// transitoire (SelectionProvider, sessionStorage), une liste nommée est le pendant durable/partagé.
+// ---------------------------------------------------------------------------
+
+const saveAsListWrapperStyle: CSSProperties = { marginBottom: 16 }
+
+const saveAsListLinkStyle: CSSProperties = {
+  border: 'none',
+  background: 'transparent',
+  padding: 0,
+  font: '600 11.5px "Plus Jakarta Sans"',
+  color: colors.brand.blue,
+  cursor: 'pointer',
+}
+
+const saveAsListFormStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  background: colors.bg,
+  border: `1px solid ${colors.border}`,
+  borderRadius: radii.lg,
+  padding: 10,
+}
+
+const saveAsListButtonsRowStyle: CSSProperties = { display: 'flex', gap: 6 }
+
+const saveAsListSuccessStyle: CSSProperties = {
+  font: '600 11.5px "Plus Jakarta Sans"',
+  color: colors.brand.teal,
+}
+
+const saveAsListErrorStyle: CSSProperties = {
+  font: '600 11.5px "Plus Jakarta Sans"',
+  color: colors.sector.ame.fg,
+}
+
+function SaveAsListBlock({ items }: { items: ContactWithMeta[] }) {
+  const { createPrintList } = usePrintLists()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
+
+  if (items.length === 0) return null
+
+  const start = () => {
+    setOpen(true)
+    setName('')
+    setError(null)
+    setSavedId(null)
+  }
+
+  const submit = async () => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setSaving(true)
+    setError(null)
+    try {
+      const id = await createPrintList(
+        trimmed,
+        items.map((c) => c.id),
+      )
+      setOpen(false)
+      setSavedId(id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Impossible d’enregistrer la liste.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (savedId) {
+    return (
+      <div style={saveAsListWrapperStyle}>
+        <span style={saveAsListSuccessStyle}>✓ Liste « {name} » enregistrée. </span>
+        <button type="button" onClick={() => navigate(`/listes/${savedId}`)} style={saveAsListLinkStyle}>
+          Voir la liste
+        </button>
+      </div>
+    )
+  }
+
+  if (!open) {
+    return (
+      <div style={saveAsListWrapperStyle}>
+        <button type="button" onClick={start} style={saveAsListLinkStyle}>
+          💾 Enregistrer cette sélection comme liste nommée
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={saveAsListWrapperStyle}>
+      <div style={saveAsListFormStyle}>
+        <TextField
+          variant="compact"
+          placeholder="Nom de la liste (ex. Adressage cardio)"
+          value={name}
+          autoFocus
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void submit()
+            if (e.key === 'Escape') setOpen(false)
+          }}
+        />
+        <div style={saveAsListButtonsRowStyle}>
+          <Button variant="primary" disabled={!name.trim() || saving} onClick={() => void submit()}>
+            {saving ? 'Enregistrement…' : 'Enregistrer'}
+          </Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>
+            Annuler
+          </Button>
+        </div>
+        {error && <span style={saveAsListErrorStyle}>{error}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function SelectionPanel({
   items,
   count,
@@ -202,6 +330,8 @@ export default function SelectionPanel({
           })
         )}
       </div>
+
+      <SaveAsListBlock items={items} />
 
       <div style={optionsLabelStyle}>Options</div>
       <div style={optionsGroupStyle}>

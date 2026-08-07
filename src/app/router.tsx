@@ -6,13 +6,15 @@ import AnnuairePage from '../features/annuaire/AnnuairePage'
 import FichePage from '../features/fiche/FichePage'
 import EditionPage from '../features/edition/EditionPage'
 import ImpressionPage from '../features/impression/ImpressionPage'
+import ListesPage from '../features/listes/ListesPage'
+import ListeDetailPage from '../features/listes/ListeDetailPage'
 import MembresPage from '../features/membres/MembresPage'
 import RetoursPage from '../features/feedback/RetoursPage'
 
 /**
  * Routes définitives (cf. plans/P1/S1.md T2 — S3-S7 ne touchent que leur dossier de feature) :
  * /connexion · / (annuaire) · /contact/:id (fiche) · /nouveau · /contact/:id/modifier
- * · /impression · /membres.
+ * · /impression · /listes · /listes/:id · /membres.
  * /connexion est hors Layout (pas de barre du haut) ; le reste passe par Layout (barre + Outlet),
  * protégé par `RequireAuth` (cf. plans/P1/S7.md T10 — redirige vers /connexion sans session).
  */
@@ -30,6 +32,8 @@ export const router = createBrowserRouter([
       { path: '/nouveau', element: <EditionPage /> },
       { path: '/contact/:id/modifier', element: <EditionPage /> },
       { path: '/impression', element: <ImpressionPage /> },
+      { path: '/listes', element: <ListesPage /> },
+      { path: '/listes/:id', element: <ListeDetailPage /> },
       { path: '/membres', element: <MembresPage /> },
       // Retours des membres (réservé au référent : garde dans RetoursPage + RLS feedback_select).
       { path: '/retours', element: <RetoursPage /> },

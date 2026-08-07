@@ -302,6 +302,9 @@ function BottomNav({ isReferent, selectedCount }: { isReferent: boolean; selecte
       </button>
       {plusOpen && (
         <div style={bottomPlusMenuStyle}>
+          <NavLink to="/listes" style={profileMenuItemStyle} onClick={() => setPlusOpen(false)}>
+            Listes
+          </NavLink>
           <NavLink to="/membres" style={profileMenuItemStyle} onClick={() => setPlusOpen(false)}>
             Membres
           </NavLink>
@@ -349,6 +352,9 @@ export default function Layout() {
             </NavLink>
             <NavLink to="/impression" style={({ isActive }) => pillStyle(isActive)}>
               Sélection & impression
+            </NavLink>
+            <NavLink to="/listes" style={({ isActive }) => pillStyle(isActive)}>
+              Listes
             </NavLink>
             <NavLink to="/membres" style={({ isActive }) => pillStyle(isActive)}>
               Membres

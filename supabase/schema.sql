@@ -423,6 +423,105 @@ drop policy if exists feedback_delete on public.feedback;
 create policy feedback_delete on public.feedback
   for delete using (public.is_referent());
 
+-- ---------------------------------------------------------------------------
+-- 7. LISTES D'IMPRESSION NOMMÉES (favorites, partagées)
+--    Distinct de « ma liste » (list_entries, section 4 : adoption individuelle d'UNE fiche).
+--    Ici, un membre compose et NOMME un ensemble ORDONNÉ de contacts pour l'impression répétée
+--    (ex. « Adressage cardio »). Visible de tous les membres ; seul le créateur édite/supprime
+--    la liste et son contenu ; n'importe quel membre peut la mettre en favori (même principe que
+--    list_entries, appliqué aux listes plutôt qu'aux contacts).
+-- ---------------------------------------------------------------------------
+create table if not exists public.print_lists (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null,
+  owner_id   uuid not null references public.members (id) on delete cascade default auth.uid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.set_print_list_updated()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists print_lists_set_updated on public.print_lists;
+create trigger print_lists_set_updated
+  before update on public.print_lists
+  for each row execute function public.set_print_list_updated();
+
+create index if not exists print_lists_owner_idx on public.print_lists (owner_id);
+
+create table if not exists public.print_list_items (
+  list_id    uuid not null references public.print_lists (id) on delete cascade,
+  contact_id uuid not null references public.contacts (id) on delete cascade,
+  -- Ordre d'impression de la liste (cf. `SelectionPanel` pour les listes ad hoc) ; réécrit en
+  -- entier à chaque sauvegarde du contenu (pas de renumérotation fine, cf. `setPrintListItems`).
+  position   integer not null default 0,
+  added_at   timestamptz not null default now(),
+  primary key (list_id, contact_id)
+);
+
+create index if not exists print_list_items_list_idx on public.print_list_items (list_id, position);
+
+create table if not exists public.print_list_favorites (
+  member_id  uuid not null references public.members (id) on delete cascade default auth.uid(),
+  list_id    uuid not null references public.print_lists (id) on delete cascade,
+  added_at   timestamptz not null default now(),
+  primary key (member_id, list_id)
+);
+
+create index if not exists print_list_favorites_list_idx on public.print_list_favorites (list_id);
+
+alter table public.print_lists          enable row level security;
+alter table public.print_list_items     enable row level security;
+alter table public.print_list_favorites enable row level security;
+
+-- PRINT_LISTS : visibles de tous les membres (« toutes les listes ») ; seul le créateur
+-- renomme/supprime la liste elle-même.
+drop policy if exists print_lists_select on public.print_lists;
+create policy print_lists_select on public.print_lists
+  for select using (public.is_member());
+drop policy if exists print_lists_insert on public.print_lists;
+create policy print_lists_insert on public.print_lists
+  for insert with check (public.is_member() and owner_id = auth.uid());
+drop policy if exists print_lists_update_own on public.print_lists;
+create policy print_lists_update_own on public.print_lists
+  for update using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+drop policy if exists print_lists_delete_own on public.print_lists;
+create policy print_lists_delete_own on public.print_lists
+  for delete using (owner_id = auth.uid());
+
+-- PRINT_LIST_ITEMS : contenu visible de tous (pour ouvrir/imprimer n'importe quelle liste) ;
+-- seul le propriétaire de la liste parente gère le contenu (sous-requête sur print_lists, pas de
+-- récursion RLS puisque print_lists n'interroge jamais print_list_items).
+drop policy if exists print_list_items_select on public.print_list_items;
+create policy print_list_items_select on public.print_list_items
+  for select using (public.is_member());
+drop policy if exists print_list_items_write on public.print_list_items;
+create policy print_list_items_write on public.print_list_items
+  for all using (
+    exists (select 1 from public.print_lists l where l.id = list_id and l.owner_id = auth.uid())
+  )
+  with check (
+    exists (select 1 from public.print_lists l where l.id = list_id and l.owner_id = auth.uid())
+  );
+
+-- PRINT_LIST_FAVORITES : chacun ne gère que ses propres favoris (même principe que list_entries).
+drop policy if exists print_list_favorites_select on public.print_list_favorites;
+create policy print_list_favorites_select on public.print_list_favorites
+  for select using (member_id = auth.uid());
+drop policy if exists print_list_favorites_insert on public.print_list_favorites;
+create policy print_list_favorites_insert on public.print_list_favorites
+  for insert with check (member_id = auth.uid());
+drop policy if exists print_list_favorites_delete on public.print_list_favorites;
+create policy print_list_favorites_delete on public.print_list_favorites
+  for delete using (member_id = auth.uid());
+
 -- ============================================================================
 -- APRÈS EXÉCUTION :
 --  1. Auth → Providers → Email : activer « Email + Password » ; DÉSACTIVER « Confirm email »

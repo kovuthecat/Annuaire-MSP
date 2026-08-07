@@ -42,7 +42,7 @@ export function memberDisplayName(member: Member | undefined | null): string {
 // (une requête n'est consommable qu'une fois).
 const PAGE_SIZE = 1000
 
-async function fetchAll<T>(build: () => any): Promise<T[]> {
+export async function fetchAll<T>(build: () => any): Promise<T[]> {
   const all: T[] = []
   let from = 0
   for (;;) {

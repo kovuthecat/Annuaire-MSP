@@ -33,6 +33,7 @@ Impact IA).
 - 2026-07-18 — **Recherche multi-termes**, tolérante aux fautes, classée et surlignée + tests → [détail](docs/decisions/2026-07-18-recherche-multi-termes-tolerante-aux-fautes-classee-et-surlignee-tests.md)
 - 2026-07-18 — **Filtres de l'annuaire recentrés** — Secteur 1 / Pédiatrie / Avis → [détail](docs/decisions/2026-07-18-filtres-de-l-annuaire-recentres-secteur-1-pediatrie-avis.md)
 - 2026-07-19 — **Recueil de retours V1** — bouton flottant + table `feedback` (vue référent) → [détail](docs/decisions/2026-07-19-recueil-de-retours-v1-bouton-flottant-table-feedback-vue-referent.md)
+- 2026-08-07 — **Listes d'impression nommées et favorites** — visibles de tous, éditables par le créateur seul, favori ouvert à tous → [détail](docs/decisions/2026-08-07-listes-impression-nommees-favorites.md)
 
 ---
 

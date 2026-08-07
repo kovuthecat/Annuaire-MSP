@@ -37,3 +37,14 @@ Seuls restent les deux chantiers **pas encore déployés**.
 - [ ] Carte sur une fiche : ne passe plus au-dessus de la barre de navigation basse.
 - [ ] Recherche « Paris 20 » = « 75020 » = « 20e » = « 20ème » : même liste de résultats ; « Paris
       11 » ne ramène pas ceux du 20e.
+
+## Listes d'impression nommées et favorites (2026-08-07, non déployé)
+
+> N1 vérifié seulement jusqu'à l'écran de connexion (pas d'identifiants à disposition) — le flux
+> authentifié complet reste à faire, cf. checklist N1 donnée à Thibault en fin de session.
+
+- [ ] Densité/lisibilité de l'écran `/listes` (liste de cartes) : à l'aise avec 1 liste comme avec
+      une vingtaine.
+- [ ] Le raccourci « 💾 Enregistrer cette sélection comme liste nommée » dans le panneau d'impression
+      ne surcharge pas visuellement la colonne (déjà dense : réordonnancement + options + impression).
+- [ ] Pastille favori (StarToggle) sur une liste : aussi lisible/intuitive que sur un contact.
