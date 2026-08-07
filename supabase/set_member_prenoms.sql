@@ -8,9 +8,12 @@ update public.members set prenom = 'Thibault' where email = 'ipamspmenilmontant@
 update public.members set prenom = 'Aurélien' where email = 'aurelien.descarpentries@gmail.com';
 update public.members set prenom = 'Charlène' where email = 'charly.lemet@gmail.com';
 update public.members set prenom = 'Antonin'  where email = 'amathieu@mspmenilmontant.fr';
-update public.members set prenom = 'Estelle'  where email = 'gregoreestelle@gmail.com';
+update public.members set prenom = 'Estelle'  where email = 'gregoireestelle@gmail.com';
 update public.members set prenom = 'Adèle'    where email = 'adele.labbe.le.picard@gmail.com';
 update public.members set prenom = 'Cécile'   where email = 'cecilegatter@gmail.com';
 update public.members set prenom = 'Elena'    where email = 'elena.nasreddine@gmail.com';
 update public.members set prenom = 'Maylis'   where email = 'mbayleorthophoniste@gmail.com';
 update public.members set prenom = 'Anne'     where email = 'annekammerer.sf@gmail.com';
+update public.members set prenom = 'Claire'   where email = 'giraud.claire@yahoo.fr';
+update public.members set prenom = 'Clara'    where email = 'clara.douchaine@gmail.com';
+update public.members set prenom = 'Lehna'    where email = 'djouadi7lehna@gmail.com';

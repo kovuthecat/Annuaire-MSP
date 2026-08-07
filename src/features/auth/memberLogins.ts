@@ -24,8 +24,11 @@ export const MEMBER_LOGINS: MemberLogin[] = [
   { prenom: 'Aurélien', email: 'aurelien.descarpentries@gmail.com' },
   { prenom: 'Cécile', email: 'cecilegatter@gmail.com' },
   { prenom: 'Charlène', email: 'charly.lemet@gmail.com' },
+  { prenom: 'Claire', email: 'giraud.claire@yahoo.fr' },
+  { prenom: 'Clara', email: 'clara.douchaine@gmail.com' },
   { prenom: 'Elena', email: 'elena.nasreddine@gmail.com' },
-  { prenom: 'Estelle', email: 'gregoreestelle@gmail.com' },
+  { prenom: 'Estelle', email: 'gregoireestelle@gmail.com' },
+  { prenom: 'Lehna', email: 'djouadi7lehna@gmail.com' },
   { prenom: 'Maylis', email: 'mbayleorthophoniste@gmail.com' },
   { prenom: 'Thibault', email: 'ipamspmenilmontant@tuta.com' },
 ]
