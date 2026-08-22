@@ -1,41 +1,31 @@
 {
-  "_comment": "Copier tel quel dans .claude/settings.json du projet (cf. README.md §Séquence de création). Les hooks pointent vers Templates/ : les modifier là-bas les met à jour partout. effortLevel est le défaut du projet — le bandeau d'une session S<k>.md peut demander plus, il se règle alors à la main au lancement.",
+  "_comment": "Copier tel quel dans .claude/settings.json du projet (cf. README.md §Séquence de création). Active le plugin `workflow` (skills + hooks + agents) — le câblage des hooks vit désormais dans hooks.json du plugin, plus dans ce fichier. extraKnownMarketplaces enregistre automatiquement la marketplace `templates` (repo GitHub privé) dès que le dossier est approuvé — sans lui, enabledPlugins ne trouve rien sur une machine/VM neuve (jamais testé en session cloud, marketplace privée : l'auth GitHub vers ce second repo n'est pas garantie). effortLevel est le défaut du projet — le bandeau d'une session S<k>.md peut demander plus, il se règle alors à la main au lancement. Projet déjà existant à migrer : voir MIGRATION.md §5. permissions.allow = prérequis des vagues headless (orchestrateur `claude -p`) ; à étendre au fil de l'eau après quelques sessions réelles, jamais élargie par précaution à l'avance.",
   "effortLevel": "medium",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\sessionstart-contexte.mjs\"",
-            "timeout": 15
-          }
-        ]
-      }
+  "extraKnownMarketplaces": {
+    "templates": {
+      "source": { "source": "github", "repo": "kovuthecat/Templates" }
+    }
+  },
+  "enabledPlugins": {
+    "workflow@templates": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(node --check:*)"
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\pretooluse-git.mjs\"",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\Users\\kovu\\SynologyDrive\\Thibault\\Projets\\Templates\\.claude\\hooks\\stop-contexte.mjs\"",
-            "timeout": 20,
-            "statusMessage": "Vérification du contexte…"
-          }
-        ]
-      }
+    "deny": [
+      "Read(.env*)",
+      "Read(**/*.pem)",
+      "Read(**/secrets/**)"
     ]
   }
 }
