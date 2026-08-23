@@ -3,7 +3,7 @@
   "effortLevel": "medium",
   "extraKnownMarketplaces": {
     "templates": {
-      "source": { "source": "github", "repo": "kovuthecat/Templates" }
+      "source": { "source": "github", "repo": "kovuthecat/claude-workflow" }
     }
   },
   "enabledPlugins": {
