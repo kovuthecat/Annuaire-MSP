@@ -1,5 +1,5 @@
 {
-  "_comment": "Copier tel quel dans .claude/settings.json du projet (cf. README.md §Séquence de création). Active le plugin `workflow` (skills + hooks + agents) — le câblage des hooks vit désormais dans hooks.json du plugin, plus dans ce fichier. extraKnownMarketplaces enregistre automatiquement la marketplace `templates` (repo GitHub privé) dès que le dossier est approuvé — sans lui, enabledPlugins ne trouve rien sur une machine/VM neuve (jamais testé en session cloud, marketplace privée : l'auth GitHub vers ce second repo n'est pas garantie). effortLevel est le défaut du projet — le bandeau d'une session S<k>.md peut demander plus, il se règle alors à la main au lancement. Projet déjà existant à migrer : voir MIGRATION.md §5. permissions.allow = prérequis des vagues headless (orchestrateur `claude -p`) ; à étendre au fil de l'eau après quelques sessions réelles, jamais élargie par précaution à l'avance.",
+  "_comment": "Copier tel quel dans .claude/settings.json du projet (cf. README.md §Séquence de création). Active le plugin `workflow` (skills + hooks + agents) — le câblage des hooks vit désormais dans hooks.json du plugin, plus dans ce fichier. extraKnownMarketplaces enregistre automatiquement la marketplace `templates` (repo GitHub public) dès que le dossier est approuvé — sans lui, enabledPlugins ne trouve rien sur une machine/VM neuve. En session cloud (Claude Code on the web), cette déclaration ne suffit pas : la marketplace n'y est jamais clonée au démarrage, donc enabledPlugins n'a rien à activer — c'est le hook SessionStart (`.claude/hooks/session-start.sh`) qui fait le `marketplace add` + `install`. Mesuré le 2026-08-24 : le repo est public et joignable depuis une session cloud, l'auth n'est pas le problème. Ne jamais lancer `claude plugin uninstall` / `marketplace remove` dans un repo : le CLI vide extraKnownMarketplaces et enabledPlugins de ce fichier au passage. effortLevel est le défaut du projet — le bandeau d'une session S<k>.md peut demander plus, il se règle alors à la main au lancement. Projet déjà existant à migrer : voir MIGRATION.md §5. permissions.allow = prérequis des vagues headless (orchestrateur `claude -p`) ; à étendre au fil de l'eau après quelques sessions réelles, jamais élargie par précaution à l'avance.",
   "effortLevel": "medium",
   "extraKnownMarketplaces": {
     "templates": {
@@ -8,6 +8,18 @@
   },
   "enabledPlugins": {
     "workflow@templates": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
   },
   "permissions": {
     "allow": [
