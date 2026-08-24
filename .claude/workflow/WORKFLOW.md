@@ -101,23 +101,48 @@ Le suivi a échoué chaque fois qu'une même information a dû être écrite à 
 
 ### 4b. Commits & parallélisation
 
-**Commit et push n'ont lieu qu'en fin de plan**, jamais à chaque tâche ni à chaque session. Pendant
-l'exécution, une tâche terminée passe son statut à `[x]` dans l'index et son diff reste dans l'arbre
-de travail. Le commit reste **atomique par tâche**, mais son exécution est reportée à la
-consolidation finale.
+**Chaque session committe son propre travail**, tâche par tâche, avant de rendre la main : staging
+explicite, message prévu dans le `T<n>`. La session qui vient d'écrire le code est la seule à savoir
+quels fichiers sont les siens — le faire reconstituer plus tard, par un autre modèle, coûte plus cher
+et se trompe.
 
-Le filet de sécurité intra-plan n'est **pas** git — c'est le **checkpointing** natif de Claude Code
-(`/rewind`, restaure code et/ou conversation à un point antérieur). Committer « par sécurité » en
-cours de plan reste interdit malgré cette disponibilité.
+*Renversement du 2026-08-24.* La règle précédente reportait tous les commits en fin de plan. Le prix
+réel s'est vu sur MYO P1 : un arbre de travail où trois sessions avaient déposé leurs fichiers, et une
+consolidation qui devenait une fouille — confiée, qui plus est, au modèle le moins cher du plan.
 
-- **Pendant les sessions** : jamais `git commit` ni `git push`. En vague parallèle, poser
-  `.claude/wave.lock` (à mettre en `.gitignore` — c'est un marqueur local, pas du contenu de projet) :
-  un hook refuse alors commit et push (§7). Ne toucher aucun fichier partagé.
-- **Fin de plan** : supprimer `wave.lock`, committer **tâche par tâche** avec staging explicite
-  (`git add <fichiers>` — `git add -A` et `git commit -a` sont refusés par hook), mettre à jour
-  `index.md`, `TASKS.md`, `STATUS.md`, `VALIDATION.md`, puis **un seul push**.
-- Cette consolidation se fait à l'humain ou via une session dédiée (Haiku `low`) — jamais mélangée
-  à l'exécution des tâches.
+Chaque commit porte le repère de sa tâche en dernière ligne. C'est ce qui rend l'attribution mécanique
+après coup (`git log --grep`), au lieu de la faire deviner :
+
+```
+Plan: P<n>/S<k>/T<m>
+```
+
+- **Ce qu'une session committe** : les fichiers de ses tâches, et son `S<k>.md`. Rien d'autre.
+- **N0 vert d'abord** : `build` + `typecheck` + tests du périmètre. Un commit qui ne compile pas
+  transforme le point de retour en piège.
+- **Jamais `git push`** depuis une session : le push est groupé, en fin de vague ou de plan.
+- **L'`index.md` suit le verrou, pas le mot « vague »** : `.claude/wave.lock` présent → la session
+  n'y touche pas, l'orchestrateur coche en fin de vague ; verrou absent → la session coche **sa
+  propre ligne** dans le commit de ses tâches. Un statut, une seule main (§4a) — mais la main est
+  celle de la session dès qu'il n'y a pas de concurrence, sans quoi la session suivante ne voit
+  jamais sa dépendance satisfaite.
+- `git add -A`, `git add .` et `git commit -a` restent refusés par hook : sans staging explicite,
+  une session emporte les fichiers de ses voisines.
+
+**Parallélisme réel — l'unique exception.** Deux sessions headless lancées en même temps partagent un
+seul index git : `git commit` prend l'état du dépôt, pas celui de la session, donc chacune emporterait le
+travail en cours de l'autre. Pour ces vagues-là **seulement**, poser `.claude/wave.lock` (à mettre en
+`.gitignore` — marqueur local, pas du contenu de projet) : un hook refuse alors commit et push (§7),
+les sessions laissent leur diff dans l'arbre, et **l'orchestrateur committe pour elles en fin de
+vague**, tâche par tâche, guidé par les colonnes `Zone modifiée`. Une vague dont les sessions se
+suivent — voie Desktop, ou headless séquentiel — n'a pas besoin du verrou.
+
+Le filet de sécurité intra-plan est désormais git lui-même : chaque session laisse un point de retour
+nommé. `/rewind` reste utile **dans** une session ; il n'a jamais rien pu pour ce qui se passe entre
+deux conversations parallèles.
+
+- **Fin de plan** : plus de consolidation de commits à faire. Restent `STATUS.md`, `TASKS.md`,
+  `VALIDATION.md` à mettre à jour, et **un seul push**.
 
 ## 5. Déléguer au lieu de faire
 
@@ -140,17 +165,21 @@ Table de délégation détaillée : `CLAUDE-BASE.md` (section « Avant de coder 
 **Jamais deux sessions d'un même plan dans une seule conversation** — chacune démarre à froid, pour
 ne pas traîner le contexte de l'une dans l'autre.
 
-- **Session par session, depuis Desktop** : la skill `/fin-de-tache` pose une pastille qui lance la
+- **Session par session, à la main** : la skill `/fin-de-tache` pose une pastille qui lance la
   suivante.
-- **Vague entière** : dérouler `/executer-vague` — un orchestrateur Haiku `low` qui ne conserve que
-  les verdicts et ne lit jamais un `S<k>.md`. La colonne `Env.` décide de la **voie**, pas du droit
-  d'orchestrer :
-  - `—` → **headless**, un processus `claude -p` par session, verdict contraint par schéma ;
-  - `Desktop` → **pastilles** `spawn_task`, un clic = une conversation neuve, verdict lu dans la
-    colonne Statut de l'`index.md`. Depuis Claude Code Desktop uniquement — ni VSCode, ni terminal,
-    ni session cloud (`claude.ai/code`, appli mobile) n'ont le navigateur in-app requis par le N1.
-- Une vague **mixte** déroule les deux voies : la headless se termine dans le tour, la Desktop attend
-  les clics de l'utilisateur. L'orchestrateur rend la main sans surveiller.
+- **Vague entière, sans intervention** : dérouler `/executer-vague`. La colonne `Env.` décide de la
+  **voie**, pas du droit d'orchestrer :
+  - `—` → **headless**, un processus `claude -p` par session, verdict contraint par schéma, modèle
+    et effort réglés depuis l'index ;
+  - `Desktop` → **sous-agent** (outil `Agent`, en arrière-plan), qui hérite du navigateur in-app de
+    la session d'orchestration et peut donc faire son N1. Aucun clic. L'effort, lui, n'est pas
+    réglable par cette voie : un `high` en `Env. = Desktop` tourne à l'effort ambiant, et
+    l'orchestrateur doit le signaler.
+- Une vague **mixte** déroule les deux voies et **se termine dans le même tour**. La session
+  d'orchestration doit rester ouverte pendant ce temps : les sous-agents vivent en elle.
+- **Hors Claude Code Desktop** (VSCode, terminal, session cloud), aucun navigateur : les sessions
+  `Env. = Desktop` retombent sur des **pastilles** `spawn_task` — un clic par session, la vague ne se
+  termine pas dans le tour. C'est un repli, plus le fonctionnement normal.
 
 ## 6. Validation — trois niveaux
 
@@ -191,7 +220,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
 | `sessionstart-contexte.mjs` | SessionStart | Signale : vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain. |
-| `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit et push tant que `.claude/wave.lock` existe. |
+| `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
 | `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
 
@@ -226,7 +255,7 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
   exploration de fichiers, lecture de doc externe).
 - Improviser des tâches hors du `S<k>.md` en cours ; mélanger deux sessions dans un même lancement.
 - Enchaîner deux sessions d'un même plan dans une seule et même conversation (§5b).
-- Committer ou pusher pendant l'exécution au lieu d'attendre la fin de plan (§4b).
+- Reporter ses commits à plus tard, ou pusher depuis une session (§4b) — une session committe le sien, et lui seul.
 - Écrire dans `VALIDATION.md` ce qu'un navigateur constate seul (§6).
 - Recopier un statut à deux endroits (§4a).
 - Recopier du texte au lieu de pointer vers la source (`WORKFLOW.md`, `docs/decisions/`…).

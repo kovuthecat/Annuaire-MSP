@@ -4,7 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -89,9 +89,22 @@ export function estFichierDeSuivi(chemin, fichiersDeSuivi) {
   return fichiersDeSuivi.includes(base) || chemin.startsWith('plans/');
 }
 
-/** Une vague parallèle est en cours si ce marqueur existe (cf. WORKFLOW.md §4b). */
+/** Racine du dépôt principal, même appelé depuis un worktree lié : `--git-common-dir` pointe
+ *  toujours le `.git` d'origine, là où vivent `.claude/wave.lock` et `.claude/vague/`. */
+export function racineDepot(cwd) {
+  const commun = git(cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  return commun ? dirname(commun) : cwd;
+}
+
+/** Vrai si le cwd est un worktree LIÉ, et non l'arbre principal du dépôt. */
+export function worktreeLie(cwd) {
+  const propre = git(cwd, 'rev-parse', '--path-format=absolute', '--git-dir');
+  const commun = git(cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  return Boolean(propre && commun && resolve(propre) !== resolve(commun));
+}
+
 export function vagueParallele(cwd) {
-  return existsSync(join(cwd, '.claude', 'wave.lock'));
+  return existsSync(join(racineDepot(cwd), '.claude', 'wave.lock'));
 }
 
 export function repondre(objet) {

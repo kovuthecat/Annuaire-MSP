@@ -8,7 +8,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
-  lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, repondre, riendafaire,
+  lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
+  repondre, riendafaire,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -49,6 +50,17 @@ if (vagueParallele(cwd)) {
     '**Vague parallèle en cours** (`.claude/wave.lock`) : ne touche ni STATUS.md, ni TASKS.md, ' +
     "ni plans/P*/index.md ; ni commit ni push (ils sont bloqués par hook)."
   );
+  // Le PreToolUse ne voit que ce qui passe par un outil : une pastille lancée « avec worktree »
+  // crée l'arbre AVANT le premier tour, hors de sa portée. Ce contrôle-ci est le seul qui l'attrape,
+  // et il tombe au premier tour — pas après une session de travail perdue d'avance.
+  if (worktreeLie(cwd)) {
+    lignes.push(
+      "**STOP — session de vague ouverte dans un worktree.** Une vague partage un seul arbre de " +
+      "travail : le diff produit ici ne sera vu ni par l'orchestrateur ni par la consolidation, et " +
+      "le verrou interdit le commit qui permettrait de le rapatrier. Ne code pas : signale-le, et " +
+      "redemande la session dans l'arbre principal (pastille → « Démarrer localement »)."
+    );
+  }
 }
 
 const dernierStatus = git(cwd, 'log', '-1', '--format=%H', '--', 'STATUS.md');

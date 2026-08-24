@@ -1,6 +1,6 @@
 ---
 name: executer-vague
-description: Orchestre une vague de sessions d'un plan — voie headless (`claude -p`, verdicts par schéma) pour les sessions sans navigateur, voie Desktop (pastilles `spawn_task`, verdicts lus dans l'index) pour celles qui exigent la validation N1. Ne garde que les verdicts, tient les statuts. À dérouler quand une vague de `plans/P<n>/index.md` est prête. Pendant exécutif de `/nouveau-plan`.
+description: Orchestre une vague de sessions d'un plan — voie headless (`claude -p`, verdicts par schéma) pour les sessions sans navigateur, voie sous-agent (outil `Agent` en arriere-plan, qui herite du navigateur in-app) pour celles qui exigent la validation N1 — une vague se deroule de bout en bout sans intervention. Ne garde que les verdicts, tient les statuts. À dérouler quand une vague de `plans/P<n>/index.md` est prête. Pendant exécutif de `/nouveau-plan`.
 model: haiku
 ---
 
@@ -18,25 +18,43 @@ les interdits ci-dessous ne dépendent pas du modèle — mais l'économie annon
 ## Les deux voies
 
 Une session exige le navigateur in-app (`Env. = Desktop`) ou non. Ça ne change pas *si* on orchestre,
-ça change *comment*. Une vague mixte déroule les deux voies, dans le même tour.
+ça change *comment*. Une vague mixte déroule les deux voies, dans le même tour — et **les deux vont
+jusqu'au bout sans intervention humaine**.
 
-| | **Voie headless** (`Env. = —`) | **Voie Desktop** (`Env. = Desktop`) |
+| | **Voie headless** (`Env. = —`) | **Voie sous-agent** (`Env. = Desktop`) |
 | --- | --- | --- |
-| Lancement | `claude -p` — un processus par session | pastille `spawn_task` — un clic = une session neuve |
-| Qui déclenche | l'orchestrateur, tout de suite | l'utilisateur, quand il veut |
-| Verdict | schéma JSON, lu à l'Étape 5 | statut `[x]` dans `index.md`, coché par `/fin-de-tache` |
-| Parallélisme | réel (`&` + attente des `.exit`) | au rythme humain, une conversation à la fois |
-| Fin de vague | dans ce tour | **plus tard** — l'orchestrateur rend la main après avoir posé les pastilles |
-| Arrêt au FAIL | mécanique (`break` en séquentiel) | l'utilisateur voit le FAIL dans sa propre session |
+| Lancement | `claude -p` — un processus par session | outil `Agent`, `run_in_background: true` |
+| Navigateur | absent — mesuré, pas supposé | **hérité de la session d'orchestration** |
+| Modèle | `--model`, depuis l'index | `model`, depuis l'index |
+| Effort | `--effort`, depuis l'index | **non réglable** — voir ci-dessous |
+| Verdict | schéma JSON, lu à l'Étape 5 | ligne de verdict rendue par l'agent + ses commits |
+| Contexte | processus neuf | contexte propre au sous-agent, seul le verdict remonte |
+| Parallélisme | réel (`&` + attente des `.exit`) | réel (plusieurs agents en arrière-plan) |
+| Fin de vague | dans ce tour | dans ce tour |
 
-La voie Desktop existe parce qu'une session N1 ne peut pas tourner en headless : `claude -p` n'a pas
-de navigateur. Elle n'est pas un pis-aller — c'est le mode normal des sessions visuelles, et
-l'orchestrateur y garde son rôle : séquencer, tenir le tableau, ne rien exécuter.
+**Pourquoi deux voies et pas une.** Mesuré le 2026-08-24 : une session `claude -p` répond `NON` à
+« as-tu des outils `mcp__Claude_Browser__` ou `preview_start` ». Le N1 y est donc impossible, et ce
+n'est pas une précaution — c'est une limite. Un sous-agent, lui, hérite des 18 outils navigateur de
+sa session parente : il peut faire le N1 sans qu'on lui ouvre une conversation.
+
+**Ce que la voie sous-agent coûte.** L'outil `Agent` accepte un `model`, pas un `effort` : une
+session `high` lancée en sous-agent tournera à l'effort ambiant. Quand une session `Env. = Desktop`
+porte un effort `high`/`xhigh`, deux issues honnêtes — la passer en headless si son N1 est en réalité
+dispensable (et le dire), ou accepter l'effort ambiant et l'écrire dans le rapport final. Ne pas
+faire comme si la colonne avait été respectée.
+
+**Ce qu'elle exige.** La session d'orchestration doit rester ouverte pendant la vague : les
+sous-agents vivent en elle. Une vague longue se lance donc quand on peut laisser la fenêtre
+tranquille — mais sans avoir à y revenir.
+
+La pastille `spawn_task` n'est plus la voie normale : elle ne subsiste qu'en **repli manuel**
+(Étape 2b), quand l'orchestrateur ne tourne pas dans Claude Code Desktop et ne peut donc ni ouvrir un
+navigateur ni en donner un à un sous-agent.
 
 ## Interdits — la raison d'être de cette skill
 
 - **Ne jamais ouvrir un `S<k>.md`.** C'est la session exécutante qui le lit, dans son propre
-  contexte. L'`index.md` suffit à l'orchestrateur.
+  contexte. L'`index.md`, `git log` et les fichiers `.claude/vague/` suffisent à l'orchestrateur.
 - **Ne jamais lire un diff ni une sortie de build.** Déléguer à `resumeur-git` et `verificateur-n0`,
   qui ne rendent que leur conclusion. *Seule exception, ajoutée le 2026-08-24* : le `.stderr.log`
   d'une session en **PANNE** (Étape 5) — il ne contient pas de contexte de tâche, seulement la
@@ -85,51 +103,76 @@ Rien à la sortie = préflight vert. Sinon STOP, en donnant la remédiation
 
 ### 2b. Le navigateur, pour l'autre voie
 
-La voie Desktop exige que la session courante dispose de la pastille `spawn_task`
-(`mcp__ccd_session__spawn_task`) et du navigateur in-app. **Claude Code Desktop est le seul
-environnement à les avoir** — ni VSCode, ni un terminal, ni une session cloud (claude.ai/code,
-appli mobile) n'en dispose. Les sessions `Desktop` de la vague n'y sont donc **pas** orchestrables.
+La voie sous-agent exige que **cette conversation** ait le navigateur in-app : un sous-agent hérite
+des outils de sa session parente, il ne peut pas en inventer. **Claude Code Desktop est le seul
+environnement à l'avoir** — ni VSCode, ni un terminal, ni une session cloud (claude.ai/code, appli
+mobile) n'en dispose.
 
-Ne pas bloquer la vague pour autant : dérouler la voie headless, et lister les sessions `Desktop`
-comme « à lancer depuis Claude Code Desktop ». La voie headless, elle, marche partout où le
-préflight 2a est vert — y compris en cloud, où le CLI est présent nativement.
+Contrôle : les outils `mcp__Claude_Browser__*` sont-ils disponibles ici ? Vérifié le 2026-08-24 —
+un sous-agent lancé depuis une session Desktop reçoit bien les 18 outils navigateur, directement et
+non en différé.
+
+Si le navigateur manque, les sessions `Env. = Desktop` ne sont **pas** orchestrables ici. Ne pas
+bloquer la vague pour autant : dérouler la voie headless, et poser les sessions `Desktop` en repli
+manuel (pastilles, Étape 4b) ou les lister comme « à lancer depuis Claude Code Desktop ». La voie
+headless, elle, marche partout où le préflight 2a est vert — y compris en cloud, où le CLI est
+présent nativement.
 
 ### 2c. Les trois vérifications de plan
 
 - une **dépendance** de la vague n'est pas `[x]` dans l'`index.md` → STOP ;
 - `.claude/settings.json` n'a pas d'**allowlist `permissions.allow`** → STOP pour la voie headless
   (en headless personne ne peut confirmer un outil, la session resterait bloquée sans fin) ;
+- l'**allowlist n'est pas seulement présente, elle est effective**. Le premier lancement headless le
+  dit dans son stderr : `Ignoring N permissions.allow entries: this workspace has not been trusted`.
+  La confiance est indexée sur la **chaîne** du chemin, pas sur le dossier : lancé depuis un shell
+  qui résout `C:/Users/.../MYO` alors que l'entrée de confiance porte `C:\Users\...\MYO`, le même
+  projet passe pour un autre et perd son allowlist en silence. Contrôle :
+
+  ```bash
+  claude -p "Reponds uniquement par OK." --model claude-haiku-4-5-20251001 2>&1 | head -2
+  ```
+
+  Une ligne `Ignoring ... not been trusted` → STOP : poser `hasTrustDialogAccepted: true` sur cette
+  forme du chemin dans `~/.claude.json`, ou ouvrir le projet une fois en interactif. Sans ça, chaque
+  session de la vague bute sur des outils refusés qu'aucun humain n'est là pour autoriser (mesuré
+  sur MYO le 2026-08-24, à la veille de lancer P2).
 - l'**arbre git n'est pas propre** (demander à `resumeur-git`) → voir ci-dessous.
 
-### 2d. Arbre sale : trancher par les zones, pas en bloc
+### 2d. Arbre sale
 
-Le but de la règle est que le diff post-vague soit **attribuable** aux sessions, pas que le dépôt
-soit immaculé. Comparer donc les fichiers sales aux colonnes `Zone modifiée` de la vague :
-
-| Intersection avec les zones | Décision |
-| --- | --- |
-| non vide | **STOP** — une session écrirait par-dessus du travail non commité |
-| vide | prendre une **référence** et demander confirmation, puis continuer |
+Depuis `WORKFLOW.md` §4b (2026-08-24), chaque session committe ses propres tâches : un arbre propre
+avant la vague n'est plus une commodité, c'est ce qui rend chaque commit lisible. Un fichier sale qui
+intersecte une `Zone modifiée` de la vague → **STOP** : une session écrirait par-dessus du travail
+non commité. Sinon, prendre une référence, demander confirmation et continuer.
 
 ```bash
 mkdir -p .claude/vague
 git status --porcelain > .claude/vague/avant-vague.txt
 ```
 
-Cette référence rend le diff attribuable malgré le bruit : en fin de vague, ce qui n'y figurait pas
-vient des sessions. Bloquer en bloc sur des fichiers hors zone coûte un commit sans rapport avec le
-plan, juste pour débloquer un lancement.
+La table d'arbitrage par zones qui vivait ici a disparu avec la consolidation de fin de plan : elle
+servait à rendre attribuable, après coup, un diff que plus personne ne savait rattacher. Ce problème
+n'existe plus — le commit se fait au moment où l'information est encore là.
 
 ## Étape 3 — Poser le verrou si la vague est parallèle
 
 Parallèle **seulement si** les zones modifiées sont disjointes. Au moindre doute : séquentiel.
 
-Si parallèle, créer `.claude/wave.lock` **après le préflight vert et juste avant le premier
-lancement** — il bloque commit et push pendant la vague (hook `pretooluse-git`). L'ordre compte :
+Le verrou ne sert plus qu'à **un seul** cas : plusieurs sessions headless lancées **en même temps**
+dans le même arbre. Elles partagent un index git, donc aucune ne peut committer sans emporter le
+travail en cours des autres — leurs commits sont reportés, et c'est l'orchestrateur qui les fait en
+fin de vague (Étape 6). Une vague dont les sessions se suivent — voie Desktop, ou headless séquentiel
+— **ne prend pas de verrou** : chaque session committe la sienne, et tout ce que le verrou bloquerait
+là serait du confort perdu.
+
+Si et seulement si le parallélisme est réel, créer `.claude/wave.lock` **après le préflight vert et
+juste avant le premier lancement** — il bloque commit et push pendant la vague (hook `pretooluse-git`). L'ordre compte :
 posé avant un préflight qui échoue, le verrou reste orphelin et gèle git pour rien.
 
-**Ne pas le retirer** en fin de vague : c'est `/fin-de-tache` qui le fait en fin de plan. Unique
-exception, à l'Étape 6 : **aucune session n'a démarré** — rien à clore, donc rien à verrouiller.
+**Le retirer en fin de vague**, une fois les commits faits (Étape 6) : il ne protège rien entre deux
+vagues, et le laisser gèle git pour la suivante. Cas particulier : **aucune session n'a démarré** —
+rien à clore, retirer le verrou immédiatement.
 
 ## Étape 4a — Voie headless : lancer
 
@@ -197,21 +240,45 @@ c'est le prix du parallèle, et la raison pour laquelle il exige des zones disjo
 > ls .claude/vague/*.exit 2>/dev/null | wc -l     # == nombre de sessions lancées → vague finie
 > ```
 
-## Étape 4b — Voie Desktop : poser les pastilles
+## Étape 4b — Voie sous-agent : lancer les sessions `Desktop`
 
-Aucun processus ici. Pour **chaque** session `Desktop` de la vague, poser une pastille `spawn_task` —
-un clic ouvre une conversation neuve, ce qui satisfait « jamais deux sessions d'un même plan dans une
-seule conversation » aussi bien que `claude -p` le fait pour la voie headless.
+Un sous-agent par session, en arrière-plan. Il hérite du navigateur in-app de cette conversation,
+donc il peut faire son N1 ; il a son propre contexte, donc le « jamais deux sessions d'un même plan
+dans une seule conversation » (`WORKFLOW.md` §5b) est respecté aussi bien que par `claude -p`.
 
-- **Titre** : `P<n>/S<k> — <titre de l'index>`.
-- **Prompt** : `Ouvre plans/P<n>/S<k>.md et exécute-le.` — rien de plus. La session lit son propre
-  fichier ; recopier son contenu dans le prompt le ferait payer deux fois.
-- **Ordre** : une pastille par session, dans l'ordre de l'index. Si la vague Desktop est séquentielle,
-  le dire dans le rapport final — les pastilles ne s'enchaînent pas toutes seules.
+```
+Agent({
+  description: "P<n>/S<k>",
+  subagent_type: "claude",
+  model: <modèle lu dans l'index>,
+  run_in_background: true,
+  prompt: "Ouvre plans/P<n>/S<k>.md et exécute-le.
+Tu es une session de plan : déroule /fin-de-tache en fin de session.
+N'ouvre AUCUN worktree — la vague partage un seul arbre de travail.
+En cas d'ÉCHEC, écris d'abord un rapport de passation dans plans/P<n>/S<k>.echec.md
+(gabarit dans .claude/skills/reprendre-echec/SKILL.md).
+Ta réponse finale doit tenir en UNE ligne, exactement dans ce format, et rien d'autre :
+VERDICT: PASS|FAIL · MOTIF: <une phrase> · RAPPORT: <chemin du .echec.md, ou ->"
+})
+```
 
-Puis **rendre la main**. Une vague Desktop ne se termine pas dans ce tour : l'utilisateur clique quand
-il veut, et chaque session clôt sa tâche par `/fin-de-tache`, qui coche l'`index.md`. L'orchestrateur
-n'attend pas, ne relance pas, ne surveille pas.
+- **Un agent par session de la vague**, lancés dans l'ordre de l'index. En vague parallèle, tous en
+  arrière-plan d'affilée ; en séquentiel, un seul à la fois, et on s'arrête au premier FAIL.
+- **`isolation: "worktree"` est interdit** — la vague partage un arbre de travail (Étape 2d).
+- **Ne jamais recopier le contenu du `S<k>.md` dans le prompt** : l'agent le lit lui-même, sinon il
+  est payé deux fois.
+- **Ne pas relire le rapport de l'agent au-delà de sa ligne de verdict.** Le format contraint est ce
+  qui remplace ici le schéma JSON de la voie headless : un rapport d'échec détaillé est une
+  tentation à enquêter, et l'orchestrateur n'enquête pas (Interdits).
+
+**Attendre.** Les sous-agents en arrière-plan notifient à leur terme : ne pas sonder, ne pas
+relancer, ne pas envoyer « c'est fini ? ». Rien à faire jusqu'à la notification.
+
+**Repli manuel** — uniquement si l'Étape 2b a conclu que cette conversation n'a pas de navigateur.
+Poser alors une pastille `spawn_task` par session (`titre : P<n>/S<k> — <titre de l'index>`, prompt
+« Ouvre plans/P<n>/S<k>.md et exécute-le. Reste dans l'arbre de travail courant : pas de worktree. »),
+préciser « **Démarrer localement** », et rendre la main : la vague se terminera plus tard, au rythme
+des clics.
 
 ## Étape 5 — Collecter les verdicts
 
@@ -268,11 +335,32 @@ déclencher une interprétation.
 > deux arguments ci-dessus sont des **chemins** — une sortie longue dépasse la taille max d'un
 > argument (leçon du 2026-08-23).
 
-### Voie Desktop — par l'index
+### Voie sous-agent — par la ligne de verdict, recoupée par les commits
 
-Rien à extraire : relire la colonne Statut de `plans/P<n>/index.md`. Une session Desktop terminée y
-est `[x]` (posé par son propre `/fin-de-tache`) ; une session encore `[ ]` n'a pas été lancée, ou pas
-finie. C'est tout — ne pas aller chercher plus loin, ne pas ouvrir le `S<k>.md`.
+L'agent rend une ligne au format imposé à l'Étape 4b. La lire, ne rien lire d'autre :
+
+```
+VERDICT: PASS · MOTIF: … · RAPPORT: -
+```
+
+**Fail-closed, comme la voie headless** : tout ce qui n'est pas un `VERDICT: PASS` lisible ressort en
+`FAIL`, motif « sortie non conforme ». Un agent mort en cours de route ne rend rien — c'est un `FAIL`,
+pas une session en attente.
+
+**Recoupement obligatoire avec les commits.** Un `PASS` annoncé sans commit correspondant est un
+`FAIL` : la session n'a pas déroulé `/fin-de-tache` jusqu'au bout, donc son travail n'est pas dans
+l'arbre et rien ne le distingue de travail jamais fait.
+
+```bash
+git log --oneline --grep "P<n>/S<k>/" | wc -l     # 0 => FAIL, quoi qu'ait dit l'agent
+```
+
+C'est la leçon du 2026-08-24 : une déclaration de fin n'est pas une preuve de fin, qu'elle vienne
+d'un humain ou d'un agent. La seule chose qui compte est ce que le dépôt porte.
+
+**Cas du repli manuel par pastille** : aucun agent n'a tourné, donc aucune ligne de verdict. Le
+verdict est alors dans les commits seuls — au moins un commit `P<n>/S<k>/` → `PASS` ; un
+`plans/P<n>/S<k>.echec.md` → `FAIL` ; rien du tout → `EN ATTENTE`, la pastille n'a pas été cliquée.
 
 ## Étape 5b — Diagnostic escaladé *(optionnel, à demander explicitement)*
 
@@ -319,15 +407,21 @@ décrit.
 
 ## Étape 6 — Rendre la main
 
-1. **Verrou.** Si **aucune** session n'a démarré (toutes en `PANNE`, ou préflight rouge après pose),
-   retirer `.claude/wave.lock` : il n'y a pas de vague à clore, et le laisser gèlerait commit et push
-   jusqu'à un `/fin-de-tache` qui ne viendra jamais. Dans tous les autres cas, le laisser.
-2. **Statuts.** Passer à `[x]` dans l'`index.md` les sessions headless `PASS`, avec la date (statut =
-   source unique, `WORKFLOW.md` §4a). En vague parallèle les sessions headless n'y touchent pas
-   (`/fin-de-tache`) : c'est l'orchestrateur qui le fait. **Ne rien cocher pour la voie Desktop** —
-   chaque session Desktop coche la sienne.
+1. **Commits des sessions parallèles, puis verrou.** Si un `.claude/wave.lock` a été posé (Étape 3),
+   les sessions headless n'ont rien pu committer : le faire **ici**, tâche par tâche, en s'appuyant
+   sur les colonnes `Zone modifiée` et les messages prévus dans les `T<n>`, avec le repère
+   `Plan: P<n>/S<k>/T<m>` en dernière ligne. Puis retirer le verrou — il ne protège rien entre deux
+   vagues. Si aucune session n'a démarré (toutes en `PANNE`, ou préflight rouge après pose), retirer
+   le verrou sans rien committer. Les sessions non verrouillées, elles, ont déjà commité les leurs :
+   **ne rien refaire pour elles**.
+2. **Statuts.** Passer à `[x]` dans l'`index.md`, avec la date, les sessions `PASS` **que le verrou a
+   empêchées de le faire elles-mêmes** — c'est-à-dire celles d'une vague qui a posé un
+   `.claude/wave.lock` (statut = source unique, `WORKFLOW.md` §4a). Les sessions non verrouillées
+   (sous-agents hors verrou, headless séquentiel) ont coché leur propre ligne dans leur commit : **relire
+   l'index, ne pas le réécrire**. Une session sans commit reste `[ ]`.
 3. **Rapport final** : une ligne par session — `S<k> · PASS/FAIL/PANNE · motif` (déjà dans
-   `.claude/vague/verdicts.txt`), voie Desktop incluse avec son statut lu dans l'index. Puis la vague
+   `.claude/vague/verdicts.txt`), voie sous-agent incluse. Signaler tout écart entre effort demandé
+   et effort réellement appliqué (l'outil `Agent` ne règle pas l'effort). Puis la vague
    suivante prête, ou le blocage rencontré. Préciser si l'Étape 5b a tourné, et avec quel modèle : le
    rapport de passation n'est plus celui qu'a écrit la session en échec.
 4. **Sur FAIL, donner les deux points d'entrée de la réparation, sans les ouvrir** :
@@ -340,7 +434,11 @@ décrit.
 5. **Sur PANNE, donner la remédiation d'environnement** — jamais `/reprendre-echec`. Le
    `.stderr.log` de la session porte la cause ; c'est le seul log que l'orchestrateur ait le droit de
    citer, et une ligne suffit.
-6. **Sur une vague Desktop ou mixte**, dire explicitement que la vague n'est **pas** finie : les
-   pastilles attendent un clic. La collecte se refait en relançant `/executer-vague` sur la même
-   vague, qui lira les statuts mis à jour.
-7. **Ni commit ni push** — ils ont lieu en fin de plan, via `/fin-de-tache`.
+6. **Seul le repli manuel laisse une vague inachevée.** Une vague orchestrée par sous-agents se
+   termine dans ce tour, les deux voies confondues : le dire, et enchaîner sur la vague suivante si
+   ses dépendances sont satisfaites. Si des pastilles ont été posées faute de navigateur (Étape 2b),
+   dire au contraire que la vague **n'est pas** finie et qu'elle se collecte en relançant
+   `/executer-vague` sur la même vague, depuis Claude Code Desktop cette fois.
+7. **Push groupé, jamais depuis une session.** Une fois la vague close et l'index à jour, un push
+   pour l'ensemble de la vague. Si des sessions restent en `EN ATTENTE` ou en `FAIL`, ne pas pusher :
+   attendre la fin de la vague.

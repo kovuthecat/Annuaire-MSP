@@ -53,6 +53,12 @@ Deux sessions sont **parallélisables** ssi aucune dépendance **et** zones modi
 (fichiers de « Modifier »). La colonne « Zone modifiée » sert à ce contrôle : y mettre les
 répertoires/fichiers réellement touchés, pas des généralités.
 
+**Une session dont la zone est « aucune » demande un soin particulier.** Vérification, mesure, audit :
+son livrable est une **conclusion**, pas un diff. Écrire alors dans le `S<k>.md` ce que le bilan devra
+contenir — le corpus exact, le critère, le résultat attendu — parce que c'est la seule chose qui
+restera. Sans ça, la session rend « ça marche » dans une conversation qui disparaît, et le plan ne
+peut plus la distinguer d'une session jamais lancée (constaté sur MYO P1/S5, 2026-08-24).
+
 Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 
 ## Étape 3 — Écrire `plans/P<n>/index.md`
@@ -74,8 +80,8 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 ## Ordonnancement
 - **Vague 1 — parallélisable** : S1 · S3 (zones disjointes, aucune dépendance).
 - **Vague 2** : S2 (après S1) · S4 (après S3).
-- **Vague 3 — consolidation** : commits tâche par tâche, statuts, `STATUS.md`, push (humain
-  ou session Haiku `low`).
+- **Vague 3 — clôture** : contexte (`STATUS.md`, `TASKS.md`, `VALIDATION.md`) et push. Pas de
+  commits de code à rattraper : chaque session a commité les siens.
 ```
 
 **Vagues orchestrées (optionnel)** — toute vague s'exécute via `/executer-vague`, orchestrateur
@@ -144,8 +150,11 @@ L'index ne contient **rien d'autre** : pas de détail d'exécution, il pointe ve
 ### Si bloqué
 <condition d'arrêt SPÉCIFIQUE → STOP + quoi signaler>
 
-### Message de commit (appliqué en fin de plan)
+### Message de commit (appliqué par la session elle-même)
 `<type(scope): message>`
+Dernière ligne du commit, obligatoire : `Plan: P<n>/S<k>/T<m>` — c'est le repère qui rend la tâche
+retrouvable ensuite (`git log --grep`), et par lequel l'orchestrateur lit le verdict d'une session
+Desktop.
 
 ---
 
