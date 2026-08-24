@@ -1,0 +1,215 @@
+#!/usr/bin/env node
+// Moteur de vendoring du workflow — copie le payload dans un projet, et le tient à jour.
+//
+// POURQUOI CE FICHIER EXISTE
+// Le workflow a d'abord été distribué comme plugin installé à l'exécution (marketplace +
+// `claude plugin install`). Ce modèle demandait, sur CHAQUE machine et CHAQUE environnement, une
+// installation qui pouvait échouer de six façons différentes — CLI absent du PATH, marketplace
+// jamais clonée en session distante, bit exécutable perdu, timeout de hook… Aucune de ces pannes
+// ne venait du contenu du workflow ; toutes venaient de la machinerie d'installation.
+//
+// Les fichiers vendorés dans le repo n'ont besoin ni de CLI, ni de réseau, ni de marketplace :
+// la seule chose qu'un environnement Claude Code garantisse, c'est le clone du repo. D'où ce
+// moteur — et le manifeste, qui est ce qui distingue « vendoré » de « copié-collé une fois ».
+//
+// USAGE
+//   node sync-workflow.mjs --source <payload> --projet <dir> [--check] [--force]
+//
+//   --check   n'écrit rien ; rapporte l'état et sort en 1 si une action est due
+//   --force   réécrit même les fichiers modifiés localement (sinon ils sont préservés)
+//
+// Le manifeste (.claude/workflow/manifest.json) porte un hash par fichier géré. Il permet de
+// distinguer les deux dérives, qui n'appellent pas la même réponse :
+//   - fichier modifié à la main dans le projet  → la modification doit remonter à la source
+//   - version de la source plus récente         → une synchronisation est due
+
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join, dirname, relative, sep } from 'node:path';
+
+// ── Plan de vendoring ────────────────────────────────────────────────────────
+// Les skills et agents vont là où Claude Code les découvre nativement
+// (.claude/skills, .claude/agents) ; le reste sous .claude/workflow/, qui devient
+// la racine du payload — celle que les substitutions ci-dessous visent.
+const PLAN = [
+  { de: 'skills',           vers: '.claude/skills',            recursif: true },
+  { de: 'agents',           vers: '.claude/agents',            recursif: true },
+  { de: 'hooks',            vers: '.claude/workflow/hooks',    recursif: true, sauf: ['hooks.json'] },
+  { de: 'templates',        vers: '.claude/workflow/templates', recursif: true },
+  { de: 'CLAUDE-BASE.md',   vers: '.claude/workflow/CLAUDE-BASE.md' },
+  { de: 'WORKFLOW.md',      vers: '.claude/workflow/WORKFLOW.md' },
+  { de: 'CONVENTIONS.md',   vers: '.claude/workflow/CONVENTIONS.md' },
+  { de: 'MIGRATION.md',     vers: '.claude/workflow/MIGRATION.md' },
+  { de: 'bin',              vers: '.claude/workflow/bin',      recursif: true },
+  // AGENTS.md NE VA PAS à la racine. Le AGENTS.md racine appartient au projet : il porte
+  // couramment des règles propres (version de framework, contraintes maison) qu'un écrasement
+  // perdrait. Le fichier central est donc vendoré ici, et le AGENTS.md du projet y renvoie par
+  // un chemin RELATIF — ce qu'un pointeur absolu ne peut pas faire survivre à une session cloud.
+  { de: 'AGENTS.md',        vers: '.claude/workflow/AGENTS.md' },
+];
+
+// `hooks.json` est exclu : en mode vendoré le câblage vit dans .claude/settings.json du projet.
+// Le laisser créerait deux déclarations concurrentes des mêmes hooks.
+
+// ── Substitutions ────────────────────────────────────────────────────────────
+// Le marqueur n'existe que si un plugin est installé. Vendoré, il faut des chemins relatifs à la
+// racine du projet. Ordre significatif : les deux règles spécifiques d'abord, le fourre-tout après.
+//
+// LE MARQUEUR EST CONSTRUIT PAR CONCATÉNATION, JAMAIS ÉCRIT EN CLAIR — et ce n'est pas une
+// coquetterie. Ce fichier fait partie du payload : il se vendore lui-même. Écrit en clair, le
+// marqueur de la table serait substitué dans la copie vendorée, qui héritait alors d'une table
+// neutralisée (`['.claude/skills/', '.claude/skills/']`) et ne substituait plus rien. Constaté en
+// pilotant MYO : 12 faux écarts, et toute synchronisation lancée depuis un projet aurait produit
+// des fichiers aux chemins non résolus.
+const MARQUEUR = '$' + '{CLAUDE_PLUGIN_ROOT}';
+const SUBSTITUTIONS = [
+  [`${MARQUEUR}/skills/`, '.claude/skills/'],
+  [`${MARQUEUR}/agents/`, '.claude/agents/'],
+  [`${MARQUEUR}/`,        '.claude/workflow/'],
+  [MARQUEUR,              '.claude/workflow'],
+];
+
+const BINAIRES = /\.(png|jpg|jpeg|gif|ico|woff2?|zip)$/i;
+
+function normaliser(txt) {
+  // CRLF → LF avant hash ET avant écriture : sans ça, le même contenu donne deux hashes selon
+  // la plateforme, et toute dérive devient indétectable sous Windows.
+  return txt.replace(/\r\n/g, '\n');
+}
+
+function substituer(txt) {
+  let out = txt;
+  for (const [de, vers] of SUBSTITUTIONS) out = out.split(de).join(vers);
+  return out;
+}
+
+function hash(contenu) {
+  return createHash('sha256').update(contenu).digest('hex').slice(0, 16);
+}
+
+function fichiersDe(racine, sousChemin, sauf = []) {
+  const abs = join(racine, sousChemin);
+  if (!existsSync(abs)) return [];
+  if (statSync(abs).isFile()) return [sousChemin];
+  const out = [];
+  for (const e of readdirSync(abs)) {
+    if (sauf.includes(e)) continue;
+    const p = join(sousChemin, e);
+    if (statSync(join(racine, p)).isDirectory()) out.push(...fichiersDe(racine, p, sauf));
+    else out.push(p);
+  }
+  return out;
+}
+
+function poser(chemin) {
+  mkdirSync(dirname(chemin), { recursive: true });
+}
+
+// ── Construction du plan effectif ────────────────────────────────────────────
+function construirePlan(source) {
+  const paires = [];
+  for (const regle of PLAN) {
+    const src = join(source, regle.de);
+    if (!existsSync(src)) continue;
+    if (statSync(src).isFile()) {
+      paires.push({ src: regle.de, dst: regle.vers });
+    } else {
+      for (const f of fichiersDe(source, regle.de, regle.sauf ?? [])) {
+        const suffixe = relative(regle.de, f).split(sep).join('/');
+        paires.push({ src: f, dst: `${regle.vers}/${suffixe}` });
+      }
+    }
+  }
+  return paires;
+}
+
+// ── Programme ────────────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
+const source = opt('--source');
+const projet = opt('--projet') ?? process.cwd();
+const check = args.includes('--check');
+const force = args.includes('--force');
+
+if (!source || !existsSync(source)) {
+  console.error(`sync-workflow: --source manquant ou introuvable (${source})`);
+  process.exit(2);
+}
+
+const versionSource = (() => {
+  const p = join(source, '.claude-plugin', 'plugin.json');
+  try { return JSON.parse(readFileSync(p, 'utf8')).version; } catch { return 'inconnue'; }
+})();
+
+const cheminManifeste = join(projet, '.claude/workflow/manifest.json');
+const ancien = existsSync(cheminManifeste)
+  ? JSON.parse(readFileSync(cheminManifeste, 'utf8'))
+  : { version: null, fichiers: {} };
+
+const paires = construirePlan(source);
+const nouveauxHashes = {};
+const aEcrire = [];
+const derives = [];
+let inchanges = 0;
+
+for (const { src, dst } of paires) {
+  const brut = readFileSync(join(source, src));
+  const estBinaire = BINAIRES.test(src);
+  const contenu = estBinaire ? brut : Buffer.from(substituer(normaliser(brut.toString('utf8'))), 'utf8');
+  const h = hash(contenu);
+  nouveauxHashes[dst] = h;
+
+  const cible = join(projet, dst);
+  const existe = existsSync(cible);
+  const hActuel = existe ? hash(estBinaire ? readFileSync(cible) : Buffer.from(normaliser(readFileSync(cible, 'utf8')), 'utf8')) : null;
+
+  if (hActuel === h) { inchanges++; continue; }
+
+  // Le fichier diffère. Est-ce une dérive locale (il ne correspond plus au hash qu'on lui
+  // connaissait) ou simplement une source plus récente ?
+  const hConnu = ancien.fichiers?.[dst] ?? null;
+  const modifieLocalement = existe && hConnu !== null && hActuel !== hConnu;
+  if (modifieLocalement && !force) { derives.push(dst); continue; }
+
+  aEcrire.push({ cible, contenu, dst, nouveau: !existe });
+}
+
+// Fichiers gérés autrefois, disparus du payload : à retirer du projet.
+const obsoletes = Object.keys(ancien.fichiers ?? {}).filter((f) => !(f in nouveauxHashes));
+
+// ── Rapport ──────────────────────────────────────────────────────────────────
+const enRetard = ancien.version !== versionSource;
+console.log(`source ${versionSource}  ·  projet ${ancien.version ?? '(non vendoré)'}`);
+console.log(`${paires.length} fichiers gérés · ${inchanges} à jour · ${aEcrire.length} à écrire · ${derives.length} modifiés localement · ${obsoletes.length} obsolètes`);
+for (const d of derives) console.log(`  DÉRIVE   ${d}  (modifié à la main — --force pour écraser)`);
+for (const o of obsoletes) console.log(`  OBSOLÈTE ${o}`);
+// Dire CE QUI va être écrit, pas seulement combien : un décompte seul rend toute anomalie
+// (idempotence rompue, substitution instable) impossible à diagnostiquer sans réinstrumenter.
+for (const e of aEcrire) console.log(`  ${e.nouveau ? 'NOUVEAU ' : 'MAJ     '} ${e.dst}`);
+
+if (check) {
+  const action = aEcrire.length > 0 || obsoletes.length > 0 || derives.length > 0 || enRetard;
+  console.log(action ? 'ÉTAT: action due' : 'ÉTAT: à jour');
+  process.exit(action ? 1 : 0);
+}
+
+// ── Écriture ─────────────────────────────────────────────────────────────────
+for (const { cible, contenu } of aEcrire) { poser(cible); writeFileSync(cible, contenu); }
+for (const o of obsoletes) { const p = join(projet, o); if (existsSync(p)) rmSync(p); }
+
+// Les dérives conservées gardent leur hash réel : le manifeste décrit ce qui est SUR LE DISQUE,
+// sinon la prochaine passe croirait le fichier sain.
+for (const d of derives) {
+  const p = join(projet, d);
+  nouveauxHashes[d] = hash(Buffer.from(normaliser(readFileSync(p, 'utf8')), 'utf8'));
+}
+
+poser(cheminManifeste);
+writeFileSync(cheminManifeste, JSON.stringify({
+  _comment: 'Généré par .claude/workflow/bin/sync-workflow.mjs — ne pas éditer à la main. Un fichier listé ici est GÉRÉ : toute amélioration remonte au repo source, puis redescend par /maj-workflow.',
+  version: versionSource,
+  source: 'kovuthecat/claude-workflow',
+  fichiers: nouveauxHashes,
+}, null, 2) + '\n');
+
+console.log(`écrit: ${aEcrire.length} · supprimé: ${obsoletes.length} · manifeste v${versionSource}`);
