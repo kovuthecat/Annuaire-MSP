@@ -1,11 +1,11 @@
 {
   "_comment": "Généré par .claude/workflow/bin/sync-workflow.mjs — ne pas éditer à la main. Un fichier listé ici est GÉRÉ : toute amélioration remonte au repo source, puis redescend par /maj-workflow.",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "source": "kovuthecat/claude-workflow",
   "fichiers": {
     ".claude/skills/cadrer/SKILL.md": "4671cd235d7c0184",
     ".claude/skills/choisir-mecanisme/SKILL.md": "60422d823e4d2053",
-    ".claude/skills/executer-vague/SKILL.md": "7591ef9c6114e293",
+    ".claude/skills/executer-vague/SKILL.md": "1ce3fb8601af3c9f",
     ".claude/skills/fin-de-tache/SKILL.md": "a8c6ae7d80892689",
     ".claude/skills/maj-workflow/SKILL.md": "64fe54e91fe4c6a4",
     ".claude/skills/migrer-projet/SKILL.md": "91908174333144c3",

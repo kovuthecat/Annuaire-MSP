@@ -284,7 +284,8 @@ des clics.
 
 ### Voie headless — par schéma
 
-Quatre champs, et seulement ceux-là : `is_error`, `structured_output.verdict`, `.motif`, `.rapport`.
+Cinq champs, et seulement ceux-là : `is_error`, `structured_output.verdict`, `.motif`, `.rapport`,
+et `permission_denials` (voir plus bas — il décrit l'environnement, pas la tâche).
 **Jamais `result`** ni aucun autre champ de l'enveloppe — c'est là que vivent le texte libre et les
 métadonnées que le schéma a justement pour rôle d'écarter.
 
@@ -328,6 +329,53 @@ rapport n'existe. Proposer `/reprendre-echec` dans ce cas envoie réparer du cod
 **Fail-closed maintenu** : hors panne franche, tout ce qui n'est pas un `PASS` complet ressort en
 `FAIL`, motif « sortie non conforme ». Une sortie illisible produit littéralement un FAIL au lieu de
 déclencher une interprétation.
+
+### Recoupement par les commits — obligatoire avant de conclure FAIL ou PANNE
+
+Le canal JSON meurt plus souvent que les sessions : processus tué après la fin du travail mais avant
+l'émission du JSON, refus de permission sur le dernier outil, timeout du harnais. Constaté sur MYO
+P2/S9 puis P3/S1 (2026-08-24-25) : bilan écrit, N0 vert — et verdict perdu en route. Depuis 0.13.0,
+**les commits sont la vérité** ; le JSON n'est que le messager. Donc, pour tout verdict `FAIL` à
+motif « sortie non conforme » ou `PANNE` :
+
+```bash
+# Une tâche = un commit portant son repère. Comparer aux tâches listées dans l'index.
+for m in <liste des T<m> de la session, depuis l'index>; do
+  n=$(git log --oneline --grep "P<n>/S<k>/$m" | wc -l)
+  echo "$m : $n commit(s)"
+done
+```
+
+| Résultat | Verdict corrigé | Motif à consigner |
+| --- | --- | --- |
+| toutes les tâches ont leur commit | **PASS** | `verdict perdu en route — commits complets` |
+| une partie seulement | **FAIL** | `interrompue après <T<m>…> — reprendre au premier manquant` |
+| aucun commit | FAIL ou PANNE, inchangé | celui du JSON |
+
+Ce n'est pas un adoucissement du fail-closed : un commit est une preuve mécanique, pas une
+déclaration. C'est le même recoupement que la voie sous-agent impose depuis 0.14.0 — dans les deux
+sens. Ne **jamais** appliquer ce rattrapage à un JSON lisible qui dit `FAIL` : la session a parlé,
+on ne la contredit pas avec ses propres commits (elle peut avoir commité T1 puis échoué T2 en
+le sachant).
+
+### Refus de permission — la cause récurrente, à rendre visible
+
+Un refus d'outil en cours de session laisse une trace dans l'enveloppe : `permission_denials`.
+C'est le **cinquième champ** que l'orchestrateur a le droit de lire — il décrit l'environnement,
+pas la tâche :
+
+```bash
+node -e "
+  const j=JSON.parse(require('fs').readFileSync('.claude/vague/S<k>.json','utf8'));
+  const d=j.permission_denials ?? [];
+  if (d.length) console.log(d.length + ' refus : ' + d.map(x=>x.tool_name ?? x).join(', '));
+" 2>/dev/null
+```
+
+S'il y a des refus, les lister dans le rapport final avec la remédiation : compléter
+`permissions.allow` du projet, **après** la vague — jamais en préventif large (règle de
+l'allowlist), mais toujours quand un refus réel a été observé. Un refus non traité reviendra à
+chaque vague.
 
 > Trois pièges que ce code évite. Découper sur une tabulation (elle est *IFS whitespace* : deux
 > tabulations consécutives s'effondrent en une et décalent tous les champs). Accepter un
