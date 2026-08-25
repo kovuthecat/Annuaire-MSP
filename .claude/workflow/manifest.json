@@ -1,6 +1,6 @@
 {
   "_comment": "Généré par .claude/workflow/bin/sync-workflow.mjs — ne pas éditer à la main. Un fichier listé ici est GÉRÉ : toute amélioration remonte au repo source, puis redescend par /maj-workflow.",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "source": "kovuthecat/claude-workflow",
   "fichiers": {
     ".claude/skills/cadrer/SKILL.md": "4671cd235d7c0184",
@@ -38,7 +38,7 @@
     ".claude/workflow/CLAUDE-BASE.md": "b964167a3f6c3757",
     ".claude/workflow/WORKFLOW.md": "dd4135287b8d6640",
     ".claude/workflow/CONVENTIONS.md": "b8bb3835e7a8d618",
-    ".claude/workflow/MIGRATION.md": "dff30897d22c7a17",
+    ".claude/workflow/MIGRATION.md": "46300e1342257286",
     ".claude/workflow/bin/sync-workflow.mjs": "35b3e0d1b755e410",
     ".claude/workflow/AGENTS.md": "c61afa4ecbec29f9"
   }
