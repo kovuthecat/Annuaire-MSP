@@ -88,6 +88,8 @@ skill `/nouveau-plan`.
 
 ### 4a. Un statut, un seul endroit
 
+*Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
+
 Le suivi a échoué chaque fois qu'une même information a dû être écrite à plusieurs endroits. Donc :
 
 | Information | Vit dans | Ne vit PAS dans |
@@ -99,7 +101,12 @@ Le suivi a échoué chaque fois qu'une même information a dû être écrite à 
 | Décision (justification) | `docs/decisions/<date>-<slug>.md` | registre |
 | Jugement visuel en attente | `VALIDATION.md` | `S<k>.md` (sauf vague parallèle) |
 
+**Qui a le droit de cocher `index.md`** : un seul juge à la fois, décidé par `.claude/wave.lock` —
+mécanisme complet en §4b, ne pas le reformuler ici.
+
 ### 4b. Commits & parallélisation
+
+*Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
 
 **Chaque session committe son propre travail**, tâche par tâche, avant de rendre la main : staging
 explicite, message prévu dans le `T<n>`. La session qui vient d'écrire le code est la seule à savoir
@@ -129,13 +136,14 @@ Plan: P<n>/S<k>/T<m>
 - `git add -A`, `git add .` et `git commit -a` restent refusés par hook : sans staging explicite,
   une session emporte les fichiers de ses voisines.
 
-**Parallélisme réel — l'unique exception.** Deux sessions headless lancées en même temps partagent un
-seul index git : `git commit` prend l'état du dépôt, pas celui de la session, donc chacune emporterait le
-travail en cours de l'autre. Pour ces vagues-là **seulement**, poser `.claude/wave.lock` (à mettre en
-`.gitignore` — marqueur local, pas du contenu de projet) : un hook refuse alors commit et push (§7),
-les sessions laissent leur diff dans l'arbre, et **l'orchestrateur committe pour elles en fin de
-vague**, tâche par tâche, guidé par les colonnes `Zone modifiée`. Une vague dont les sessions se
-suivent — voie Desktop, ou headless séquentiel — n'a pas besoin du verrou.
+**Parallélisme réel — l'unique exception.** Deux sessions lancées en même temps partagent un
+seul index git — sous-agents concurrents comme processus `claude -p` concurrents, indépendamment de
+la voie (§5b) : `git commit` prend l'état du dépôt, pas celui de la session, donc chacune emporterait
+le travail en cours de l'autre. Pour ces vagues-là **seulement**, poser `.claude/wave.lock` (à mettre
+en `.gitignore` — marqueur local, pas du contenu de projet) : un hook refuse alors commit et push
+(§7), les sessions laissent leur diff dans l'arbre, et **l'orchestrateur committe pour elles en fin
+de vague**, tâche par tâche, guidé par les colonnes `Zone modifiée`. Une vague dont les sessions se
+suivent, quelle que soit la voie, n'a pas besoin du verrou.
 
 Le filet de sécurité intra-plan est désormais git lui-même : chaque session laisse un point de retour
 nommé. `/rewind` reste utile **dans** une session ; il n'a jamais rien pu pour ce qui se passe entre
@@ -160,26 +168,39 @@ Quatre agents du plugin, chacun ne rend que sa **conclusion** — jamais les tra
 
 Table de délégation détaillée : `CLAUDE-BASE.md` (section « Avant de coder »).
 
-## 5b. Enchaîner les sessions
+## 5b. Sessions & voies d'orchestration
+
+*Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
 
 **Jamais deux sessions d'un même plan dans une seule conversation** — chacune démarre à froid, pour
 ne pas traîner le contexte de l'une dans l'autre.
 
 - **Session par session, à la main** : la skill `/fin-de-tache` pose une pastille qui lance la
   suivante.
-- **Vague entière, sans intervention** : dérouler `/executer-vague`. La colonne `Env.` décide de la
-  **voie**, pas du droit d'orchestrer :
-  - `—` → **headless**, un processus `claude -p` par session, verdict contraint par schéma, modèle
-    et effort réglés depuis l'index ;
-  - `Desktop` → **sous-agent** (outil `Agent`, en arrière-plan), qui hérite du navigateur in-app de
-    la session d'orchestration et peut donc faire son N1. Aucun clic. L'effort, lui, n'est pas
-    réglable par cette voie : un `high` en `Env. = Desktop` tourne à l'effort ambiant, et
-    l'orchestrateur doit le signaler.
-- Une vague **mixte** déroule les deux voies et **se termine dans le même tour**. La session
-  d'orchestration doit rester ouverte pendant ce temps : les sous-agents vivent en elle.
-- **Hors Claude Code Desktop** (VSCode, terminal, session cloud), aucun navigateur : les sessions
-  `Env. = Desktop` retombent sur des **pastilles** `spawn_task` — un clic par session, la vague ne se
-  termine pas dans le tour. C'est un repli, plus le fonctionnement normal.
+- **Vague entière, sans intervention** : dérouler `/orchestrer-plan`.
+
+**Voie normale : sous-agent.** Toute session orchestrée se lance avec l'outil `Agent`, en
+arrière-plan — c'est le défaut, quel que soit l'environnement, `Env. = —` dans l'index. Le
+sous-agent hérite du navigateur in-app de la session d'orchestration (donc son N1) et de tout son
+environnement (permissions, MCP) : zéro préflight, zéro clic. Le verdict est celui de ses commits
+(§4b). La session d'orchestration doit rester ouverte pendant ce temps : les sous-agents vivent en
+elle.
+
+**Exception headless**, à déclarer et justifier dans la colonne `Env.` de l'index (`headless`) —
+jamais par défaut. Légitime dans exactement deux cas :
+
+| Cas | Pourquoi le sous-agent ne suffit pas |
+| --- | --- |
+| Effort `high`/`xhigh` à appliquer réellement | l'outil `Agent` règle le modèle, pas l'effort |
+| Vague à lancer sans garder la fenêtre ouverte | un `claude -p` détaché survit à la fermeture, un sous-agent non |
+
+Une vague headless lance un processus `claude -p` par session ; le verdict reste lu dans les commits
+(§4b) — un motif de sortie absent n'est qu'une information manquante, pas une panne à instruire.
+
+**Repli — hors Claude Code Desktop** (VSCode, terminal, session cloud), quand aucune pastille ni
+navigateur in-app n'est disponible : revenir au chaînage manuel du premier point, une pastille
+`spawn_task` (ou la commande du bandeau) par session terminée. La vague ne se termine alors plus
+dans le même tour — c'est un repli, pas le fonctionnement normal.
 
 ## 6. Validation — trois niveaux
 

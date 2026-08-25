@@ -1,12 +1,12 @@
 ---
 name: reprendre-echec
-description: Reprendre une session de plan en échec, à partir de son rapport de passation, jusqu'à relancer N0. À dérouler après un FAIL d'`/executer-vague`, ou une session manuelle arrêtée sans finir sa tâche.
+description: Reprendre une session de plan en échec, à partir de son rapport de passation, jusqu'à relancer N0. À dérouler après un FAIL d'`/orchestrer-plan`, ou une session manuelle arrêtée sans finir sa tâche.
 model: sonnet
 ---
 
 # Reprendre une session en échec
 
-Une session qui échoue rend la main sans corriger (`/executer-vague`, Interdits). Cette skill est
+Une session qui échoue rend la main sans corriger (règle de `/orchestrer-plan`). Cette skill est
 ce qui vient après : elle transforme un rapport de passation en correction validée.
 
 **Démarrage à froid, toujours.** Ne jamais reprendre la conversation de la session en échec pour
@@ -19,7 +19,7 @@ n'ouvrir que si le rapport s'avère insuffisant — et à refermer sans y corrig
 
 ## Gabarit — le rapport de passation
 
-> Cette section est la référence citée par `/executer-vague` Étape 4. Une session qui échoue écrit
+> Cette section est la référence citée par `/orchestrer-plan`. Une session qui échoue écrit
 > ce fichier dans `plans/P<n>/S<k>.echec.md` **avant** de renvoyer son verdict.
 
 Il est écrit pour quelqu'un qui n'a rien vu de la session. Il ne raconte pas ce qui s'est passé :

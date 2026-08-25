@@ -39,15 +39,15 @@ if (/\bgit\s+commit\b/.test(commande) && /\s-(?:a|[a-zA-Z]*a[a-zA-Z]*)\b|--all\b
   );
 }
 
-// Une vague suppose un arbre de travail unique : c'est là que l'orchestrateur a pris sa référence
-// (`/executer-vague` Étape 2d) et là que la consolidation committera tâche par tâche. Un diff resté
+// Une vague suppose un arbre de travail unique : c'est là que l'orchestrateur (`/orchestrer-plan`)
+// a pris sa référence et là que la consolidation committera tâche par tâche. Un diff resté
 // dans un worktree n'est vu ni par l'orchestrateur ni par la consolidation — et le verrou interdit
 // justement le commit qui permettrait de le rapatrier. Le refus tombe donc à la création.
 if (vagueParallele(cwd) && (outilWorktree || (commande ?? '').includes('worktree add'))) {
   refuser(
     "Vague parallèle en cours (`.claude/wave.lock` présent) : les sessions d'une vague partagent " +
     "un seul arbre de travail. Un diff produit dans un worktree n'est vu ni par l'orchestrateur " +
-    "(`/executer-vague` Étape 5) ni par la consolidation de fin de plan, et le verrou interdit le " +
+    "(`/orchestrer-plan`) ni par la consolidation de fin de plan, et le verrou interdit le " +
     "commit qui permettrait de le rapatrier. Travaille dans l'arbre courant."
   );
 }

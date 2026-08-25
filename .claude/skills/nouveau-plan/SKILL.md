@@ -75,7 +75,7 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 | Session | Tâches | Titre | Modèle | Effort | Env. | Dépend de | Zone modifiée | Statut |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [S1](S1.md) | T1-T3 | … | Haiku | low | — | — | `css/`, `index.html` | [ ] |
-| [S2](S2.md) | T5 | … | Sonnet | high | Desktop | S1 | `js/edit/` | [ ] |
+| [S2](S2.md) | T5 | … | Sonnet | high | headless (effort `high` réellement appliqué) | S1 | `js/edit/` | [ ] |
 
 ## Ordonnancement
 - **Vague 1 — parallélisable** : S1 · S3 (zones disjointes, aucune dépendance).
@@ -84,26 +84,20 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
   commits de code à rattraper : chaque session a commité les siens.
 ```
 
-**Vagues orchestrées (optionnel)** — toute vague s'exécute via `/executer-vague`, orchestrateur
-Haiku `low` qui ne conserve que les verdicts. La colonne `Env.` décide de la **voie**, pas du droit
-d'orchestrer :
+**Vagues orchestrées (optionnel)** — toute vague s'exécute via `/orchestrer-plan`, qui déroule les
+sessions les unes après les autres jusqu'à épuisement, un échec, ou une gate humaine. Voies et
+colonne `Env.` : domicile `WORKFLOW.md` §5b, ne pas le reformuler ici. Résumé pour le découpage :
 
-- sessions `—` → voie **headless**, un processus `claude -p` chacune, verdicts par schéma, arrêt au
-  premier FAIL. Prérequis impératif : une allowlist `permissions.allow` dans `.claude/settings.json`
-  (pas d'humain disponible pour confirmer un outil en headless) ;
-- sessions `Desktop` → voie **sous-agent** (outil `Agent` en arrière-plan, navigateur in-app hérité
-  de la session d'orchestration), verdict lu dans les commits de la session. Se lance depuis Claude
-  Code Desktop uniquement.
+Colonne **Env.** : `—` (sous-agent, défaut) sauf exception `headless` déclarée et justifiée dans le
+bandeau du `S<k>.md` — légitime dans deux cas seulement (§5b) : effort `high`/`xhigh` à appliquer
+réellement, ou vague à lancer sans garder la fenêtre ouverte. *Legacy : dans un plan antérieur à
+P3, `Desktop` se lit comme `—`.*
 
 **Ce que le découpage doit peser** : une vague mixte est valide, mais elle ne se termine pas d'un
-bloc — la voie headless finit dans le tour, la voie Desktop attend des clics. Grouper les sessions
-`Desktop` entre elles quand le graphe de dépendances le permet donne des vagues qui se closent
-franchement ; les mélanger est un choix, pas un accident à éviter.
-
-Colonne **Env.** : `Desktop` si la session exige la validation visuelle N1 (navigateur in-app),
-`—` sinon. Une session `Desktop` se lance **depuis Claude Code Desktop uniquement** — ni VSCode, ni
-terminal, ni cloud/mobile n'ont le navigateur in-app (cf. `/verif-visuelle`). Une session `—` se
-lance de partout, cloud compris.
+bloc de la même façon — la voie sous-agent vit dans la fenêtre d'orchestration ouverte, la voie
+headless survit à sa fermeture. Grouper les sessions `headless` entre elles quand le graphe de
+dépendances le permet donne des vagues homogènes ; les mélanger est un choix, pas un accident à
+éviter.
 
 L'index ne contient **rien d'autre** : pas de détail d'exécution, il pointe vers les sessions.
 
@@ -113,8 +107,8 @@ L'index ne contient **rien d'autre** : pas de détail d'exécution, il pointe ve
 # P<n> · S<k> — <titre>   (rédigé par Opus)
 
 > **Modèle : <Sonnet/Haiku/Codex> · effort : <low|medium|high|xhigh> · Vague : <v> (parallèle : oui/non)**
-> **Environnement : <Desktop (navigateur in-app requis) | indifférent>**
-> **Lancement : `claude --model <modèle>` · effort : /effort si ≠ défaut · autonome : /goal « toutes les tâches de ce fichier faites, N0 vert »**
+> **Environnement : <indifférent | headless (<motif : effort high/xhigh réellement appliqué | vague fenêtre fermée>)>**
+> **Lancement (si headless) : `claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le." --model <modèle> --effort <effort>`**
 > Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
 > Design fixé — ne reconçois pas. Doute ou blocage → STOP, signale, rends la main.
 
@@ -155,7 +149,7 @@ L'index ne contient **rien d'autre** : pas de détail d'exécution, il pointe ve
 `<type(scope): message>`
 Dernière ligne du commit, obligatoire : `Plan: P<n>/S<k>/T<m>` — c'est le repère qui rend la tâche
 retrouvable ensuite (`git log --grep`), et par lequel l'orchestrateur lit le verdict d'une session
-Desktop.
+(§5b).
 
 ---
 
