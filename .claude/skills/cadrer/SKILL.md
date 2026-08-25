@@ -1,6 +1,6 @@
 ---
 name: cadrer
-description: Session de réflexion avec Opus, en amont d'un plan — fixe la question, délègue toute exploration, borne les options, se termine par un écrit. À dérouler quand le QUOI et le POURQUOI ne sont pas encore tranchés, avant `/nouveau-plan`. Ne modifie jamais de code.
+description: Session de réflexion avec Opus en amont d'un plan, jusqu'à un écrit tranchant les options. À dérouler quand le QUOI et le POURQUOI ne sont pas encore tranchés, avant `/nouveau-plan`.
 allowed-tools: Read, Glob, Grep, Agent, WebFetch, WebSearch, Write, Edit
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: reprendre-echec
-description: Reprendre une session de plan qui a échoué, à partir de son rapport de passation — lecture du rapport, vérification de l'état laissé derrière, diagnostic, correction, puis relance de la validation N0. À dérouler après un FAIL remonté par `/executer-vague`, ou après une session lancée à la main qui s'est arrêtée sans finir sa tâche. Porte aussi le gabarit du rapport de passation que toute session en échec doit écrire.
+description: Reprendre une session de plan en échec, à partir de son rapport de passation, jusqu'à relancer N0. À dérouler après un FAIL d'`/executer-vague`, ou une session manuelle arrêtée sans finir sa tâche.
 model: sonnet
 ---
 

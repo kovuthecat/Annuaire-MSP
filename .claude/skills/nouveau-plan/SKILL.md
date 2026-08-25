@@ -1,6 +1,6 @@
 ---
 name: nouveau-plan
-description: Découper un chantier en sessions et générer le dossier plans/P<n>/ (index d'orchestration + un fichier par session). À dérouler par Opus quand une tâche demande plusieurs sessions. Contient la checklist d'investigation, les règles de découpage en sessions et les squelettes index.md / S<k>.md.
+description: Découper un chantier en sessions et générer le dossier plans/P<n>/ (index + un fichier par session). À dérouler par Opus quand une tâche demande plusieurs sessions, ou quand le scope est flou.
 model: opus
 ---
 
@@ -91,8 +91,9 @@ d'orchestrer :
 - sessions `—` → voie **headless**, un processus `claude -p` chacune, verdicts par schéma, arrêt au
   premier FAIL. Prérequis impératif : une allowlist `permissions.allow` dans `.claude/settings.json`
   (pas d'humain disponible pour confirmer un outil en headless) ;
-- sessions `Desktop` → voie **pastilles** `spawn_task`, un clic = une session neuve, verdict lu dans
-  la colonne Statut. Se lance depuis Claude Code Desktop uniquement.
+- sessions `Desktop` → voie **sous-agent** (outil `Agent` en arrière-plan, navigateur in-app hérité
+  de la session d'orchestration), verdict lu dans les commits de la session. Se lance depuis Claude
+  Code Desktop uniquement.
 
 **Ce que le découpage doit peser** : une vague mixte est valide, mais elle ne se termine pas d'un
 bloc — la voie headless finit dans le tour, la voie Desktop attend des clics. Grouper les sessions

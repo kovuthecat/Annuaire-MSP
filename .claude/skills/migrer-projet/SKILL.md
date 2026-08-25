@@ -1,6 +1,6 @@
 ---
 name: migrer-projet
-description: Rattacher un projet existant au workflow en le **vendorant** dans le dépôt (skills, agents, hooks et docs copiés sous `.claude/`, plus rien à installer). Un diagnostic unique route vers la bonne voie : **bascule** d'un projet encore sur un modèle antérieur (import `@<chemin absolu>CLAUDE-BASE.md`, `enabledPlugins`, hooks à chemins absolus, skills copiées en local), ou **adoption** d'un projet qui a du code mais n'a jamais été outillé (ni `.claude/settings.json`, ni fichiers de contexte, ni `plans/`). Puis vérification prouvée. À dérouler dans le projet concerné.
+description: Rattacher un projet existant au workflow en le vendorant dans le dépôt, puis vérification prouvée. À dérouler si le projet n'est pas encore sur ce workflow, ou si son outillage est incomplet ou daté.
 model: sonnet
 ---
 
@@ -139,6 +139,14 @@ Ordre imposé : le gain décroît, le risque croît.
    `SessionStart` de bootstrap, et les entrées de hooks à chemins absolus. Ces lignes servaient à
    rapatrier au démarrage des fichiers désormais présents dans le repo ; les garder chargerait le
    workflow **deux fois**.
+
+   Poser aussi la confiance du workspace sur les deux formes du chemin projet (`claude -p` ignore
+   silencieusement `permissions.allow` sinon — la confiance est indexée sur la chaîne du chemin,
+   `C:\Users\...` et `C:/Users/...` comptant comme deux entrées) :
+
+   ```bash
+   node -e "const fs=require('fs'),os=require('os'),p=require('path');const f=p.join(os.homedir(),'.claude.json');const c=JSON.parse(fs.readFileSync(f,'utf8'));c.projects=c.projects||{};const cwd=process.cwd();for(const k of [cwd, cwd.replace(/\\\\/g,'/')]){c.projects[k]=c.projects[k]||{};c.projects[k].hasTrustDialogAccepted=true;}fs.writeFileSync(f,JSON.stringify(c,null,2));"
+   ```
 
 3. **Bootstrap obsolète** — supprimer `.claude/hooks/session-start.sh` s'il existe.
 

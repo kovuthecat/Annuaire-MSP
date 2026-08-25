@@ -56,8 +56,9 @@ Ce qui est entré ne se retire que par un démarrage à froid.
 
 **Une session = un fichier `S<k>.md`** (1 à n tâches). `/clear` (ou nouvelle session) entre deux
 sessions : ne pas traîner le contexte d'une session dans la suivante, ni improviser hors plan.
-Session suivante d'un plan = toujours une nouvelle conversation, jamais la même (pastille en
-Desktop, ou commande du bandeau sinon — voir `WORKFLOW.md` §5b).
+Session suivante d'un plan = toujours une nouvelle conversation, jamais la même (sous-agent quand
+`/executer-vague` orchestre, pastille ou commande du bandeau en lancement manuel — voir
+`WORKFLOW.md` §5b).
 
 ## Plans, modèles, garde-fous
 

@@ -1,6 +1,6 @@
 ---
 name: fin-de-tache
-description: Checklist de fin de tâche et de fin de session — statuts, fichiers de contexte, rapport, commit. À dérouler quand une tâche T<n> d'une session S<k> est terminée et validée (N0 build + typecheck OK). Le mode (solo ou vague parallèle) est indiqué dans le bandeau du S<k>.md.
+description: Checklist de fin de tâche et de fin de session — statuts, fichiers de contexte, rapport, commit. À dérouler quand une tâche T<n> d'une session S<k> est terminée et validée (N0 OK).
 ---
 
 # Fin de tâche
@@ -58,9 +58,12 @@ ailleurs (ni dans le `S<k>.md`, ni dans `TASKS.md`) — c'est la première sourc
    appartiennent au dépôt source. Porter la modification là-bas, publier, puis `/maj-workflow` ici.
    Sans ça, la prochaine synchronisation la signalera en dérive — au mieux — ou la perdra.
 8. **Le workflow lui-même a changé ?** (tâche menée dans le dépôt source, sous `plugin/`) → bumper
-   `version` dans `plugin/.claude-plugin/plugin.json` + une ligne dans `CHANGELOG.md`, puis publier.
-   Sans bump, les projets vendorés ne voient jamais la mise à jour : le manifeste compare les
-   versions, donc le travail est poussé mais n'arrive nulle part.
+   `version` dans `plugin/.claude-plugin/plugin.json` + une ligne dans `CHANGELOG.md`, **puis**
+   `node .claude/workflow/bin/publier.mjs` depuis le dépôt source. Sans bump, les projets vendorés
+   ne voient jamais la mise à jour : le manifeste compare les versions, donc le travail est poussé
+   mais n'arrive nulle part. Sans publication non plus : le dépôt public reste en retard, et toute
+   machine neuve ou session cloud qui vendore depuis lui embarque une version périmée — c'est déjà
+   arrivé, 4 versions de retard.
 
 ## Fin de session — mode SOLO (parallèle : non)
 

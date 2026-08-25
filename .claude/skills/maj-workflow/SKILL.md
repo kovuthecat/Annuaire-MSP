@@ -1,6 +1,6 @@
 ---
 name: maj-workflow
-description: Mettre à jour les fichiers du workflow vendorés dans un projet (`.claude/skills`, `.claude/agents`, `.claude/workflow`) depuis le dépôt source, et signaler les fichiers modifiés à la main. À dérouler quand un projet est en retard sur la source, quand un hook signale une dérive, ou périodiquement. Fonctionne sans le plugin installé — le moteur est vendoré dans le projet.
+description: Mettre à jour les fichiers du workflow vendorés depuis le dépôt source, en signalant les fichiers modifiés à la main. À dérouler quand un projet est en retard sur la source, ou périodiquement.
 model: haiku
 ---
 

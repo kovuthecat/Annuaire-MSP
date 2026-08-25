@@ -1,6 +1,6 @@
 ---
 name: purge-contexte
-description: Ramener les fichiers de contexte (STATUS, TASKS, VALIDATION, DECISIONS, PROJECT_MAP) sous leur plafond de lignes en archivant sans perdre d'information. À dérouler quand un hook signale un dépassement, ou avant de reprendre un projet laissé de côté. Inclut la scission DECISIONS.md en registre + docs/decisions/.
+description: Ramener les fichiers de contexte sous leur plafond de lignes en archivant sans perdre d'information. À dérouler quand un hook signale un dépassement, ou avant de reprendre un projet dormant.
 model: haiku
 ---
 

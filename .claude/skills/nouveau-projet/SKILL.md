@@ -1,6 +1,6 @@
 ---
 name: nouveau-projet
-description: Démarrer un projet : interview de cadrage guidée (questionnaire complet) puis instanciation des fichiers de contexte, settings et git. À dérouler avec Opus dans le futur repo vide, avant toute autre chose.
+description: Démarrer un projet : interview de cadrage guidée puis instanciation des fichiers de contexte, settings et git. À dérouler avec Opus dans le futur repo vide, avant toute autre chose.
 ---
 
 # Nouveau projet — interview de cadrage
@@ -70,14 +70,22 @@ d'écrire le moindre fichier**. Pas de « je considère que c'est validé » imp
    > **ni** `enabledPlugins`, **ni** `extraKnownMarketplaces` : le workflow est dans le repo, il
    > n'y a rien à rapatrier au démarrage. Les deux ensemble le chargeraient deux fois.
 
-3. Copier depuis `.claude/workflow/templates/` : `PROJECT_BRIEF.md`, `ARCHITECTURE.md`,
+3. Poser la confiance du workspace sur les deux formes du chemin projet (`claude -p` ignore
+   silencieusement `permissions.allow` sinon — la confiance est indexée sur la chaîne du chemin,
+   `C:\Users\...` et `C:/Users/...` comptant comme deux entrées) :
+
+   ```bash
+   node -e "const fs=require('fs'),os=require('os'),p=require('path');const f=p.join(os.homedir(),'.claude.json');const c=JSON.parse(fs.readFileSync(f,'utf8'));c.projects=c.projects||{};const cwd=process.cwd();for(const k of [cwd, cwd.replace(/\\\\/g,'/')]){c.projects[k]=c.projects[k]||{};c.projects[k].hasTrustDialogAccepted=true;}fs.writeFileSync(f,JSON.stringify(c,null,2));"
+   ```
+
+4. Copier depuis `.claude/workflow/templates/` : `PROJECT_BRIEF.md`, `ARCHITECTURE.md`,
    `DECISIONS.md`, `PROJECT_MAP.md`, `STATUS.md`, `TASKS.md`, `VALIDATION.md`, `CLAUDE.md`
    (squelette) — et, si la réponse à la question 13 est « oui, il y a une UI », `DESIGN_SPEC.md`.
 
    > Les squelettes voyagent **dans le repo** depuis le vendoring : ne jamais aller les chercher
    > dans un checkout du dépôt source (chemin qui n'existe que sur la machine du développeur).
 
-4. Créer `AGENTS.md` à la racine, renvoyant à la copie vendorée :
+5. Créer `AGENTS.md` à la racine, renvoyant à la copie vendorée :
 
    ```md
    Lire et appliquer `.claude/workflow/AGENTS.md` (rôle Codex : régression visuelle scriptée).
@@ -89,13 +97,13 @@ d'écrire le moindre fichier**. Pas de « je considère que c'est validé » imp
    > vont les règles propres (version de framework, contraintes maison). Si l'utilisateur se sert du
    > runner Playwright partagé, lui rappeler de définir `PLAYWRIGHT_AUDIT_RUNNER`.
 
-5. Ajouter `.claude/wave.lock` au `.gitignore` (marqueur local, jamais versionné).
+6. Ajouter `.claude/wave.lock` au `.gitignore` (marqueur local, jamais versionné).
 
-6. Remplir `PROJECT_BRIEF.md` avec les réponses de l'interview (chaque section a une question
+7. Remplir `PROJECT_BRIEF.md` avec les réponses de l'interview (chaque section a une question
    source en Phase A — aucune section ne doit rester à instancier sans réponse).
-7. Supprimer les sections de template non pertinentes pour ce projet précis (une section vide est
+8. Supprimer les sections de template non pertinentes pour ce projet précis (une section vide est
    du bruit payé à chaque lecture — ne pas la laisser vide, la retirer).
-8. `git init` (s'il n'a pas eu lieu avant l'amorçage) puis premier commit, staging explicite,
+9. `git init` (s'il n'a pas eu lieu avant l'amorçage) puis premier commit, staging explicite,
    message exact : `chore: instanciation projet depuis Templates`. Le commit inclut `.claude/` —
    c'est ce qui rend le workflow disponible à quiconque clone, dans tous les environnements.
 

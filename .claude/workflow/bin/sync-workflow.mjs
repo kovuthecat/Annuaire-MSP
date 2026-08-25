@@ -123,6 +123,46 @@ function construirePlan(source) {
   return paires;
 }
 
+// ── Contrôle de dérive du bloc hooks de settings.json ───────────────────────
+// settings.json n'est PAS géré par le manifeste ci-dessus (permissions et effortLevel
+// appartiennent au projet, jamais réécrits) — mais son bloc `hooks` doit rester aligné sur
+// templates/project-settings.json du payload. Une évolution des hooks a déjà demandé une
+// édition manuelle dans 6 projets ; un oubli laisse des hooks silencieusement absents. Ce
+// contrôle est purement informatif : jamais bloquant, jamais d'écriture.
+function normaliserHooks(objet) {
+  // Tri récursif des clés pour que la comparaison JSON.stringify ignore l'ordre.
+  if (Array.isArray(objet)) return objet.map(normaliserHooks);
+  if (objet && typeof objet === 'object') {
+    const trie = {};
+    for (const cle of Object.keys(objet).sort()) trie[cle] = normaliserHooks(objet[cle]);
+    return trie;
+  }
+  return objet;
+}
+
+function controlerDeriveSettings(source, projet) {
+  const cheminProjet = join(projet, '.claude/settings.json');
+  const cheminSource = join(source, 'templates/project-settings.json');
+
+  if (!existsSync(cheminProjet)) {
+    return '  SETTINGS  .claude/settings.json absent — copier depuis .claude/workflow/templates/project-settings.json';
+  }
+  if (!existsSync(cheminSource)) return null; // rien à comparer côté source
+
+  let hooksProjet, hooksSource;
+  try { hooksProjet = JSON.parse(readFileSync(cheminProjet, 'utf8')).hooks ?? {}; }
+  catch { return '  SETTINGS  .claude/settings.json illisible (JSON invalide) — vérifier le fichier'; }
+  try { hooksSource = JSON.parse(readFileSync(cheminSource, 'utf8')).hooks ?? {}; }
+  catch { return '  SETTINGS  templates/project-settings.json illisible (JSON invalide) côté source — vérifier le payload'; }
+
+  const a = JSON.stringify(normaliserHooks(hooksProjet));
+  const b = JSON.stringify(normaliserHooks(hooksSource));
+  if (a !== b) {
+    return '  SETTINGS  bloc hooks divergent du template — comparer .claude/settings.json à .claude/workflow/templates/project-settings.json';
+  }
+  return null;
+}
+
 // ── Programme ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
@@ -186,6 +226,9 @@ for (const o of obsoletes) console.log(`  OBSOLÈTE ${o}`);
 // Dire CE QUI va être écrit, pas seulement combien : un décompte seul rend toute anomalie
 // (idempotence rompue, substitution instable) impossible à diagnostiquer sans réinstrumenter.
 for (const e of aEcrire) console.log(`  ${e.nouveau ? 'NOUVEAU ' : 'MAJ     '} ${e.dst}`);
+
+const deriveSettings = controlerDeriveSettings(source, projet);
+if (deriveSettings) console.log(deriveSettings);
 
 if (check) {
   const action = aEcrire.length > 0 || obsoletes.length > 0 || derives.length > 0 || enRetard;

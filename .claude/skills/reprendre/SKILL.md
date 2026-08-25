@@ -1,6 +1,6 @@
 ---
 name: reprendre
-description: Répondre à « où j'en étais ? » sur un projet laissé de côté — lecture bornée de STATUS.md, de l'index du plan courant et du backlog, détection des incohérences, puis UNE prochaine action proposée. À dérouler en ouverture d'une session sur un projet non touché depuis un moment, ou quand le hook SessionStart signale un STATUS.md en retard. Ne code pas, ne commite pas, ne modifie aucun fichier de suivi.
+description: Répondre à « où j'en étais ? » sur un projet laissé de côté, jusqu'à UNE prochaine action proposée. À dérouler en ouverture de session sur un projet dormant, ou si SessionStart signale un STATUS.md en retard.
 model: sonnet
 ---
 

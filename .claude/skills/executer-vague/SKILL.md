@@ -1,6 +1,6 @@
 ---
 name: executer-vague
-description: Orchestre une vague de sessions d'un plan — voie headless (`claude -p`, verdicts par schéma) pour les sessions sans navigateur, voie sous-agent (outil `Agent` en arriere-plan, qui herite du navigateur in-app) pour celles qui exigent la validation N1 — une vague se deroule de bout en bout sans intervention. Ne garde que les verdicts, tient les statuts. À dérouler quand une vague de `plans/P<n>/index.md` est prête. Pendant exécutif de `/nouveau-plan`.
+description: Orchestre une vague de sessions d'un plan de bout en bout sans intervention, ne gardant que les verdicts. À dérouler quand une vague de `plans/P<n>/index.md` est prête.
 model: haiku
 ---
 

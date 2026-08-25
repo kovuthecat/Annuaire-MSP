@@ -1,6 +1,6 @@
 ---
 name: verif-visuelle
-description: Vérification visuelle d'un écran ou d'un parcours — niveau N1 automatique via le navigateur in-app de Claude Code Desktop, ou sortie d'une checklist à dérouler à la main quand le navigateur n'est pas disponible (VSCode, terminal, session cloud, appli mobile). À utiliser après une tâche qui change l'UI, avant de consigner quoi que ce soit dans VALIDATION.md.
+description: Vérification visuelle d'un écran — navigateur in-app si disponible, sinon checklist manuelle. À utiliser après une tâche qui change l'UI, avant de consigner dans VALIDATION.md.
 ---
 
 # Vérification visuelle

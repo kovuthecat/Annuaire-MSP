@@ -1,6 +1,6 @@
 ---
 name: choisir-mecanisme
-description: Choisir le bon mécanisme Claude Code (règle, rule scopée, skill, hook, subagent, MCP, plugin, /goal, scheduling) et auditer la config .claude/ d'un projet. À dérouler quand on hésite entre plusieurs mécanismes, avant de créer de l'infrastructure custom, ou pour un audit périodique de workflow.
+description: Choisir le bon mécanisme Claude Code et auditer la config .claude/. À dérouler en cas d'hésitation entre mécanismes, avant de créer de l'infra custom, ou pour un audit périodique.
 ---
 
 # Choisir le bon mécanisme Claude Code
