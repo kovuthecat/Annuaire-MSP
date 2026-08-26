@@ -69,7 +69,13 @@ export function nbLignes(chemin) {
   if (!existsSync(chemin)) return null;
   const contenu = readFileSync(chemin, 'utf8');
   if (contenu === '') return 0;
-  return contenu.split('\n').length;
+  const lignes = contenu.split('\n');
+  // Un fichier bien formé se termine par \n : le dernier élément du split est alors la chaîne
+  // vide APRÈS ce \n, pas une ligne. Le compter rendait le plafond effectif `plafond - 1`, et
+  // /purge-contexte insatisfiable — la skill recompte avec wc -l, qui lui ne le compte pas.
+  // Symptôme observé : 5 fichiers pile au plafond signalés en dépassement à chaque session.
+  if (lignes[lignes.length - 1] === '') lignes.pop();
+  return lignes.length;
 }
 
 /** Fichiers de contexte dépassant leur plafond. Renvoie [{fichier, lignes, plafond}]. */

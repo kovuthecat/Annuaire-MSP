@@ -1,6 +1,6 @@
 {
   "_comment": "Généré par .claude/workflow/bin/sync-workflow.mjs — ne pas éditer à la main. Un fichier listé ici est GÉRÉ : toute amélioration remonte au repo source, puis redescend par /maj-workflow.",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "source": "kovuthecat/claude-workflow",
   "fichiers": {
     ".claude/skills/cadrer/SKILL.md": "c6f4a867a38cb4b5",
@@ -19,7 +19,7 @@
     ".claude/agents/lecteur-doc.md": "74ec05c9de9a2ab6",
     ".claude/agents/resumeur-git.md": "b24fe40de6955c05",
     ".claude/agents/verificateur-n0.md": "bf5dfc4e61554c97",
-    ".claude/workflow/hooks/lib.mjs": "e5cc2d0795f5e0e9",
+    ".claude/workflow/hooks/lib.mjs": "2aed76bbd6849eeb",
     ".claude/workflow/hooks/plafonds.json": "a2d3ab0cdf978568",
     ".claude/workflow/hooks/posttooluse-format.mjs": "53fed429b8b40700",
     ".claude/workflow/hooks/pretooluse-git.mjs": "71ca31e14b710677",
