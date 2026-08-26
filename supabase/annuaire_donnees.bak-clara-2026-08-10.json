@@ -1912,17 +1912,11 @@
         "texte": "Adresse à vérifier : sante.fr situe l'UCASAR au 47 bd de l'Hôpital 75013, tandis que la page action-groupe.org la situe « au rez-de-chaussée de l'Institut de Cardiologie, 52 bd Vincent Auriol 75013 ». Les deux sont sur le site de la Pitié-Salpêtrière ; seul l'arrondissement est certain.",
         "author": null,
         "origine": "enrichissement_web"
-      },
-      {
-        "type": "info",
-        "texte": "Ligne « urgence cardiologie » indiquee par le carnet de Clara : 01 42 16 22 11 (distincte du numero standard UCASAR 01 42 16 29 29 deja enregistre).",
-        "author": "clara"
       }
     ],
     "_meta": {
       "owners": [
-        "antonin",
-        "clara"
+        "antonin"
       ],
       "from_partage": false,
       "garbled": false,
@@ -2328,8 +2322,7 @@
     ],
     "_meta": {
       "owners": [
-        "charlene",
-        "clara"
+        "charlene"
       ],
       "from_partage": false,
       "garbled": false,
@@ -7122,8 +7115,7 @@
     "comments": [],
     "_meta": {
       "owners": [
-        "charlene",
-        "clara"
+        "charlene"
       ],
       "from_partage": false,
       "garbled": false,
@@ -8061,17 +8053,10 @@
       "dermatologie"
     ],
     "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Consultations sans rendez-vous le mardi et le mercredi.",
-        "author": "clara"
-      }
-    ],
+    "comments": [],
     "_meta": {
       "owners": [
-        "charlene",
-        "clara"
+        "charlene"
       ],
       "from_partage": false,
       "garbled": false,
@@ -8222,7 +8207,7 @@
     "adresse": "4b rue de l'Hôpital Saint-Louis",
     "arrondissement": "75010",
     "secteur_conv": "2",
-    "tel_secretariat": "01 77 37 57 30",
+    "tel_secretariat": null,
     "doctolib": null,
     "site_web": null,
     "email_rdv": null,
@@ -8238,7 +8223,7 @@
     "tele_expertise": null,
     "tarif": "100 €",
     "rpps": "10101201324",
-    "prend_nouveaux": "oui",
+    "prend_nouveaux": "inconnu",
     "vad": false,
     "ame_cmu": false,
     "pmr": false,
@@ -8274,17 +8259,11 @@
         "texte": "Secteur 2 adhérent OPTAM : dépassements d'honoraires maîtrisés (source : Annuaire santé Ameli, CNAM, fichier du 2026-07-13).",
         "author": null,
         "origine": "enrichissement_web"
-      },
-      {
-        "type": "info",
-        "texte": "Accepte les nouveaux patients.",
-        "author": "clara"
       }
     ],
     "_meta": {
       "owners": [
-        "anne",
-        "clara"
+        "anne"
       ],
       "from_partage": false,
       "garbled": false,
@@ -19913,17 +19892,9 @@
       "psychiatrie"
     ],
     "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Oriente aussi pour la chirurgie du dos / neurochirurgie (avec la Pitie-Salpetriere en alternative).",
-        "author": "clara"
-      }
-    ],
+    "comments": [],
     "_meta": {
-      "owners": [
-        "clara"
-      ],
+      "owners": [],
       "from_partage": true,
       "garbled": false,
       "needs_web": true,
@@ -20390,7 +20361,7 @@
     "tel_secretariat": "01 56 01 63 03",
     "doctolib": null,
     "site_web": null,
-    "email_rdv": "consultation.hepatogast@aphp.fr",
+    "email_rdv": null,
     "ligne_directe": null,
     "bip": null,
     "portable": null,
@@ -20414,17 +20385,10 @@
       "consultation"
     ],
     "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Si ascite peu abondante : envoyer au prealable un courrier avec serologies hepatiques + imagerie.",
-        "author": "clara"
-      }
-    ],
+    "comments": [],
     "_meta": {
       "owners": [
-        "charlene",
-        "clara"
+        "charlene"
       ],
       "from_partage": false,
       "garbled": false,
@@ -38900,8 +38864,7 @@
     "_meta": {
       "owners": [
         "antonin",
-        "aurelien",
-        "clara"
+        "aurelien"
       ],
       "from_partage": false,
       "garbled": false,
@@ -47353,8 +47316,7 @@
     "_meta": {
       "owners": [
         "antonin",
-        "charlene",
-        "clara"
+        "charlene"
       ],
       "from_partage": false,
       "garbled": false,
@@ -52243,18 +52205,11 @@
         "texte": "Le site officiel d'Ambulance Pelleport (23 rue Pelleport, 75020) publie le numéro 01 42 54 54 54, différent de celui du carnet (01 42 54 89 21). Le numéro du carnet a été conservé tel quel : les deux peuvent coexister. « Montaigne » n'est pas mentionné sur le site.",
         "author": null,
         "origine": "enrichissement_web"
-      },
-      {
-        "type": "info",
-        "texte": "Le site officiel (ambulances-pelleport.fr) indique le numero 01 42 54 54 54, different de celui deja enregistre (01 42 54 89 21) a la meme adresse (23 rue Pelleport) - les deux sont conserves, a confirmer lequel est actuellement actif.",
-        "author": null,
-        "origine": "enrichissement_web"
       }
     ],
     "_meta": {
       "owners": [
-        "aurelien",
-        "clara"
+        "aurelien"
       ],
       "from_partage": false,
       "garbled": false,
@@ -65289,8 +65244,7 @@
     ],
     "_meta": {
       "owners": [
-        "aurelien",
-        "clara"
+        "aurelien"
       ],
       "from_partage": false,
       "garbled": false,
@@ -68635,17 +68589,10 @@
       "santé des femmes"
     ],
     "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Le carnet de Clara indique l'adresse mail « maisondesfemmes.bichat@aphp.fr », legerement differente de celle deja enregistree (« maisondesfemmes.bch@aphp.fr ») - les deux alias sont probablement valides (meme boite AP-HP), conservee a titre indicatif.",
-        "author": "clara"
-      }
-    ],
+    "comments": [],
     "_meta": {
       "owners": [
-        "anne",
-        "clara"
+        "anne"
       ],
       "from_partage": false,
       "garbled": false,
@@ -82176,8 +82123,7 @@
     "comments": [],
     "_meta": {
       "owners": [
-        "elena",
-        "clara"
+        "elena"
       ],
       "from_partage": false,
       "garbled": false,
@@ -87965,549 +87911,5 @@
     "longitude": 2.388519,
     "geocode_score": 0.9761,
     "geocoded_at": "2026-07-19T00:00:00+02:00"
-  },
-  {
-    "type": "praticien",
-    "sous_type": null,
-    "civilite": "Dr",
-    "nom": "MOISAN",
-    "prenom": "Delphine",
-    "profession": "Psychiatre addictologue",
-    "orientation": "Addictologie / alcoologie",
-    "etablissement": "Hopital Beaujon (AP-HP) - UTAMA (Unite de Traitement Ambulatoire des Maladies Addictives)",
-    "adresse": "100 Boulevard du General Leclerc, 92110 Clichy",
-    "arrondissement": "92110",
-    "secteur_conv": null,
-    "tel_secretariat": "01 40 87 58 84",
-    "doctolib": null,
-    "site_web": null,
-    "email_rdv": null,
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "addictologie",
-      "alcoologie",
-      "psychiatrie"
-    ],
-    "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Egalement joignable via le service de psychiatrie et addictologie de l'Hopital Bichat (meme GHU Paris Nord) : 01 40 25 82 63.",
-        "author": "clara"
-      },
-      {
-        "type": "info",
-        "texte": "Identite et fonction confirmees : Dr Delphine Moisan, psychiatre-addictologue, responsable de l'UTAMA a l'Hopital Beaujon, AP-HP. (Source : https://www.aphp.fr/beaujon/service-de-psychiatrie-et-addictologie - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": false,
-      "confidence": "high",
-      "source_text": [
-        "addictologie/alcoolisme ; Dr Moisan Delphine ; APHP Beaujon / Bichat ; Beaujon : 01 40 87 58 84 Bichat 01 40 25 82 63"
-      ],
-      "merged_from": 1,
-      "idx": 1233,
-      "web_enrichi": true,
-      "web_source": "https://www.aphp.fr/beaujon/service-de-psychiatrie-et-addictologie",
-      "web_confidence": "haute"
-    },
-    "source_url": "https://www.aphp.fr/beaujon/service-de-psychiatrie-et-addictologie",
-    "source_type": "site_etablissement",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Praticien",
-    "latitude": 48.908509,
-    "longitude": 2.30778,
-    "geocode_score": 0.975,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
-  },
-  {
-    "type": "structure",
-    "sous_type": "consultation sans rendez-vous",
-    "civilite": null,
-    "nom": "UMCG - Peupliers (Unite Medico-Chirurgicale de Garde)",
-    "prenom": null,
-    "profession": null,
-    "orientation": null,
-    "etablissement": "Hopital Prive des Peupliers",
-    "adresse": "24 rue des Peupliers, 75013 Paris",
-    "arrondissement": "75013",
-    "secteur_conv": null,
-    "tel_secretariat": null,
-    "doctolib": null,
-    "site_web": null,
-    "email_rdv": null,
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "urgences",
-      "sans rendez-vous",
-      "traumatologie"
-    ],
-    "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Consultation sans rendez-vous, tous les jours de 8h a 20h (horaires reduits 8h-18h en aout). Prend en charge traumatologie, plaies, brulures, infections cutanees, medecine generale et urgences de la main.",
-        "author": "clara"
-      },
-      {
-        "type": "info",
-        "texte": "Adresse et horaires confirmes sur la page officielle de l'etablissement. Aucun numero de telephone dedie trouve. (Source : https://hopital-prive-des-peupliers-paris.ramsaysante.fr/ - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": false,
-      "confidence": "high",
-      "source_text": [
-        "Unite medico-chir de garde UMCG - Peupliers ; 24 rue des Peupliers 75013 ; sans rdv, Lundi au Dimanche de 08h00 a 20h00"
-      ],
-      "merged_from": 1,
-      "idx": 1234,
-      "web_enrichi": true,
-      "web_source": "https://hopital-prive-des-peupliers-paris.ramsaysante.fr/",
-      "web_confidence": "haute"
-    },
-    "source_url": "https://hopital-prive-des-peupliers-paris.ramsaysante.fr/",
-    "source_type": "site_etablissement",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Structure de soins",
-    "latitude": 48.823136,
-    "longitude": 2.352951,
-    "geocode_score": 0.9779,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
-  },
-  {
-    "type": "praticien",
-    "sous_type": null,
-    "civilite": "Dr",
-    "nom": "PANA-KATATALI",
-    "prenom": "Heloise",
-    "profession": "Pneumologue",
-    "orientation": null,
-    "etablissement": null,
-    "adresse": "74 rue Saint-Blaise, 75020 Paris",
-    "arrondissement": "75020",
-    "secteur_conv": "2",
-    "tel_secretariat": "03 81 60 34 01",
-    "doctolib": "https://www.doctolib.fr/pneumologue/paris/heloise-pana-katatali",
-    "site_web": null,
-    "email_rdv": "pneumologue.paris20@gmail.com",
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": "allemand, anglais, francais",
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "pneumologie",
-      "medecine du sommeil",
-      "apnee du sommeil",
-      "apnee du sommeil de l'enfant",
-      "asthmologie",
-      "cancerologie thoracique",
-      "polygraphie ventilatoire",
-      "ronflements",
-      "troubles du sommeil"
-    ],
-    "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Secteur 2 OPTAM (depassements maitrises).",
-        "author": "clara"
-      },
-      {
-        "type": "info",
-        "texte": "Le numero 03 81 60 34 01 est le secretariat commun des deux cabinets (Paris 75020 et Besancon) : verifie sur le site officiel, ce n'est pas une erreur de saisie malgre l'indicatif non-parisien. (Source : http://www.pneumoparisbesancon.fr/ - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      },
-      {
-        "type": "info",
-        "texte": "Actes/competences (page Doctolib ouverte et identite confirmee sur place, donnees structurees schema.org) : apnee du sommeil (adulte et enfant), asthmologie, cancerologie thoracique, polygraphie ventilatoire, ronflements, troubles du sommeil. Suit les patients a partir de 3 ans. Langues : allemand, anglais, francais. (Source : https://www.doctolib.fr/pneumologue/paris/heloise-pana-katatali - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": false,
-      "confidence": "high",
-      "source_text": [
-        "pneumologue ; Dr Pana-Katatali ; 74, rue Saint Blaise 75020 ; 03 81 60 34 01 ; pneumologue.paris20@gmail.com ; secteur 2 OPTAM"
-      ],
-      "merged_from": 1,
-      "idx": 1235,
-      "web_enrichi": true,
-      "web_source": "http://www.pneumoparisbesancon.fr/",
-      "web_confidence": "haute",
-      "enriched": {
-        "tags": "https://www.doctolib.fr/pneumologue/paris/heloise-pana-katatali"
-      }
-    },
-    "source_url": "http://www.pneumoparisbesancon.fr/",
-    "source_type": "site_etablissement",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Praticien",
-    "latitude": 48.856913,
-    "longitude": 2.408699,
-    "geocode_score": 0.9799,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
-  },
-  {
-    "type": "praticien",
-    "sous_type": null,
-    "civilite": "Dr",
-    "nom": "MORVAN",
-    "prenom": "Erwan",
-    "profession": "Neurologue",
-    "orientation": "ENMG (electromyogramme), potentiels evoques",
-    "etablissement": null,
-    "adresse": "28 rue Ligner, 75020 Paris",
-    "arrondissement": "75020",
-    "secteur_conv": "2",
-    "tel_secretariat": "07 81 82 91 24",
-    "doctolib": "https://www.doctolib.fr/neurologue/paris/erwan-morvan",
-    "site_web": null,
-    "email_rdv": null,
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": "10101084274",
-    "tags": [
-      "neurologie",
-      "enmg",
-      "electromyogramme",
-      "potentiels evoques"
-    ],
-    "statut": "a_verifier",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Neurologue oriente neurophysiologie : realise EMG/ENMG, potentiels evoques moteurs et sensitifs. Ne fait pas de consultation de neurologie generale ni de suivi enfant de moins de 14 ans. Aucune coordonnee n'etait donnee par le carnet ; adresse, telephone et RPPS confirmes sur sante.fr. (Source : https://www.sante.fr/neurologie/paris/dr-morvan-erwan - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      },
-      {
-        "type": "alerte",
-        "texte": "Desaccord de telephone entre 2 sources ouvertes : sante.fr indique 07 81 82 91 24 (retenu ici, sante.fr etant la reference du projet pour ce champ) ; la page Doctolib du praticien (texte libre de sa bio, pas le champ telephone structure qui est vide) indique un autre numero, 09 78 27 12 01. Le cabinet est aussi note « Centre de sante Angels » sur Doctolib, avec des remplacants les lundi (Dr Javeri) et jeudi (Dr Fela Fouzia) -- possible changement recent de secretariat qui expliquerait l'ecart. A confirmer avant tout appel. Ne fait pas de consultation de neurologie generale, pas d'EMG du perineum/face, pas d'enfant de moins de 14 ans.",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": true,
-      "confidence": "medium",
-      "source_text": [
-        "neuro ENMG ; Dr MORVAN Erwan"
-      ],
-      "merged_from": 1,
-      "idx": 1236,
-      "web_enrichi": true,
-      "web_source": "https://www.sante.fr/neurologie/paris/dr-morvan-erwan",
-      "web_confidence": "haute",
-      "enriched": {
-        "tags": "https://www.doctolib.fr/neurologue/paris/erwan-morvan",
-        "tel_secretariat": "https://www.sante.fr/neurologie/paris/dr-morvan-erwan"
-      }
-    },
-    "source_url": "https://www.sante.fr/neurologie/paris/dr-morvan-erwan",
-    "source_type": "annuaire_sante",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Praticien",
-    "latitude": 48.857573,
-    "longitude": 2.398077,
-    "geocode_score": 0.9756,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
-  },
-  {
-    "type": "autre",
-    "sous_type": null,
-    "civilite": null,
-    "nom": "IAPR - Institut d'Accompagnement Psychologique et de Ressources",
-    "prenom": null,
-    "profession": "Soutien psychologique (salaries, via l'employeur)",
-    "orientation": null,
-    "etablissement": null,
-    "adresse": null,
-    "arrondissement": null,
-    "secteur_conv": null,
-    "tel_secretariat": null,
-    "doctolib": null,
-    "site_web": "https://www.iapr.fr/",
-    "email_rdv": null,
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "psychologie",
-      "soutien",
-      "en ligne",
-      "salaries"
-    ],
-    "statut": "a_verifier",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Note du carnet : « IAPR : en ligne », sans autre precision.",
-        "author": "clara"
-      },
-      {
-        "type": "info",
-        "texte": "IAPR est un prestataire de soutien psychologique en contexte professionnel (risques psychosociaux, sante mentale au travail) : reseau de plus de 950 psychologues, accessible par telephone/numerique/presentiel, parfois avec une ligne 24/7 si l'employeur y a souscrit. Cible principalement les salaries d'entreprises clientes, pas un service de consultation patient classique - pertinence pour l'annuaire a confirmer avec Clara (ressource pour les patients, ou pour l'equipe de la MSP elle-meme ?). (Source : https://www.iapr.fr/ - enrichissement web 2026-08-10, confiance moyenne).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": true,
-      "confidence": "medium",
-      "source_text": [
-        "psychologue ; IAPR : en ligne"
-      ],
-      "merged_from": 1,
-      "idx": 1237,
-      "web_enrichi": true,
-      "web_source": "https://www.iapr.fr/",
-      "web_confidence": "moyenne"
-    },
-    "categorie": "Ressource"
-  },
-  {
-    "type": "structure",
-    "sous_type": null,
-    "civilite": null,
-    "nom": "Maison des femmes Hotel-Dieu",
-    "prenom": null,
-    "profession": null,
-    "orientation": null,
-    "etablissement": "Hotel-Dieu (AP-HP)",
-    "adresse": "1 Place du Parvis Notre-Dame, 75004 Paris",
-    "arrondissement": "75004",
-    "secteur_conv": null,
-    "tel_secretariat": "01 42 34 82 00",
-    "doctolib": null,
-    "site_web": null,
-    "email_rdv": "maisondesfemmes.hoteldieu@aphp.fr",
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "violence",
-      "maison des femmes",
-      "sante des femmes"
-    ],
-    "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Accueil des femmes victimes de violences (physiques, psychologiques, sexuelles, conjugales, intrafamiliales) : suivi medical, psychologique et social pluridisciplinaire, depot de plainte possible sur place. Accueil du lundi au vendredi 9h-17h sur rendez-vous ; entree 1 place du Parvis Notre-Dame puis batiment A3, 4e etage. (Source : https://www.sante.fr/maison-des-femmes-aphp-hotel-dieu - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": false,
-      "confidence": "high",
-      "source_text": [
-        "Violences ; Maison des Femmes Hotel Dieu 75004 ; 01 42 34 82 00 ; maisondesfemmes.hoteldieu@aphp.fr"
-      ],
-      "merged_from": 1,
-      "idx": 1238,
-      "web_enrichi": true,
-      "web_source": "https://www.sante.fr/maison-des-femmes-aphp-hotel-dieu",
-      "web_confidence": "haute"
-    },
-    "source_url": "https://www.sante.fr/maison-des-femmes-aphp-hotel-dieu",
-    "source_type": "annuaire_sante",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Structure de soins",
-    "latitude": 48.853928,
-    "longitude": 2.348347,
-    "geocode_score": 0.6167,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
-  },
-  {
-    "type": "structure",
-    "sous_type": null,
-    "civilite": null,
-    "nom": "Maison des femmes Pitie-Salpetriere",
-    "prenom": null,
-    "profession": null,
-    "orientation": null,
-    "etablissement": "Hopital Pitie-Salpetriere (AP-HP)",
-    "adresse": "47-83 boulevard de l'Hopital, 75013 Paris",
-    "arrondissement": "75013",
-    "secteur_conv": null,
-    "tel_secretariat": "01 42 17 76 97",
-    "doctolib": null,
-    "site_web": null,
-    "email_rdv": "maisondesfemmes.pitiesalpetriere@aphp.fr",
-    "ligne_directe": null,
-    "bip": null,
-    "portable": null,
-    "fax": null,
-    "email_avis": null,
-    "mssante": null,
-    "consignes_pro": null,
-    "prend_nouveaux": "inconnu",
-    "delai": null,
-    "vad": false,
-    "ame_cmu": false,
-    "pmr": false,
-    "langues": null,
-    "tele_expertise": null,
-    "tarif": null,
-    "rpps": null,
-    "tags": [
-      "violence",
-      "maison des femmes",
-      "sante des femmes"
-    ],
-    "statut": "actif",
-    "comments": [
-      {
-        "type": "info",
-        "texte": "Meme reseau AP-HP que les Maisons des femmes de Bichat et de l'Hotel-Dieu : accueil des femmes victimes de violences, accompagnement medical/social/judiciaire. Accueil du lundi au vendredi 9h-17h sur rendez-vous. Adresse et email confirmes sur sante.fr (email non fourni par le carnet). (Source : https://www.sante.fr/maison-des-femmes-aphp-pitie-salpetriere - enrichissement web 2026-08-10, confiance haute).",
-        "author": null,
-        "origine": "enrichissement_web"
-      }
-    ],
-    "_meta": {
-      "owners": [
-        "clara"
-      ],
-      "from_partage": false,
-      "garbled": false,
-      "needs_web": false,
-      "confidence": "high",
-      "source_text": [
-        "Violences ; Maison des Femmes Pitie Salpetriere 75013 ; 01 42 17 76 97"
-      ],
-      "merged_from": 1,
-      "idx": 1239,
-      "web_enrichi": true,
-      "web_source": "https://www.sante.fr/maison-des-femmes-aphp-pitie-salpetriere",
-      "web_confidence": "haute"
-    },
-    "source_url": "https://www.sante.fr/maison-des-femmes-aphp-pitie-salpetriere",
-    "source_type": "annuaire_sante",
-    "source_checked_at": "2026-08-10T00:00:00+02:00",
-    "categorie": "Structure de soins",
-    "latitude": 48.838609,
-    "longitude": 2.361165,
-    "geocode_score": 0.827,
-    "geocoded_at": "2026-08-10T00:00:00+02:00"
   }
 ]

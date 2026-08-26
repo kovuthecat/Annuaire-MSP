@@ -54,6 +54,16 @@ données sur Supabase. `npm run build` / `typecheck` / `test` passent à 0 erreu
   N1 partiel (écran de connexion vérifié au navigateur, flux authentifié non testé — pas
   d'identifiants). **Migration prod à appliquer avant déploiement** (rejouer `supabase/schema.sql`) +
   validation visuelle humaine à faire (cf. `VALIDATION.md`).
+- **4e carnet supplémentaire intégré — Clara** (2026-08-10) : `Downloads/Correspondants Clara.pdf`
+  (24 lignes), pipeline extraction+dédup+enrichissement web (jamais Doctolib comme source) rejouée à
+  la main vu le petit volume. 13 fiches déjà connues enrichies (owner clara + quelques champs/comments
+  neufs) + 7 fiches vraiment nouvelles (dont 2 entièrement complétées par recherche web, carnet trop
+  mince). 1 fiche laissée `a_verifier` (IAPR — pertinence patient vs équipe MSP ambiguë, à trancher
+  avec Clara). `supabase/annuaire_donnees.json` mis à jour (1226→1233 fiches, backup
+  `annuaire_donnees.bak-clara-2026-08-10.json`). **Pas encore appliqué en base de prod** :
+  `supabase/import/seed_clara_incremental.sql` généré (script `gen_sql_clara_incremental.py`,
+  incrémental et idempotent — ne touche que les 20 fiches concernées, pas un reseed complet) mais pas
+  exécuté, en attente de confirmation.
 
 ## Bugs connus
 

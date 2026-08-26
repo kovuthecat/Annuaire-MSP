@@ -144,17 +144,35 @@ Ordre conseillé : **`sante.fr` → `lemedecin.fr` → site officiel → autres 
 
 Ignore : avis patients, forums, e-réputation, annuaires scrapés douteux.
 
-### Règle Doctolib (le fetch est bloqué)
+### Règle Doctolib — deux outils, deux comportements différents (corrigé 2026-08-10)
 
-Tu ne pourras jamais ouvrir une page Doctolib. Donc :
-- Tu peux retenir une URL Doctolib **uniquement** si elle apparaît dans un résultat de recherche
-  dont le **titre concorde** (nom + spécialité + ville). Tu la copies telle quelle.
-- **Ne construis jamais** une URL Doctolib à la main, et ne la « devine » pas.
+**`WebFetch` sur une URL Doctolib échoue toujours (HTTP 403).** Sur cet outil précis, la règle
+d'origine (2026-07-16) tient : tu ne pourras jamais l'ouvrir.
+
+**Mais le navigateur in-app (sandbox Claude Code, `mcp__Claude_Browser__*`) ouvre les pages
+Doctolib sans blocage**, découvert le 2026-07-18 (vague B de S2) et reconfirmé le 2026-08-10 —
+deux outils différents, deux résultats différents, ne pas conflater. Utilise-le pour
+**l'extraction**, jamais pour la **recherche** :
+
+- **Extraction (autorisée)** : tu as déjà une URL de profil précise (trouvée via `WebSearch`,
+  titre concordant nom+spécialité+ville). Ouvre-la avec `navigate`, puis lis les blocs
+  `<script type="application/ld+json">` via `javascript_tool` — Doctolib y publie des données
+  structurées `schema.org` : `Physician.name/address/telephone/availableService` (les actes/
+  compétences, type `MedicalProcedure`), `openingHours`, `paymentAccepted`. **Vérifie d'abord que
+  le nom affiché sur la page correspond à la fiche** avant d'écrire quoi que ce soit — même
+  exigence que pour toute autre source. Le champ `telephone` structuré est parfois vide ; un
+  numéro peut alors traîner dans le texte libre de la bio (`description`) — traite-le comme une
+  source plus faible qu'un champ structuré ou qu'une autre source ouverte (ex. sante.fr), et note
+  le désaccord si les deux divergent plutôt que de trancher seul.
+- **Recherche (toujours interdite)** : ne tape jamais une requête dans la barre de recherche de
+  Doctolib, et ne construis/devine jamais une URL de profil (`doctolib.fr/spécialité/ville/
+  prénom-nom`). Le plan a explicitement écarté cet usage (risque anti-bot identique à un balayage,
+  jugement d'appariement, échecs silencieux à l'échelle) — cf. `plans/P2/S2.md`. Seule
+  l'**extraction sur une URL déjà identifiée par ailleurs** est couverte par cette règle.
 - Si plusieurs profils Doctolib concurrents existent pour un même nom → **n'en retiens aucun**.
-- Note dans `enrich_note` que l'URL vient d'un résultat indexé et n'a pas pu être ouverte.
-- **Ne lis jamais l'adresse ou le secteur « dans » un résultat Doctolib** : le texte de synthèse
-  d'un moteur de recherche n'est pas une source primaire. Ces valeurs doivent venir d'une page
-  réellement ouverte.
+- **Le texte de synthèse d'un résultat `WebSearch` n'est jamais une preuve**, y compris quand il
+  cite une URL Doctolib ou sante.fr — cf. section suivante. Ouvre la page (par `WebFetch` si le
+  domaine le permet, par le navigateur in-app pour Doctolib) avant d'écrire une valeur.
 
 ### Le texte de synthèse d'une recherche n'est pas une preuve
 
