@@ -79,7 +79,8 @@ arbitrer, jamais un « on pourrait aussi ». Ordre de priorité :
 2. `STATUS.md` faux → le remettre à jour avant d'ajouter du travail dessus.
 3. La session suivante prête dans l'`index.md` → afficher la commande de son bandeau, ou poser la
    pastille (`/fin-de-tache` §Enchaînement) — **jamais l'exécuter dans cette conversation** : une
-   session part toujours à froid (`WORKFLOW.md` §5b).
+   session part toujours à froid (`WORKFLOW.md` §5b). Avec la pastille, joindre la ligne « À régler
+   AVANT de lancer : modèle · effort » (`WORKFLOW.md` §3).
 4. Plus de plan en cours → `/nouveau-plan`, ou `/cadrer` si le QUOI n'est pas tranché.
 
 **Attendre le oui de l'utilisateur avant d'exécuter quoi que ce soit.** Cette skill ne code pas, ne

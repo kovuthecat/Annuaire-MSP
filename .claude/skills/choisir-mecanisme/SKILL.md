@@ -6,8 +6,9 @@ description: Choisir le bon mécanisme Claude Code et auditer la config .claude/
 # Choisir le bon mécanisme Claude Code
 
 Cette skill ne décrit AUCUNE fonctionnalité en détail (ça se périme vite). Pour une question
-pointue et à jour → agent `claude-code-guide`. Pour l'intégralité du rapport source →
-`docs/references/claude-code-capabilities-2026-08.md` (archive figée).
+pointue et à jour → agent `claude-code-guide`. Pour l'intégralité du rapport source, table de
+liens ci-dessous (§Vérifier avant de construire) — `docs/references/claude-code-capabilities-2026-08.md`
+n'existe que dans le dépôt source du workflow, pas dans une copie vendorée.
 
 ## Arbre de choix
 
@@ -17,6 +18,9 @@ Déterministe (code/script peut le garantir) ?
   → NON ↓
 Connaissance permanente du projet ou d'un scope de fichiers ?
   → OUI, globale : CLAUDE.md   |   OUI, scopée à un chemin : .claude/rules/
+  → NON ↓
+Ton, rôle ou format de réponse par défaut, à CHAQUE tour (une façon de répondre, pas un savoir) ?
+  → OUI : output style (~/.claude/output-styles/<nom>.md + champ "outputStyle" des settings)
   → NON ↓
 Procédure réutilisable, multi-étapes, appelée plus d'une fois ?
   → OUI : Skill
@@ -76,6 +80,13 @@ problème de façon fiable, jamais le plus impressionnant :
 2 fois · elle est spécifique à ce projet (sinon candidate à une skill globale) · **coût** : chaque
 skill installée paie sa description à CHAQUE session, même non utilisée — ne pas en créer « au cas où ».
 
+**Output style plutôt que CLAUDE.md quand** : ce qui doit changer est la **façon de répondre** (ton,
+rôle, format), pas ce que Claude sait du projet — le style modifie le prompt système, `CLAUDE.md`
+ajoute un message. Trois pièges : il ne s'applique **qu'à la conversation principale** (un sous-agent
+garde son propre prompt) · un style custom **retire** les instructions d'ingénierie logicielle
+intégrées, sauf `keep-coding-instructions: true` · la commande `/output-style` a été supprimée en
+v2.1.91, ça se règle par le champ `outputStyle` d'un `settings.json`, effectif à la session suivante.
+
 **Hook plutôt qu'instruction écrite quand** : l'événement doit être GARANTI à chaque occurrence,
 pas seulement probable · une instruction en prose du type « toujours / ne jamais » a déjà été
 oubliée une fois · le déclencheur est mécanique (avant commit, après édition d'un type de fichier).
@@ -134,5 +145,5 @@ seulement alors, construire de l'infrastructure custom.
 | Changelog | <https://code.claude.com/docs/en/changelog> |
 
 **Renvoi** : question pointue et précise sur une fonctionnalité → agent `claude-code-guide`.
-Besoin de l'intégralité du rapport (contexte, détails, exemples) →
-`docs/references/claude-code-capabilities-2026-08.md`.
+Besoin de l'intégralité du rapport (contexte, détails, exemples) — dans le dépôt source du
+workflow uniquement, pas vendoré → `docs/references/claude-code-capabilities-2026-08.md`.

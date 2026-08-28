@@ -3,6 +3,7 @@
   "_comment_hooks": "Le câblage vivait dans hooks.json du plugin ; sans plugin, il revient ici. Les chemins passent par $CLAUDE_PROJECT_DIR — jamais de chemin absolu, qui ne survivrait ni à un autre poste ni à une session cloud. Les scripts, eux, résolvent leurs ressources (CLAUDE-BASE.md, plafonds.json) relativement à leur propre emplacement : ils fonctionnent donc à l'identique vendorés ou non.",
   "_comment_permissions": "permissions.allow = prérequis des vagues headless (orchestrateur `claude -p`) ; à étendre au fil de l'eau après quelques sessions réelles, jamais élargie par précaution à l'avance.",
   "effortLevel": "medium",
+  "outputStyle": "Pedagogue",
   "hooks": {
     "SessionStart": [
       {

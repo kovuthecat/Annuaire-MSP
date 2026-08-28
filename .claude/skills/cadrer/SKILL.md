@@ -87,4 +87,5 @@ Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle ser
 - **Aucune exploration en direct** dès que ça dépasse un fichier : c'est le travail d'`explorateur`.
 - **Aucun enchaînement de `/nouveau-plan` dans la même conversation.** Le cadrage repart à froid et
   lit la décision écrite à l'étape 5 — c'est précisément à ça qu'elle sert. Poser une pastille ou
-  afficher la commande, comme `/fin-de-tache` (`WORKFLOW.md` §5b).
+  afficher la commande, comme `/fin-de-tache` (`WORKFLOW.md` §5b), avec la ligne « À régler AVANT de
+  lancer » (§3) : le frontmatter de `/nouveau-plan` bascule le modèle sur Opus, jamais l'effort.

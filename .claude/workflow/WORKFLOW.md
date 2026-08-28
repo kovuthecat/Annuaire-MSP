@@ -67,6 +67,19 @@ Le défaut vient de `.claude/settings.json` du projet (`"effortLevel": "medium"`
 Code. Chaque session porte **modèle + effort + environnement** dans le bandeau de son `S<k>.md` —
 à **régler à la main avant de lancer la session**, aucun routing automatique.
 
+**Rappel systématique à l'humain qui lance** — *domicile de cette règle, les skills y renvoient.*
+Une pastille `spawn_task`, une commande affichée ou un « lance S3 » démarre avec les **réglages
+ambiants de l'application**, jamais avec ceux du plan : rien, dans le lancement, ne pose le modèle
+ni l'effort à la place de l'utilisateur. Toute skill qui rend la main pour qu'un humain lance une
+session écrit donc, juste avant, cette ligne — valeurs prises dans l'`index.md` :
+
+```
+À régler AVANT de lancer — S<k> : modèle <M> · effort <E>   (la pastille hérite des réglages courants)
+```
+
+Seule exception : une session lancée en `claude -p` porte `--model`/`--effort` dans sa commande,
+donc la commande affichée suffit — le rappel devient inutile.
+
 Un effort élevé consomme plus de tokens sur *chaque* tour de la session : le laisser à `xhigh` en
 permanence est le poste de dépense le plus silencieux du workflow.
 

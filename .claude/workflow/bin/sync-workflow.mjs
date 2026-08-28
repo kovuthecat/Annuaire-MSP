@@ -34,13 +34,21 @@ import { join, dirname, relative, sep } from 'node:path';
 const PLAN = [
   { de: 'skills',           vers: '.claude/skills',            recursif: true },
   { de: 'agents',           vers: '.claude/agents',            recursif: true },
+  // Les styles d'output vont eux aussi là où Claude Code les découvre (.claude/output-styles) —
+  // pas sous .claude/workflow/, qui n'est scruté par rien. Le style n'est actif que si
+  // settings.json le sélectionne : vendoré sans être choisi, un style ne coûte rien.
+  { de: 'output-styles',    vers: '.claude/output-styles',     recursif: true },
   { de: 'hooks',            vers: '.claude/workflow/hooks',    recursif: true, sauf: ['hooks.json'] },
   { de: 'templates',        vers: '.claude/workflow/templates', recursif: true },
   { de: 'CLAUDE-BASE.md',   vers: '.claude/workflow/CLAUDE-BASE.md' },
   { de: 'WORKFLOW.md',      vers: '.claude/workflow/WORKFLOW.md' },
   { de: 'CONVENTIONS.md',   vers: '.claude/workflow/CONVENTIONS.md' },
   { de: 'MIGRATION.md',     vers: '.claude/workflow/MIGRATION.md' },
-  { de: 'bin',              vers: '.claude/workflow/bin',      recursif: true },
+  // publier.mjs exclu : il pousse vers LE dépôt public de distribution (URL en dur), un geste qui
+  // n'a de sens que dans le dépôt source. Le vendorer laisserait un utilisateur en aval avec un
+  // script qui republierait — sans les droits, et sans que rien ne l'explique — le dépôt de
+  // quelqu'un d'autre.
+  { de: 'bin',              vers: '.claude/workflow/bin',      recursif: true, sauf: ['publier.mjs'] },
   // AGENTS.md NE VA PAS à la racine. Le AGENTS.md racine appartient au projet : il porte
   // couramment des règles propres (version de framework, contraintes maison) qu'un écrasement
   // perdrait. Le fichier central est donc vendoré ici, et le AGENTS.md du projet y renvoie par
@@ -149,18 +157,30 @@ function controlerDeriveSettings(source, projet) {
   }
   if (!existsSync(cheminSource)) return null; // rien à comparer côté source
 
-  let hooksProjet, hooksSource;
-  try { hooksProjet = JSON.parse(readFileSync(cheminProjet, 'utf8')).hooks ?? {}; }
+  let settingsProjet, settingsSource;
+  try { settingsProjet = JSON.parse(readFileSync(cheminProjet, 'utf8')); }
   catch { return '  SETTINGS  .claude/settings.json illisible (JSON invalide) — vérifier le fichier'; }
-  try { hooksSource = JSON.parse(readFileSync(cheminSource, 'utf8')).hooks ?? {}; }
+  try { settingsSource = JSON.parse(readFileSync(cheminSource, 'utf8')); }
   catch { return '  SETTINGS  templates/project-settings.json illisible (JSON invalide) côté source — vérifier le payload'; }
 
-  const a = JSON.stringify(normaliserHooks(hooksProjet));
-  const b = JSON.stringify(normaliserHooks(hooksSource));
+  const lignes = [];
+
+  const a = JSON.stringify(normaliserHooks(settingsProjet.hooks ?? {}));
+  const b = JSON.stringify(normaliserHooks(settingsSource.hooks ?? {}));
   if (a !== b) {
-    return '  SETTINGS  bloc hooks divergent du template — comparer .claude/settings.json à .claude/workflow/templates/project-settings.json';
+    lignes.push('  SETTINGS  bloc hooks divergent du template — comparer .claude/settings.json à .claude/workflow/templates/project-settings.json');
   }
-  return null;
+
+  // `outputStyle` : le template en propose un, dont le fichier est vendoré sous
+  // .claude/output-styles/. Sans la clé, le style vendoré est présent mais jamais sélectionné —
+  // une panne silencieuse de plus, du même genre que les hooks absents. Un projet qui a choisi
+  // un AUTRE style n'est pas signalé : c'est un choix, pas une dérive.
+  const styleSource = settingsSource.outputStyle;
+  if (styleSource && !settingsProjet.outputStyle) {
+    lignes.push(`  SETTINGS  outputStyle absent — le template propose "${styleSource}" (fichier vendoré dans .claude/output-styles/) ; ajouter la clé, ou s'en passer sciemment`);
+  }
+
+  return lignes.length > 0 ? lignes.join('\n') : null;
 }
 
 // ── Programme ────────────────────────────────────────────────────────────────

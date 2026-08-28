@@ -59,6 +59,19 @@ Dans cet ordre :
 
 ## Étape 3 — Lancer la vague
 
+**Annoncer d'abord, lancer ensuite.** Avant le premier lancement de la vague, écrire dans la
+conversation ce qui part — uniquement depuis l'`index.md` déjà lu (Étape 1), jamais en ouvrant un
+`S<k>.md` : l'utilisateur doit pouvoir suivre une vague sans lire de fichier, et savoir ce qu'il
+retrouvera commité. Format imposé, une ligne par session, rien de plus :
+
+```
+▶ Vague <w> — <n> session(s), <parallèle|séquentielle> · gate : <oui|non>
+  S<k> · <titre> · <T<a>-T<b>> · <Modèle>/<effort> · <sous-agent|headless> · zone `<zone modifiée>`
+```
+
+Une vague qui s'enchaîne dans le même tour (Étape 5) réécrit ce bloc : c'est le seul repère de
+l'utilisateur entre deux vagues, et il ne coûte que les lignes de l'index déjà en contexte.
+
 **Sous-agent, la voie par défaut** (`WORKFLOW.md` §5b) — pour toute session, quel que soit `Env.`,
 sauf déclaration explicite `headless` :
 
@@ -88,18 +101,24 @@ appliqué, ou vague à lancer sans garder la fenêtre ouverte (`WORKFLOW.md` §5
 claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le. [même consigne d'échec que ci-dessus]" \
   --session-id "$(node -e "console.log(require('crypto').randomUUID())")" \
   --model <modèle index> --effort <effort index> \
+  --settings '{"outputStyle":"Default"}' \
   --output-format json \
   --json-schema '{"type":"object","properties":{"verdict":{"type":"string","enum":["PASS","FAIL"]},"motif":{"type":"string"},"rapport":{"type":"string"}},"required":["verdict","motif","rapport"]}' \
   > ".claude/vague/$k.json" 2> ".claude/vague/$k.stderr.log"; echo $? > ".claude/vague/$k.exit"
 ```
 
 Lancer détaché (arrière-plan du harnais) et sonder `.exit` plutôt qu'un `wait` bloquant : un appel
-Bash plafonné tuerait une session longue et produirait un JSON vide.
+Bash plafonné tuerait une session longue et produirait un JSON vide. Le `--settings` neutralise
+l'`outputStyle` de l'utilisateur pour ce processus : un exécutant headless n'a pas de lecteur, ses
+explications ne seraient que des tokens de sortie. Un sous-agent n'en a pas besoin — un style ne
+s'applique jamais à un sous-agent, qui a son propre prompt système.
 
 **Repli pastille**, uniquement hors Claude Code Desktop (aucun navigateur à transmettre, ni pour un
 sous-agent ni pour cette conversation) : une pastille `spawn_task` par session, « Démarrer
 localement » — jamais le worktree proposé par défaut — puis rendre la main : la vague ne finit plus
-dans ce tour.
+dans ce tour. C'est un humain qui lance : titrer la pastille `P<n> · S<k> — <titre> · <M>/<E>` et
+sortir la ligne « À régler AVANT de lancer » de chaque session (`WORKFLOW.md` §3) — la pastille
+hérite des réglages courants, elle ne pose ni le modèle ni l'effort du plan.
 
 ## Étape 4 — Collecter le verdict de chaque session
 
@@ -193,3 +212,8 @@ Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies con
 Sur `FAIL` : chemin du rapport de passation + `/reprendre-echec`, jamais le contenu ouvert ici ;
 `claude --resume <uuid>` en dernier recours seulement. Push groupé une fois le plan fini ou arrêté —
 jamais depuis une session, jamais si une vague reste `EN ATTENTE`.
+
+**Ce qui reste à lancer à la main** — sessions restantes après une gate, un `FAIL` ou un repli
+pastille : une ligne « À régler AVANT de lancer » par session prête (`WORKFLOW.md` §3), modèle et
+effort pris dans l'index. Une relance de cette skill ne dispense pas du rappel : son frontmatter
+fixe son propre modèle, pas l'effort de la conversation qui l'accueille.
