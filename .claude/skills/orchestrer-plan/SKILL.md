@@ -1,6 +1,6 @@
 ---
 name: orchestrer-plan
-description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, un échec ou une gate humaine déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
+description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, un échec non repris ou une gate humaine déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
 model: haiku
 ---
 
@@ -25,9 +25,11 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
   L'`index.md` et `git log` suffisent à l'orchestrateur.
 - **Ne jamais lire un diff ni une sortie de build.** Déléguer à `resumeur-git` / `verificateur-n0`,
   qui ne rendent que leur conclusion.
-- **Ne jamais corriger soi-même, ni relancer une session en échec.** Une session qui échoue rend la
-  main ; la seule chose que l'orchestrateur ait le droit de lancer après un `FAIL` est la passe de
-  diagnostic optionnelle de l'Étape 5b, qui ne corrige rien non plus.
+- **Ne jamais corriger soi-même, ni reprendre la conversation d'une session en échec.** Une session
+  qui échoue rend la main ; l'orchestrateur ne touche ni au code ni au rapport de passation. Ce
+  qu'il a le droit de lancer après un `FAIL` : la **reprise automatique** de l'Étape 5c (une seule,
+  à froid, dans une session dédiée qui corrige *chez elle*) et la passe de diagnostic optionnelle
+  de l'Étape 5b. Jamais un `SendMessage` ou un `fork` vers l'agent en échec.
 - **Ne jamais interpréter le rapport d'une session.** Le verdict est extrait par format contraint ou
   schéma, pas relu : un rapport détaillé est une tentation à enquêter plutôt qu'à relayer tel quel.
 
@@ -72,6 +74,10 @@ retrouvera commité. Format imposé, une ligne par session, rien de plus :
 Une vague qui s'enchaîne dans le même tour (Étape 5) réécrit ce bloc : c'est le seul repère de
 l'utilisateur entre deux vagues, et il ne coûte que les lignes de l'index déjà en contexte.
 
+**Repli pastille uniquement** (voir plus bas) : ajouter à l'annonce la consigne `/rename P<n>·S<k>`
+— trois sessions ouvertes en parallèle sont indistinguables dans la liste, et le nom suit la session
+jusqu'à son `--resume`. Inutile pour un sous-agent ou un `claude -p`, qui n'ont pas de fenêtre.
+
 **Sous-agent, la voie par défaut** (`WORKFLOW.md` §5b) — pour toute session, quel que soit `Env.`,
 sauf déclaration explicite `headless` :
 
@@ -91,7 +97,9 @@ Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL · MOTIF: <une phr
 
 Un agent par session, dans l'ordre de l'index ; vague parallèle → tous en arrière-plan d'affilée,
 vague séquentielle → un seul à la fois, arrêt au premier `FAIL` (Étape 5). `isolation: "worktree"`
-interdit — la vague partage un arbre. Ne jamais recopier le contenu du `S<k>.md` dans le prompt.
+interdit — la vague partage un arbre. **`subagent_type: "fork"` interdit** : un fork hérite de toute
+la conversation d'orchestration, alors que l'invariant du workflow est qu'un exécutant ne connaisse
+que son `S<k>.md`. Ne jamais recopier le contenu du `S<k>.md` dans le prompt.
 Attendre la notification de fin ; ne pas sonder.
 
 **Bloc headless**, uniquement pour les sessions déclarées `Env. = headless` — effort réellement
@@ -101,7 +109,7 @@ appliqué, ou vague à lancer sans garder la fenêtre ouverte (`WORKFLOW.md` §5
 claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le. [même consigne d'échec que ci-dessus]" \
   --session-id "$(node -e "console.log(require('crypto').randomUUID())")" \
   --model <modèle index> --effort <effort index> \
-  --settings '{"outputStyle":"Default"}' \
+  --settings '{"outputStyle":"Concise"}' \
   --output-format json \
   --json-schema '{"type":"object","properties":{"verdict":{"type":"string","enum":["PASS","FAIL"]},"motif":{"type":"string"},"rapport":{"type":"string"}},"required":["verdict","motif","rapport"]}' \
   > ".claude/vague/$k.json" 2> ".claude/vague/$k.stderr.log"; echo $? > ".claude/vague/$k.exit"
@@ -110,7 +118,10 @@ claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le. [même consigne d'échec que
 Lancer détaché (arrière-plan du harnais) et sonder `.exit` plutôt qu'un `wait` bloquant : un appel
 Bash plafonné tuerait une session longue et produirait un JSON vide. Le `--settings` neutralise
 l'`outputStyle` de l'utilisateur pour ce processus : un exécutant headless n'a pas de lecteur, ses
-explications ne seraient que des tokens de sortie. Un sous-agent n'en a pas besoin — un style ne
+explications ne seraient que des tokens de sortie. `Concise` plutôt que `Default` — style intégré
+depuis v2.1.237, qui attaque par le résultat et supprime préambule et narration sans toucher au
+travail. Sur une version antérieure le nom serait inconnu et le réglage silencieusement sans effet :
+repasser à `Default` en cas de doute. Un sous-agent n'en a pas besoin — un style ne
 s'applique jamais à un sous-agent, qui a son propre prompt système.
 
 **Repli pastille**, uniquement hors Claude Code Desktop (aucun navigateur à transmettre, ni pour un
@@ -123,6 +134,13 @@ hérite des réglages courants, elle ne pose ni le modèle ni l'effort du plan.
 ## Étape 4 — Collecter le verdict de chaque session
 
 **Sous-agent** : lire la ligne `VERDICT: … · MOTIF: … · RAPPORT: …`, rien d'autre.
+
+**Un retour marqué `partial` n'est jamais un `PASS`.** Depuis 2.1.246, un sous-agent qui épuise son
+`maxTurns` rend ce qu'il a en le marquant partiel, au lieu d'avoir l'air d'avoir fini — c'est
+exactement le faux vert que le recoupement par les commits existe pour attraper, et il vaut mieux le
+lire directement. Le traiter comme un `FAIL`, motif « tours épuisés », et **ne pas le reprendre par
+`SendMessage`** : continuer l'agent rapatrierait ses fausses pistes, alors que la réparation passe
+par le rapport de passation et un démarrage à froid (`/reprendre-echec`).
 
 **Headless** : lecteur réduit à l'extraction, ~30 lignes — les commits jugent déjà (§4b), donc plus
 de verdict `PANNE` élaboré, plus de fail-closed à trois branches :
@@ -172,20 +190,25 @@ aussi — il faut deux appels distincts.
 **Vague non verrouillée** → chaque session a commité et coché la sienne (`WORKFLOW.md` §4a) : relire
 l'index, ne rien réécrire.
 
-### Échec — finir la vague, arrêter le plan
+### Échec — finir la vague, puis une reprise automatique
 
 Un `FAIL` ne tue pas les sous-agents déjà lancés de la vague en cours : ils vont au bout, on ne peut
-pas les rappeler et leur travail est déjà commencé. La vague se collecte normalement (Étape 4), puis
-**le plan s'arrête** — la vague suivante n'est pas lancée. Le rapport final (Étape 6) distingue les
-sessions **bloquées** par l'échec (qui en dépendent, directement ou transitivement, via la colonne
-Dépend de) des sessions **encore indépendantes** — pour que l'utilisateur choisisse entre réparer
-d'abord ou relancer le reste.
+pas les rappeler et leur travail est déjà commencé. La vague se collecte et se clôt normalement
+(Étapes 4 et 5 — verrou retiré, commits des `PASS` faits), puis chaque session `FAIL` a droit à
+**une reprise automatique** (Étape 5c) — sauf si la ligne d'ordonnancement de la vague porte le mot
+**`reprise-manuelle`**, auquel cas le plan s'arrête directement, comportement historique.
+
+**Le plan ne s'arrête que si une reprise rend autre chose que `PASS`** (ou en `reprise-manuelle`).
+Le rapport final (Étape 6) distingue alors les sessions **bloquées** par l'échec (qui en dépendent,
+directement ou transitivement, via la colonne Dépend de) des sessions **encore indépendantes** —
+pour que l'utilisateur choisisse entre réparer d'abord ou relancer le reste.
 
 ### Gate humaine
 
 Une vague dont la ligne d'ordonnancement de l'index porte le mot **`gate`** arrête l'orchestrateur
-**après** l'avoir collectée, même si tout est `PASS` : il rend la main avec l'état et ce qui reste. La
-vague suivante ne se lance qu'à une relance explicite de cette skill.
+**après** l'avoir collectée — reprise automatique (Étape 5c) comprise —, même si tout est `PASS` :
+il rend la main avec l'état et ce qui reste. La vague suivante ne se lance qu'à une relance
+explicite de cette skill.
 
 **Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]`) → l'enchaîner dans le même
 tour, retour à l'Étape 2. Plan épuisé (dernière vague collectée) → Étape 6 puis fin.
@@ -205,11 +228,62 @@ plans/P<n>/S<k>.echec.md" --model <cran au-dessus> --effort high --disallowed-to
 `--disallowed-tools Edit` n'est pas une preuve : diffs `avant`/`après` (`git status --porcelain`) à
 comparer — tout écart hors `S<k>.echec.md` → arrêter et signaler.
 
+## Étape 5c — Reprise automatique (une par session, à froid)
+
+Activée par défaut ; opt-out par le mot `reprise-manuelle` sur la ligne d'ordonnancement de la
+vague. Elle ne change rien aux invariants : l'orchestrateur lance et collecte, la correction vit
+dans la session de reprise — qui ne connaît que le rapport de passation, jamais cette conversation.
+
+**Quand** : après la clôture de la vague (Étape 5 — verrou retiré, arbre propre), avant la vague
+suivante. Une reprise à la fois, dans l'ordre de l'index, **jamais en parallèle** — l'arbre est
+partagé et la vague est déjà close. Rapport `S<k>.echec.md` absent (session tuée avant de
+l'écrire) : lancer quand même, `/reprendre-echec` couvre ce cas.
+
+**Modèle** : un cran au-dessus du modèle de l'index, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus,
+Opus→Fable en le signalant). Session Fable en échec → pas de reprise auto, `ARBITRAGE` direct :
+il n'y a pas de cran au-dessus.
+
+```
+Agent({
+  description: "P<n>/S<k> reprise",
+  subagent_type: "claude",
+  model: <cran au-dessus, plancher Sonnet>,
+  run_in_background: true,
+  prompt: "Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
+P<n>). Mode orchestré. Reste dans l'arbre de travail courant : n'ouvre AUCUN worktree.
+Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ARBITRAGE · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
+})
+```
+
+`fork` interdit, `SendMessage` vers l'agent en échec interdit — le démarrage à froid est le point
+de la reprise. Ne jamais recopier le contenu du `.echec.md` dans le prompt, ne jamais l'ouvrir ici.
+
+**Collecte** : mêmes règles que l'Étape 4 — ligne de verdict seule, `partial` = `FAIL`, recoupement
+par les commits avant de conclure `FAIL`. Trois issues :
+
+- **`PASS`** — la reprise a elle-même commité, supprimé le `.echec.md` et coché `[x]`
+  (`/reprendre-echec` Étape 5) : vérifier la coche dans l'index, puis reprendre le plan là où il
+  s'était arrêté — les sessions **jamais lancées** de la même vague d'abord (vague séquentielle
+  arrêtée au `FAIL`, retour Étape 3), sinon la vague suivante (Étape 5, cas « Sinon » — la gate
+  d'une vague `gate` s'applique toujours).
+- **`FAIL`** — deuxième échec consécutif sur la même session : **jamais de seconde reprise auto**,
+  arrêt du plan, arbitrage humain. Le `.echec.md` mis à jour (section « Déjà écarté » enrichie) est
+  le point de départ de l'humain.
+- **`ARBITRAGE`** — une gate de `/reprendre-echec` demande une décision humaine avant toute
+  correction (annulation destructive, prémisse de plan fausse → `/nouveau-plan` en extension,
+  hypothèse épuisée) : arrêt du plan, motif relayé tel quel, sans l'interpréter.
+
+Plusieurs `FAIL` dans la même vague : reprises une par une ; la première qui rend autre chose que
+`PASS` arrête le plan, les reprises restantes ne se lancent pas (leurs sessions restent `FAIL` au
+rapport, avec leur `.echec.md` intact).
+
 ## Étape 6 — Rapport final
 
-Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies confondues. Signaler tout
+Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies confondues ; une session
+reprise porte les deux verdicts (`S<k> · FAIL → reprise PASS/FAIL/ARBITRAGE · motif`). Signaler tout
 écart entre effort demandé et effort réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
-Sur `FAIL` : chemin du rapport de passation + `/reprendre-echec`, jamais le contenu ouvert ici ;
+Sur `FAIL` ou `ARBITRAGE` non résolu : chemin du rapport de passation + `/reprendre-echec`, jamais
+le contenu ouvert ici ;
 `claude --resume <uuid>` en dernier recours seulement. Push groupé une fois le plan fini ou arrêté —
 jamais depuis une session, jamais si une vague reste `EN ATTENTE`.
 

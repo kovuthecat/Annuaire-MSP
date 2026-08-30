@@ -38,6 +38,10 @@ Jamais de Playwright, de script de capture ni d'automatisation de navigateur hor
 la régression visuelle scriptée est le rôle de Codex
 (`.claude/workflow/AGENTS.md`).
 
+**La grille s'arrête à trois.** La relecture `/code-review` de fin de session (`/fin-de-tache`) est
+automatique et non bloquante, mais **n'est pas un niveau** : ses trouvailles se corrigent dans la
+session ou partent dans `TASKS.md`, jamais dans `VALIDATION.md`.
+
 En mode autonome : enchaîner les tâches (gate = N0), accumuler les points N2, rendre la main en fin de lot.
 
 ## Avant de coder
@@ -49,10 +53,20 @@ Déléguer plutôt que faire soi-même (le contexte accumulé se paie à chaque 
 - build/typecheck/tests → agent `verificateur-n0` (JAMAIS en direct dans la conversation principale)
 - résumer un diff/historique → agent `resumeur-git`
 - lire une doc externe → agent `lecteur-doc`
+- besoin du contexte courant **et** travail bruyant (outils, itérations) → sous-agent `fork`, qui
+  hérite la conversation et réutilise le cache : seul son résultat revient, ses appels restent dehors
 
-**La délégation empêche le contexte d'entrer, elle ne l'évacue pas** : un agent ne peut pas alléger
-une conversation déjà chargée, il devrait tout relire pour reconstruire ce qu'on a sous la main.
-Ce qui est entré ne se retire que par un démarrage à froid.
+**La délégation empêche le contexte d'entrer, elle ne l'évacue pas** : un agent neuf ne peut pas
+alléger une conversation déjà chargée, il devrait tout relire pour reconstruire ce qu'on a sous la
+main. Ce qui est entré ne se retire que par un démarrage à froid. Un `fork` échappe à ce coût
+(il hérite), mais **jamais pour une session de plan ni une reprise d'échec** — il rapatrierait le
+contexte que ces deux-là existent pour laisser derrière — **ni pour une restitution pure** sans
+appel d'outil, où écrire soi-même reste moins cher. Détail :
+`docs/decisions/2026-08-30-contexte-des-sous-agents.md` du dépôt source.
+
+**Pas de `memory:` sur les agents du plugin.** Une mémoire d'agent n'est légitime que pour une
+information dont **aucun fichier du dépôt n'est déjà la source** — commandes (`CLAUDE.md`),
+localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 
 **Une session = un fichier `S<k>.md`** (1 à n tâches). `/clear` (ou nouvelle session) entre deux
 sessions : ne pas traîner le contexte d'une session dans la suivante, ni improviser hors plan.

@@ -15,8 +15,9 @@
 // USAGE
 //   node sync-workflow.mjs --source <payload> --projet <dir> [--check] [--force]
 //
-//   --check   n'écrit rien ; rapporte l'état et sort en 1 si une action est due
-//   --force   réécrit même les fichiers modifiés localement (sinon ils sont préservés)
+//   --check          n'écrit rien ; rapporte l'état et sort en 1 si une action est due
+//   --force          réécrit même les fichiers modifiés localement (sinon ils sont préservés)
+//   --ignorer-cache  passe outre un cache plugin périmé (voir controlerCachePlugin)
 //
 // Le manifeste (.claude/workflow/manifest.json) porte un hash par fichier géré. Il permet de
 // distinguer les deux dérives, qui n'appellent pas la même réponse :
@@ -26,6 +27,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, dirname, relative, sep } from 'node:path';
+import { homedir } from 'node:os';
 
 // ── Plan de vendoring ────────────────────────────────────────────────────────
 // Les skills et agents vont là où Claude Code les découvre nativement
@@ -183,6 +185,41 @@ function controlerDeriveSettings(source, projet) {
   return lignes.length > 0 ? lignes.join('\n') : null;
 }
 
+// ── Contrôle du cache plugin ────────────────────────────────────────────────
+// Un cache de plugin périmé est INVISIBLE et pourtant prioritaire : Claude Code charge les skills
+// qu'il y trouve, sans que rien ne le signale — `installed_plugins.json` peut être vide, le cache
+// est servi quand même. Une session lit alors un texte de skill vieux de plusieurs versions tout
+// en travaillant sur un payload à jour, et suit des consignes qui n'ont plus cours.
+//
+// Constaté le 2026-08-28 : une instanciation pilotée par `/nouveau-projet` en 0.10.0 (cache) sur un
+// payload 0.17.1 — la skill lue dictait de copier le `AGENTS.md` du plugin à la racine et ignorait
+// l'étape de vendoring. Le projet a été sauvé par le jugement de la session, pas par le workflow.
+//
+// Ce moteur est le seul programme qui tourne à CHAQUE instanciation et à chaque mise à jour : c'est
+// donc ici que l'écart doit se voir. Bloquant (sortie 3), parce qu'un simple avertissement dans un
+// flot de sortie est exactement ce qui n'a pas été lu la première fois ; `--ignorer-cache` laisse
+// la porte ouverte au cas légitime (payload plus récent que le cache, qu'on ne veut pas toucher).
+function cachesPlugin() {
+  const base = join(process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude'), 'plugins', 'cache');
+  if (!existsSync(base)) return [];
+  const out = [];
+  for (const marketplace of readdirSync(base)) {
+    const dossier = join(base, marketplace, 'workflow');
+    if (!existsSync(dossier) || !statSync(dossier).isDirectory()) continue;
+    for (const v of readdirSync(dossier)) {
+      const chemin = join(dossier, v);
+      if (!statSync(chemin).isDirectory()) continue;
+      // La version fait foi dans plugin.json, pas dans le nom du dossier : un cache renommé à la
+      // main mentirait sinon sur ce qui est réellement chargé.
+      let version = v;
+      try { version = JSON.parse(readFileSync(join(chemin, '.claude-plugin', 'plugin.json'), 'utf8')).version ?? v; }
+      catch { /* dossier incomplet : le nom reste la meilleure information disponible */ }
+      out.push({ chemin, version });
+    }
+  }
+  return out;
+}
+
 // ── Programme ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
@@ -190,6 +227,7 @@ const source = opt('--source');
 const projet = opt('--projet') ?? process.cwd();
 const check = args.includes('--check');
 const force = args.includes('--force');
+const ignorerCache = args.includes('--ignorer-cache');
 
 if (!source || !existsSync(source)) {
   console.error(`sync-workflow: --source manquant ou introuvable (${source})`);
@@ -250,10 +288,26 @@ for (const e of aEcrire) console.log(`  ${e.nouveau ? 'NOUVEAU ' : 'MAJ     '} $
 const deriveSettings = controlerDeriveSettings(source, projet);
 if (deriveSettings) console.log(deriveSettings);
 
+const cachesPerimes = cachesPlugin().filter((c) => c.version !== versionSource);
+for (const c of cachesPerimes) {
+  console.log(`  CACHE    plugin workflow ${c.version} en cache alors que la source est en ${versionSource}`);
+  console.log(`           ${c.chemin}`);
+  console.log('           Claude Code sert les skills de ce cache : la session en cours peut suivre un texte périmé.');
+  console.log(`           Supprimer ce dossier, ou le remplacer par une copie de la source en ${versionSource}, puis relancer.`);
+}
+
 if (check) {
+  // Le cache plugin ne compte PAS dans `action` : `--check` répond « ce projet vendoré est-il à
+  // jour ? », une question qui ne dépend pas de ce qui traîne sur le poste. La ligne CACHE
+  // ci-dessus suffit à le signaler.
   const action = aEcrire.length > 0 || obsoletes.length > 0 || derives.length > 0 || enRetard;
   console.log(action ? 'ÉTAT: action due' : 'ÉTAT: à jour');
   process.exit(action ? 1 : 0);
+}
+
+if (cachesPerimes.length > 0 && !ignorerCache) {
+  console.error('sync-workflow: cache plugin périmé (voir CACHE ci-dessus) — rien écrit. --ignorer-cache pour passer outre.');
+  process.exit(3);
 }
 
 // ── Écriture ─────────────────────────────────────────────────────────────────

@@ -46,6 +46,24 @@ un `S<k>.md` ni dans `TASKS.md`.
    cet emplacement, jamais sous `.claude/workflow/bin/`). Sans bump, les projets vendorés ne voient
    jamais la mise à jour ; sans publication, toute machine neuve embarque une version périmée.
 
+## Relecture de session — avant de clore, dans les deux modes
+
+**Seulement si la session a produit du code.** Une session dont la « Zone modifiée » est `aucune`
+(mesure, audit, vérification) n'a pas de diff à relire — passer directement à la clôture.
+
+Lancer `/code-review` en effort `high` : à ce niveau il tourne dans un agent d'arrière-plan et ne
+prend pas la session. Périmètre = le diff de la session, délimité par ses propres commits
+(`git log --oneline --grep "P<n>/S<k>/"`). Le sous-agent n'a pas vu la conversation : c'est tout
+l'intérêt, il ne partage pas ses angles morts.
+
+- **Non bloquant, et sans rang dans la grille.** Ce n'est ni un N0 (qui bloque) ni un N1 (visuel) ni
+  un N2 (humain) : c'est une étape de cette skill, rien de plus. La grille N0/N1/N2 ne bouge pas.
+- **Ce qui est dans le périmètre de la session se corrige maintenant**, puis N0 est rejoué.
+- **Ce qui déborde devient une ligne dans `TASKS.md`** — jamais dans `VALIDATION.md`, qui ne porte
+  que le N2 humain. Sans destination écrite, une revue produit un texte que personne ne relit.
+- **Ce qui invalide une hypothèse du plan** ne se corrige pas ici : c'est une extension de plan
+  (`/nouveau-plan` Étape 0).
+
 ## Fin de session — mode SOLO (parallèle : non)
 
 9. **Statut** : passer les tâches à `[x]` dans l'`index.md` du plan (colonne Statut), avec la date —

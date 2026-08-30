@@ -62,10 +62,16 @@ a menti. On la **nomme**, on ne la répare pas en silence.
 
 Format imposé, une ligne par point, rien de plus :
 
-- **État** : où en est l'app (1-2 lignes, depuis `STATUS.md` corrigé par le résumé git).
+- **But** : l'« Objectif d'ensemble » du plan courant **cité**, pas reformulé. Une reprise qui
+  reformule le but le déplace ; c'est le premier endroit où un projet dérive sans que ça se voie.
+- **État** : où en est l'app (1-2 lignes, depuis `STATUS.md` corrigé par le résumé git), **avec sa
+  preuve**. La preuve qu'une tâche est livrée est un commit portant `Plan: P<n>/S<k>/T<m>` — pas un
+  statut coché, pas un N0 vert, pas une phrase de bilan.
 - **Plan courant** : `P<n>` — X/Y tâches faites, la prochaine session prête.
 - **Écarts** : les incohérences de l'étape 3, une ligne chacune. Aucun écart → l'écrire.
-- **En attente humain** : N2 restant, s'il y en a.
+- **Bloqué** : séparer ce qui attend **une personne** (N2 en attente, arbitrage, accès) de ce qui
+  est bloqué **techniquement** (échec non repris, dépendance cassée). Les deux ne se débloquent pas
+  par les mêmes moyens, et les confondre fait attendre l'utilisateur sur ce qui ne l'attend pas.
 
 Pas de récapitulatif du projet, pas de rappel de ce que fait l'app : l'utilisateur le sait, il
 demande où il en était.

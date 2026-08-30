@@ -62,6 +62,11 @@ corrige dans la session, il ne se consigne **pas** dans `VALIDATION.md`.
 **Si tout passe** : le noter dans le rapport de fin de tâche (« N1 OK : <écran>, console propre,
 <élément> présent »). Ne rien écrire dans `VALIDATION.md`.
 
+**Point N2 à faire trancher** : plutôt que de décrire l'élément en mots, dire à l'utilisateur qu'il
+peut le **désigner** — `Ctrl/Cmd+Shift+B` ouvre le panneau Browser, `Ctrl/Cmd+Shift+S` arme la
+sélection, il clique l'élément et dit quoi changer. Ça ne déplace pas la frontière : le jugement
+reste le sien, seule la désignation devient exacte.
+
 ## Mode B — Pas de navigateur (VSCode, terminal, cloud, mobile)
 
 Ne rien vérifier soi-même. Produire, dans la réponse, un bloc prêt à dérouler :

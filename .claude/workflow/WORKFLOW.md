@@ -99,6 +99,9 @@ dossier `plans/P<n>/` :
 L'exécutant ouvre **uniquement** son `S<k>.md`. Format, règle de découpage et squelettes :
 skill `/nouveau-plan`.
 
+Une correction qui **débloque un plan en cours** s'ajoute à ce plan (sessions suivantes, vague de
+remédiation) au lieu de devenir `P<n+1>` : aiguillage et plafond dans `/nouveau-plan` Étape 0.
+
 ### 4a. Un statut, un seul endroit
 
 *Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
