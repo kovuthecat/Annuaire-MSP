@@ -16,6 +16,17 @@ coûtent des tokens qu'au découpage.
 décidée, ce n'est pas ce plan qu'il faut écrire : dérouler `/cadrer` d'abord, dans une session
 séparée, et repartir de la décision écrite qu'elle produit.
 
+## Pour qui on écrit — deux lecteurs, deux registres
+
+Un plan sert deux lectures, et rate sa cible s'il n'en sert qu'une :
+
+- **L'`index.md` est lu par un humain qui décide** — et relayé tel quel par `/orchestrer-plan` au
+  lancement de chaque vague, sans qu'aucun `S<k>.md` ne soit ouvert. C'est le seul texte du plan que
+  l'utilisateur lira : registre « Écrire pour qui décide » (`CLAUDE-BASE.md`), appliqué strictement.
+- **Le `S<k>.md` est lu par le modèle qui exécute.** Précision et exhaustivité priment sur le
+  registre. Il porte quand même le **pourquoi** de chaque tâche : une consigne sans intention
+  s'exécute à la lettre et à côté, et c'est l'intention qui permet de s'arrêter au bon moment.
+
 ## Étape 0 — Plan neuf, ou extension d'un plan en cours ?
 
 Un plan en cours peut produire un résultat qui invalide une hypothèse dont dépendent ses sessions
@@ -88,7 +99,8 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 # Plan P<n> — <titre du plan>   (rédigé par Opus)
 
 ## Objectif d'ensemble
-<2-3 lignes : le but global du plan>
+<2-3 lignes : le but global du plan, et ce qui sera vrai à la fin qui ne l'est pas aujourd'hui —
+ en clair, pas en termes de code>
 
 ## Sessions
 | Session | Tâches | Titre | Modèle | Effort | Env. | Dépend de | Zone modifiée | Statut |
@@ -98,10 +110,26 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 
 ## Ordonnancement
 - **Vague 1 — parallélisable** : S1 · S3 (zones disjointes, aucune dépendance).
+  *Pourquoi maintenant* : <ce que cette vague débloque pour la suite, une ligne>
+  - **S1** — <en clair : ce que ça change, et à quoi on le verra. 1-2 phrases, sans jargon>
+  - **S3** — <idem>
 - **Vague 2** : S2 (après S1) · S4 (après S3).
+  *Pourquoi maintenant* : <…>
+  - **S2** — <…>
+  - **S4** — <…>
 - **Vague 3 — clôture** : contexte (`STATUS.md`, `TASKS.md`, `VALIDATION.md`) et push. Pas de
   commits de code à rattraper : chaque session a commité les siens.
 ```
+
+**La ligne « en clair » est un contrat de lisibilité, pas une redite du titre.** Elle dit ce que la
+session change et **à quoi l'utilisateur le constatera** : un écran, un comportement, un fichier
+produit, une mesure obtenue. `/orchestrer-plan` la relaie **mot pour mot** au lancement de la vague
+(son Étape 3) sans jamais ouvrir le `S<k>.md` — c'est donc la seule chose que l'utilisateur lira
+avant de voir passer les commits. Une ligne qui paraphrase le titre (« S2 — refonte du module
+d'édition ») ne lui apprend rien ; deux phrases suffisent, à condition d'être les bonnes.
+
+Même exigence pour le *Pourquoi maintenant* d'une vague : il justifie l'**ordre**, pas le contenu —
+« sans ça, S4 travaillerait sur une structure de données qui va changer » plutôt que « prérequis ».
 
 **Vagues orchestrées (optionnel)** — toute vague s'exécute via `/orchestrer-plan`, qui déroule les
 sessions les unes après les autres jusqu'à épuisement, un échec non repris, ou une gate humaine.
@@ -122,7 +150,9 @@ headless survit à sa fermeture. Grouper les sessions `headless` entre elles qua
 dépendances le permet donne des vagues homogènes ; les mélanger est un choix, pas un accident à
 éviter.
 
-L'index ne contient **rien d'autre** : pas de détail d'exécution, il pointe vers les sessions.
+L'index ne contient **rien d'autre** : aucun détail d'exécution (étapes, commandes, fichiers à la
+ligne près) — il pointe vers les sessions. Les lignes « en clair » et les *Pourquoi maintenant* sont
+la seule prose autorisée, et elles décrivent toujours un **résultat**, jamais un moyen.
 
 ### En mode extension — modifier l'index, ne pas le récrire
 
@@ -132,7 +162,9 @@ Trois éditions ponctuelles, rien de plus :
    `S5bis` — le repère `Plan: P<n>/S<k>/T<m>` des commits doit rester unique et triable.
 2. **Ordonnancement** : insérer la vague **avant** celles qu'elle débloque, avec sa cause dans le
    titre — `**Vague <w> — remédiation de S<j>** (ajoutée le YYYY-MM-DD) : S8 · S9.` Sans cette
-   trace, un plan relu dans un mois ne distingue plus le prévu du réparé.
+   trace, un plan relu dans un mois ne distingue plus le prévu du réparé. La vague ajoutée porte
+   son *Pourquoi maintenant* et ses lignes « en clair » comme les autres — c'est même là qu'elles
+   comptent le plus : une vague de remédiation est ce que l'utilisateur n'avait pas prévu de lire.
 3. **Statuts en aval** : une session déjà `[x]` dont le résultat repose sur l'hypothèse invalidée
    redevient `[ ]`, et on le dit explicitement à l'utilisateur. Un vert faux coûte plus cher qu'un
    statut manquant.
@@ -164,6 +196,11 @@ L'« Objectif d'ensemble » ne bouge pas. S'il faut le récrire, ce n'était pas
 
 ### Objectif
 <1-2 lignes : le quoi>
+
+### Pourquoi
+<1-2 lignes : ce que cette tâche débloque dans le plan, ou ce qu'elle change pour qui se sert du
+ produit. C'est l'intention — ce qui permet à l'exécutant de trancher si une consigne s'avère
+ ambiguë en cours de route, et à un humain de comprendre la tâche sans lire le code.>
 
 ### Décision clé
 <ce qu'il faut savoir sans relire le repo ; pointer une décision précise, ex. « docs/decisions/2026-07-12-auth.md »>
@@ -206,7 +243,14 @@ Principes :
   de retourner à l'index pour lancer la session.
 - **« Lire » est restrictif et porté** : que ces fichiers, à la section/fonction près.
 - **« Étapes » = le comment**, ordonné. Plus le modèle est faible, plus elles sont fines ; si une
-  tâche demande trop de jugement pour le modèle visé → la **découper**.
+  tâche demande trop de jugement pour le modèle visé → la **découper**. Une étape dont l'intention
+  n'est pas évidente porte sa raison en fin de ligne, après un tiret : c'est ce qui permet de
+  s'écarter **juste** plutôt que d'appliquer à la lettre. Une étape qui réclame trois lignes de
+  justification n'est pas une étape, c'est une décision qui manque — elle remonte en « Décision
+  clé », ou dans un `docs/decisions/` via `/cadrer`.
+- **« Pourquoi » n'est pas « Objectif » redit autrement.** L'objectif dit *quoi faire*, le pourquoi
+  dit *ce que ça sert*. Si les deux se paraphrasent, c'est le pourquoi qui manque : remonter d'un
+  cran vers l'objectif d'ensemble du plan jusqu'à trouver ce que cette tâche-là rend possible.
 - **« Validation » = critères vérifiables** (commande + résultat, ou écran + attendu), jamais « ça marche ».
 - **N1 ≠ N2** : ce qu'un navigateur peut constater (erreur console, texte absent, 404, débordement)
   est N1 et ne va **jamais** dans `VALIDATION.md`. N2 = uniquement le jugement humain.

@@ -52,6 +52,12 @@ Deux ou trois options, jamais un panorama. Pour chacune : ce qu'elle coûte, et 
 Terminer par **une recommandation motivée**, pas un tableau neutre laissé à trancher. Une option
 écartée se note en une ligne — elle sert au lecteur futur, pas à la délibération en cours.
 
+**Une option que le lecteur ne peut pas évaluer n'est pas une option, c'est un fait accompli.**
+C'est un humain qui tranche ici : chaque option se présente par ses **conséquences observables** —
+ce qui devient possible, ce qui devient impossible, ce qui casse, ce qu'il faudra maintenir — avant
+tout détail technique (registre : `CLAUDE-BASE.md`, « Écrire pour qui décide »). Sans ça,
+l'arbitrage se réduit à faire confiance, et la session n'a tranché que pour elle-même.
+
 ## Étape 4 — Écrire au fil de l'eau
 
 Dès qu'un point est tranché, l'écrire. Ne pas attendre la fin de la session : un compactage efface
@@ -80,6 +86,12 @@ froid, pas celui d'un sous-agent.
 | **Rien à faire** | la question tombe, ou le sujet attend | une ligne dans le registre, et on s'arrête |
 
 Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle sera refaite.
+
+**La décision écrite s'ouvre par ce qu'elle change, en clair.** Sa première section doit se tenir
+seule : quelqu'un qui la lit dans six mois, sans le contexte de la session, doit comprendre ce qui a
+été tranché et ce que ça implique avant d'atteindre la moindre justification technique. Le détail,
+les alternatives et le raisonnement viennent après — c'est ce qui rend le fichier relisable au lieu
+d'être archivé sans être rouvert.
 
 ## Interdits
 

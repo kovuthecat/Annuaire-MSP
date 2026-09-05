@@ -87,8 +87,16 @@ permanence est le poste de dépense le plus silencieux du workflow.
 
 Le backlog vit dans `TASKS.md` (index global). Un plan est toujours précédé d'une **décision écrite** :
 si le QUOI ou le POURQUOI n'est pas tranché, dérouler **`/cadrer`** dans une session séparée — sa
-sortie (`docs/decisions/`) est l'entrée du plan. Puis Opus déroule **`/nouveau-plan`**, qui crée un
-dossier `plans/P<n>/` :
+sortie (`docs/decisions/`) est l'entrée du plan.
+
+En amont encore : quand la question elle-même n'est pas identifiée — les correctifs et les ajouts se
+sont empilés, personne ne sait plus si le chemin pris tient — **`/revue-de-conception`** la trouve.
+Elle constate l'écart entre l'intention écrite et le code réel, **recale l'objectif avec
+l'utilisateur en interview** (c'est souvent le but qui a bougé, pas le code qui a dérivé), puis sort
+un rapport dans `docs/revues/` et remet l'écrit à jour. Tout autre arbitrage sort en `/cadrer`, à
+froid.
+
+Puis Opus déroule **`/nouveau-plan`**, qui crée un dossier `plans/P<n>/` :
 
 - **`plans/P<n>/index.md`** — guide d'orchestration : objectif, table des sessions, ordonnancement
   par vagues. **C'est le seul endroit où vit le statut des tâches.**
@@ -182,6 +190,9 @@ Quatre agents du plugin, chacun ne rend que sa **conclusion** — jamais les tra
 - `resumeur-git` → résumer un diff ou un historique.
 - `lecteur-doc` → lire une doc externe.
 
+Les quatre se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
+conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu.
+
 Table de délégation détaillée : `CLAUDE-BASE.md` (section « Avant de coder »).
 
 ## 5b. Sessions & voies d'orchestration
@@ -201,6 +212,13 @@ sous-agent hérite du navigateur in-app de la session d'orchestration (donc son 
 environnement (permissions, MCP) : zéro préflight, zéro clic. Le verdict est celui de ses commits
 (§4b). La session d'orchestration doit rester ouverte pendant ce temps : les sous-agents vivent en
 elle.
+
+**Cet arrière-plan-là est celui de la session entière — pas celui de ses délégations internes.**
+Une fois lancée, la session exécutante reste soumise à §5 : ses propres appels à `verificateur-n0`
+et aux trois autres agents restent au premier plan, qu'elle ait été lancée à la main ou par
+l'orchestrateur. Confondre les deux a déjà coûté plusieurs échecs — une session qui lance son N0 en
+arrière-plan avant de committer se referme, elle aussi, sans rien avoir committé
+(`docs/decisions/2026-09-04-delegation-au-premier-plan.md`).
 
 **Exception headless**, à déclarer et justifier dans la colonne `Env.` de l'index (`headless`) —
 jamais par défaut. Légitime dans exactement deux cas :

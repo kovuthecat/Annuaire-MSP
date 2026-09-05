@@ -37,8 +37,11 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
 
 Ouvrir `plans/P<n>/index.md` et en extraire, pour **toutes** les vagues : sessions, modèle, effort,
 colonne `Env.`, dépendances, zone modifiée, et la ligne d'ordonnancement de chaque vague (dépendances
-entre vagues, mot `gate` éventuel). C'est la seule lecture de l'index en entier de toute la session
-d'orchestration — les tours suivants n'y retournent que pour cocher un statut.
+entre vagues, mots `gate` et `reprise-manuelle` éventuels). Extraire aussi, dans l'Ordonnancement, le
+***Pourquoi maintenant*** de chaque vague et la ligne **« en clair »** de chaque session : c'est la
+matière de l'annonce (Étape 3), et la seule explication que l'utilisateur recevra — l'orchestrateur
+n'ouvre jamais un `S<k>.md` pour la compléter. C'est la seule lecture de l'index en entier de toute
+la session d'orchestration — les tours suivants n'y retournent que pour cocher un statut.
 
 ## Étape 2 — Préflight (par vague, avant son lancement)
 
@@ -62,17 +65,40 @@ Dans cet ordre :
 ## Étape 3 — Lancer la vague
 
 **Annoncer d'abord, lancer ensuite.** Avant le premier lancement de la vague, écrire dans la
-conversation ce qui part — uniquement depuis l'`index.md` déjà lu (Étape 1), jamais en ouvrant un
-`S<k>.md` : l'utilisateur doit pouvoir suivre une vague sans lire de fichier, et savoir ce qu'il
-retrouvera commité. Format imposé, une ligne par session, rien de plus :
+conversation ce qui part — uniquement depuis l'`index.md` déjà lu (Étape 1), **jamais en ouvrant un
+`S<k>.md`**. L'utilisateur doit pouvoir suivre une vague **sans ouvrir un seul fichier** : savoir ce
+qui va changer, ce qu'il retrouvera commité, et ce qui se passera si une session rate. Format
+imposé, une strophe par session :
 
 ```
-▶ Vague <w> — <n> session(s), <parallèle|séquentielle> · gate : <oui|non>
-  S<k> · <titre> · <T<a>-T<b>> · <Modèle>/<effort> · <sous-agent|headless> · zone `<zone modifiée>`
+▶ Vague <w>/<W> — <n> session(s) en <parallèle|séquentiel>
+   Pourquoi cette vague maintenant : <« Pourquoi maintenant » de l'ordonnancement, tel quel>
+   Si une session échoue : <une reprise automatique en <modèle du cran au-dessus>, puis arbitrage
+     humain si elle échoue aussi | reprise manuelle — je m'arrête et je te rends la main>
+   Fin de vague : <gate — je m'arrête même si tout passe | j'enchaîne sur la vague <w+1>>
+
+   S<k> · <titre>
+      En clair : <ligne « en clair » de l'index, relayée mot pour mot>
+      Tâches <T<a>-T<b>> · <Modèle>/<effort> · <sous-agent|headless>
+      Fichiers touchés : `<zone modifiée>` · Dépend de : <S<j>, déjà passée | —>
+
+   <une strophe par session de la vague, dans l'ordre de l'index>
+
+   Pendant que ça tourne : ne pas modifier les fichiers listés — les sessions y écrivent.
+   À la fin : un commit par tâche, retrouvable par son repère `Plan: P<n>/S<k>/T<m>`.
 ```
 
-Une vague qui s'enchaîne dans le même tour (Étape 5) réécrit ce bloc : c'est le seul repère de
-l'utilisateur entre deux vagues, et il ne coûte que les lignes de l'index déjà en contexte.
+**Relayer, jamais reformuler.** La ligne « en clair » et le *Pourquoi maintenant* sont recopiés tels
+quels : les récrire, c'est réinterpréter un plan qu'Opus a rédigé pour être lu — et l'orchestrateur
+tourne sur Haiku. Le reste de la strophe est de la donnée de table.
+
+**Index sans ligne « en clair »** (plan rédigé avant cette règle) : annoncer la strophe sans elle et
+le signaler **une fois** pour la vague — « index antérieur : pas de résumé en clair disponible ».
+**Ne jamais ouvrir le `S<k>.md` pour la reconstituer**, ni l'inventer depuis le titre : l'interdit
+prime sur le confort de lecture, et un index incomplet se corrige dans l'index, pas au lancement.
+
+Une vague qui s'enchaîne dans le même tour (Étape 5) réécrit ce bloc en entier : c'est le seul
+repère de l'utilisateur entre deux vagues, et il ne coûte que des lignes déjà en contexte.
 
 **Repli pastille uniquement** (voir plus bas) : ajouter à l'annonce la consigne `/rename P<n>·S<k>`
 — trois sessions ouvertes en parallèle sont indistinguables dans la liste, et le nom suit la session
@@ -190,6 +216,17 @@ aussi — il faut deux appels distincts.
 **Vague non verrouillée** → chaque session a commité et coché la sienne (`WORKFLOW.md` §4a) : relire
 l'index, ne rien réécrire.
 
+### Revues de session — relayer, sans ouvrir
+
+Une fois la vague collectée, lister les `plans/P<n>/S<k>.revue.md` déposés par ses sessions
+(`/fin-de-tache`, relecture qualité — fichiers non commités, c'est normal). Pour chacun dont la
+première ligne `Bloquant : <n>` porte n > 0 : **une ligne** dans le bloc de fin de vague et le
+rapport final — `Revue S<k> : <n> bloquant(s) → plans/P<n>/S<k>.revue.md` — rien de plus. Ne
+jamais ouvrir les trouvailles (relayer, jamais reformuler) ; **non bloquant** : la vague suivante
+s'enchaîne, l'arbitrage appartient à l'humain, le versement dans `TASKS.md` au tri de clôture
+(`/fin-de-tache` point 16). Un bloquant qui invalide une hypothèse du plan suit le chemin déjà
+écrit : extension (`/nouveau-plan` Étape 0), sur décision humaine.
+
 ### Échec — finir la vague, puis une reprise automatique
 
 Un `FAIL` ne tue pas les sous-agents déjà lancés de la vague en cours : ils vont au bout, on ne peut
@@ -282,6 +319,13 @@ rapport, avec leur `.echec.md` intact).
 Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies confondues ; une session
 reprise porte les deux verdicts (`S<k> · FAIL → reprise PASS/FAIL/ARBITRAGE · motif`). Signaler tout
 écart entre effort demandé et effort réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
+Une ligne par revue à bloquants non encore relayée (Étape 5, « Revues de session »).
+
+**Écrit pour qui n'a pas suivi la vague.** Sur `PASS`, le titre suffit — le travail est commité, il
+se relit. C'est sur `FAIL` et `ARBITRAGE` que l'utilisateur a besoin de comprendre : ajouter, en
+français et sans jargon, **ce que ça l'empêche de faire** — quelles sessions restantes sont bloquées
+(colonne Dépend de) et lesquelles restent lançables. Le motif technique reste relayé tel quel à
+côté, jamais traduit : c'est une citation de la session, pas une interprétation de l'orchestrateur.
 Sur `FAIL` ou `ARBITRAGE` non résolu : chemin du rapport de passation + `/reprendre-echec`, jamais
 le contenu ouvert ici ;
 `claude --resume <uuid>` en dernier recours seulement. Push groupé une fois le plan fini ou arrêté —

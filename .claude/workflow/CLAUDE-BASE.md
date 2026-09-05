@@ -15,6 +15,17 @@ projet ; ne pas copier. Chargé à **chaque** session : rester court.
 - Instruction utile seulement sur un sous-ensemble de fichiers d'un projet → `.claude/rules/` de CE
   projet (règle scopée), pas une ligne ajoutée à `CLAUDE.md` (voir `CONVENTIONS.md`).
 
+## Écrire pour qui décide
+
+Le lecteur connaît son projet, pas le code. Tout ce qu'il lit — proposition, option, annonce de
+vague, rapport, décision — dit d'abord **ce que ça change et à quoi il le verra**, et seulement
+ensuite comment. Un terme technique inévitable est suivi une fois de ce qu'il désigne. Une
+recommandation énonce son revers, sinon elle ne laisse rien à arbitrer.
+
+Ce n'est pas un cours : on explique ce que fait la chose et ce qu'elle coûte, jamais comment le
+langage ou l'outil fonctionne. Ce qui est déjà écrit dans un fichier ne se recopie pas ici — le
+registre s'applique à ce qu'on rédige, pas au volume.
+
 ## Dépendances
 
 Un exécutant n'ajoute **jamais** de dépendance de lui-même : si une tâche en requiert une, elle
@@ -39,8 +50,9 @@ la régression visuelle scriptée est le rôle de Codex
 (`.claude/workflow/AGENTS.md`).
 
 **La grille s'arrête à trois.** La relecture `/code-review` de fin de session (`/fin-de-tache`) est
-automatique et non bloquante, mais **n'est pas un niveau** : ses trouvailles se corrigent dans la
-session ou partent dans `TASKS.md`, jamais dans `VALIDATION.md`.
+automatique et non bloquante, mais **n'est pas un niveau** : elle se lance APRÈS commits et statuts,
+ses trouvailles vont dans `plans/P<n>/S<k>.revue.md` (classées bloquant/backlog) puis `TASKS.md` au
+tri de clôture du plan — jamais dans `VALIDATION.md`.
 
 En mode autonome : enchaîner les tâches (gate = N0), accumuler les points N2, rendre la main en fin de lot.
 
@@ -55,6 +67,14 @@ Déléguer plutôt que faire soi-même (le contexte accumulé se paie à chaque 
 - lire une doc externe → agent `lecteur-doc`
 - besoin du contexte courant **et** travail bruyant (outils, itérations) → sous-agent `fork`, qui
   hérite la conversation et réutilise le cache : seul son résultat revient, ses appels restent dehors
+
+**Les quatre premiers tournent au premier plan, jamais en arrière-plan** (pas de
+`run_in_background: true` sur l'outil `Agent`) : leur conclusion conditionne la suite immédiate de
+la tâche en cours — N0 bloque le commit (ci-dessus), une localisation conditionne le code qui suit.
+Les lancer en arrière-plan puis rendre la main revient, pour le harnais, à clore une session qui n'a
+encore rien commité : le verdict arrive dans un tour que plus personne ne lit. L'arrière-plan est
+réservé à la voie sous-agent de **session entière** (`WORKFLOW.md` §5b), où c'est la conversation
+d'orchestration — pas l'exécutant — qui reste ouverte à attendre la notification.
 
 **La délégation empêche le contexte d'entrer, elle ne l'évacue pas** : un agent neuf ne peut pas
 alléger une conversation déjà chargée, il devrait tout relire pour reconstruire ce qu'on a sous la

@@ -46,24 +46,6 @@ un `S<k>.md` ni dans `TASKS.md`.
    cet emplacement, jamais sous `.claude/workflow/bin/`). Sans bump, les projets vendorés ne voient
    jamais la mise à jour ; sans publication, toute machine neuve embarque une version périmée.
 
-## Relecture de session — avant de clore, dans les deux modes
-
-**Seulement si la session a produit du code.** Une session dont la « Zone modifiée » est `aucune`
-(mesure, audit, vérification) n'a pas de diff à relire — passer directement à la clôture.
-
-Lancer `/code-review` en effort `high` : à ce niveau il tourne dans un agent d'arrière-plan et ne
-prend pas la session. Périmètre = le diff de la session, délimité par ses propres commits
-(`git log --oneline --grep "P<n>/S<k>/"`). Le sous-agent n'a pas vu la conversation : c'est tout
-l'intérêt, il ne partage pas ses angles morts.
-
-- **Non bloquant, et sans rang dans la grille.** Ce n'est ni un N0 (qui bloque) ni un N1 (visuel) ni
-  un N2 (humain) : c'est une étape de cette skill, rien de plus. La grille N0/N1/N2 ne bouge pas.
-- **Ce qui est dans le périmètre de la session se corrige maintenant**, puis N0 est rejoué.
-- **Ce qui déborde devient une ligne dans `TASKS.md`** — jamais dans `VALIDATION.md`, qui ne porte
-  que le N2 humain. Sans destination écrite, une revue produit un texte que personne ne relit.
-- **Ce qui invalide une hypothèse du plan** ne se corrige pas ici : c'est une extension de plan
-  (`/nouveau-plan` Étape 0).
-
 ## Fin de session — mode SOLO (parallèle : non)
 
 9. **Statut** : passer les tâches à `[x]` dans l'`index.md` du plan (colonne Statut), avec la date —
@@ -99,6 +81,37 @@ l'intérêt, il ne partage pas ses angles morts.
     worktree, le **signaler** au lieu de clore : le travail doit d'abord revenir dans l'arbre
     principal.
 
+## Relecture de session — dernier geste, dans les deux modes
+
+**Seulement si la session a produit du code.** Une session dont la « Zone modifiée » est `aucune`
+(mesure, audit, vérification) n'a pas de diff à relire — clore sans revue.
+
+**L'ordre est impératif : clôture d'abord, revue ensuite.** Dérouler toutes les étapes de fin de
+session du mode (statuts, commits, rapport) AVANT de lancer la revue : le travail est alors commité
+et le verdict acquis — plus rien n'attend la revue, elle ne peut plus coûter la session. Une session
+qui attend sa revue avant de committer compte, pour l'orchestrateur, comme jamais lancée.
+
+Lancer `/code-review` en effort `high` : à ce niveau il tourne dans un agent d'arrière-plan.
+Périmètre = le diff de la session, délimité par ses propres commits
+(`git log --oneline --grep "P<n>/S<k>/"`). Le sous-agent n'a pas vu la conversation : c'est tout
+l'intérêt, il ne partage pas ses angles morts.
+
+À son retour, écrire `plans/P<n>/S<k>.revue.md` — première ligne exactement `Bloquant : <n>` (elle
+sert de marqueur mécanique à l'orchestrateur), puis chaque trouvaille confirmée, classée :
+
+- **bloquant** — défaut réel dans ce qui vient d'être livré : résultat faux, crash, code de sortie
+  erroné, régression. Seuil : ce qu'un utilisateur du livrable rencontrerait en s'en servant.
+- **backlog** — simplification, duplication, dette, style. Tout le reste.
+
+Revue qui échoue, ne rend rien ou ne confirme rien → pas de fichier, clore quand même en le
+signalant d'une ligne : elle est **non bloquante**, sans rang dans la grille N0/N1/N2.
+
+Le fichier reste **non commité** : il est consommé au tri de clôture du plan (point 16). La session
+ne corrige rien — elle est close. Exception en mode solo, humain présent : un **bloquant** peut se
+corriger sur-le-champ (commit correctif + N0 rejoué), et sort alors du `.revue.md`. Un défaut qui
+invalide une hypothèse du plan reste une extension (`/nouveau-plan` Étape 0), jamais une correction
+locale.
+
 ## Fin de plan (toutes les sessions exécutées et validées)
 
 Le travail de code est déjà commité — chaque session a pris le sien. Il ne reste que le rangement.
@@ -106,11 +119,15 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
 14. **Vérifier qu'il ne reste rien.** `git status` doit être propre hors fichiers de contexte. Ce qui
     traîne encore appartient à une session qui n'a pas déroulé cette checklist : la retrouver plutôt
     que de balayer le reste dans un commit fourre-tout. Un `plans/P<n>/S<k>.echec.md` encore présent
-    signale un échec non résolu → ne pas clore le plan (`/reprendre-echec`).
+    signale un échec non résolu → ne pas clore le plan (`/reprendre-echec`). Les `S<k>.revue.md`
+    encore là sont normaux : ils attendent le tri du point 16.
 15. **Nettoyer les marqueurs** : `.claude/wave.lock` s'il existe, et `.claude/vague/` (sorties brutes
     et identifiants de session — transitoires).
 16. **Ranger le contexte** : statuts `[x]` complets dans l'`index.md`, lignes purgées de `TASKS.md`,
-    `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. Un commit dédié.
+    `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. **Trier les revues** :
+    chaque `plans/P<n>/S<k>.revue.md` est versé dans `TASKS.md` — les **bloquants** en tête, marqués
+    comme tels, le backlog à la suite, jamais dans `VALIDATION.md` — puis supprimé (transitoire,
+    comme `.claude/vague/`). Un commit dédié.
 17. **Un seul push** pour l'ensemble du plan.
 
 ## Enchaînement — session suivante du plan
