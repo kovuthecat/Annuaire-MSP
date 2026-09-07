@@ -38,7 +38,7 @@ Une réflexion sans question écrite ne se termine pas : elle s'interrompt quand
 
 ## Étape 2 — Déléguer tout ce qui n'est pas un arbitrage
 
-Avant d'ouvrir un fichier soi-même, se demander lequel des quatre agents rend la conclusion voulue.
+Avant d'ouvrir un fichier soi-même, se demander lequel des agents de délégation rend la conclusion voulue.
 Opus lit **les conclusions**, pas les traces. Ce qu'il garde pour lui : le raisonnement, les
 hypothèses racines, l'arbitrage final — le reste se délègue.
 

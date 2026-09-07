@@ -227,6 +227,15 @@ s'enchaîne, l'arbitrage appartient à l'humain, le versement dans `TASKS.md` au
 (`/fin-de-tache` point 16). Un bloquant qui invalide une hypothèse du plan suit le chemin déjà
 écrit : extension (`/nouveau-plan` Étape 0), sur décision humaine.
 
+**Une revue absente se relaie comme un manque, pas comme un silence.** Le dépôt est inconditionnel
+(`Bloquant : 0` quand il n'y a rien à dire) : un `.revue.md` manquant veut donc dire que la revue
+n'a pas tourné, jamais qu'elle n'a rien trouvé. Pour chaque session de la vague dont la colonne
+« Zone modifiée » de l'`index.md` n'est pas `aucune`, qui n'a pas de `.echec.md`, et dont le
+`.revue.md` manque : une ligne `Revue S<k> : absente` — au même endroit que les autres, **non
+bloquante** elle aussi. C'est le seul signal qui rende visible une panne du canal de revue ; sans
+lui, un plan entier peut se clore sans qu'aucune relecture n'ait été déposée, sans que personne ne
+s'en aperçoive.
+
 ### Échec — finir la vague, puis une reprise automatique
 
 Un `FAIL` ne tue pas les sous-agents déjà lancés de la vague en cours : ils vont au bout, on ne peut
@@ -319,7 +328,8 @@ rapport, avec leur `.echec.md` intact).
 Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies confondues ; une session
 reprise porte les deux verdicts (`S<k> · FAIL → reprise PASS/FAIL/ARBITRAGE · motif`). Signaler tout
 écart entre effort demandé et effort réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
-Une ligne par revue à bloquants non encore relayée (Étape 5, « Revues de session »).
+Une ligne par revue à bloquants — **et par revue absente** — non encore relayée (Étape 5,
+« Revues de session »).
 
 **Écrit pour qui n'a pas suivi la vague.** Sur `PASS`, le titre suffit — le travail est commité, il
 se relit. C'est sur `FAIL` et `ARBITRAGE` que l'utilisateur a besoin de comprendre : ajouter, en

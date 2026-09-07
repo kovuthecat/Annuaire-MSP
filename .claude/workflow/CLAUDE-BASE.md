@@ -49,10 +49,12 @@ Jamais de Playwright, de script de capture ni d'automatisation de navigateur hor
 la régression visuelle scriptée est le rôle de Codex
 (`.claude/workflow/AGENTS.md`).
 
-**La grille s'arrête à trois.** La relecture `/code-review` de fin de session (`/fin-de-tache`) est
-automatique et non bloquante, mais **n'est pas un niveau** : elle se lance APRÈS commits et statuts,
-ses trouvailles vont dans `plans/P<n>/S<k>.revue.md` (classées bloquant/backlog) puis `TASKS.md` au
-tri de clôture du plan — jamais dans `VALIDATION.md`.
+**La grille s'arrête à trois.** La relecture de fin de session (`/fin-de-tache`, agent
+`relecteur-session`) est automatique et non bloquante, mais **n'est pas un niveau** : elle se lance
+APRÈS commits et statuts, **au premier plan**, et c'est l'agent qui dépose
+`plans/P<n>/S<k>.revue.md` — **toujours**, même sans trouvaille (`Bloquant : 0`), pour qu'un fichier
+absent ne veuille dire qu'une chose : la revue n'a pas tourné. Versé dans `TASKS.md` au tri de
+clôture du plan (classé bloquant/backlog), jamais dans `VALIDATION.md`.
 
 En mode autonome : enchaîner les tâches (gate = N0), accumuler les points N2, rendre la main en fin de lot.
 
@@ -65,14 +67,18 @@ Déléguer plutôt que faire soi-même (le contexte accumulé se paie à chaque 
 - build/typecheck/tests → agent `verificateur-n0` (JAMAIS en direct dans la conversation principale)
 - résumer un diff/historique → agent `resumeur-git`
 - lire une doc externe → agent `lecteur-doc`
+- relire le diff d'une session close → agent `relecteur-session`, qui écrit lui-même son `.revue.md`
 - besoin du contexte courant **et** travail bruyant (outils, itérations) → sous-agent `fork`, qui
   hérite la conversation et réutilise le cache : seul son résultat revient, ses appels restent dehors
 
-**Les quatre premiers tournent au premier plan, jamais en arrière-plan** (pas de
+**Les cinq premiers tournent au premier plan, jamais en arrière-plan** (pas de
 `run_in_background: true` sur l'outil `Agent`) : leur conclusion conditionne la suite immédiate de
-la tâche en cours — N0 bloque le commit (ci-dessus), une localisation conditionne le code qui suit.
-Les lancer en arrière-plan puis rendre la main revient, pour le harnais, à clore une session qui n'a
-encore rien commité : le verdict arrive dans un tour que plus personne ne lit. L'arrière-plan est
+la tâche en cours — N0 bloque le commit (ci-dessus), une localisation conditionne le code qui suit,
+et le `relecteur-session` est le **dernier** geste de la session, donc aucun tour ne s'ouvrira après
+lui pour lire un retour. Les lancer en arrière-plan puis rendre la main revient, pour le harnais, à
+clore une session : le verdict arrive dans un tour que plus personne ne lit — pour les quatre
+premiers sans que rien soit commité, pour le cinquième sans que la revue soit déposée.
+L'arrière-plan est
 réservé à la voie sous-agent de **session entière** (`WORKFLOW.md` §5b), où c'est la conversation
 d'orchestration — pas l'exécutant — qui reste ouverte à attendre la notification.
 

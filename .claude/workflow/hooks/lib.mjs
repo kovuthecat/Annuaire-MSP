@@ -3,6 +3,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -111,6 +112,52 @@ export function worktreeLie(cwd) {
 
 export function vagueParallele(cwd) {
   return existsSync(join(racineDepot(cwd), '.claude', 'wave.lock'));
+}
+
+/** Marqueur temporaire propre à une session (garde anti-boucle du Stop, repère HEAD du
+ *  SessionStart). Même clé pour les deux hooks : c'est ce qui les relie d'un bout à l'autre. */
+export function repereSession(entree, cwd, suffixe) {
+  const dossier = join(tmpdir(), 'claude-hooks-templates');
+  const cle = (entree.session_id || cwd).replace(/[^\w-]/g, '_');
+  return { dossier, chemin: join(dossier, `${cle}.${suffixe}`) };
+}
+
+/** Sessions de plan ayant commité du CODE dans `depuis..HEAD` sans déposer leur `plans/P<n>/S<k>.revue.md`.
+ *
+ *  Le dépôt de la revue est inconditionnel (`Bloquant : 0` quand il n'y a rien à dire) : un fichier
+ *  absent ne peut donc signifier qu'une chose — la revue n'a pas tourné. C'est le mode d'échec qui a
+ *  emporté toutes les revues d'un plan entier (`docs/decisions/2026-09-07-revue-orpheline.md`), sans
+ *  que rien ne le rende visible.
+ *
+ *  Fail-open partout : repère illisible, `git` en échec, aucun repère `Plan:` → tableau vide. Ce
+ *  contrôle signale un manque, il n'invente jamais une session. */
+export function revuesManquantes(cwd, depuis) {
+  if (!depuis) return [];
+  const { fichiersDeSuivi } = lirePlafonds();
+
+  const changes = (git(cwd, 'diff', '--name-only', `${depuis}..HEAD`) || '')
+    .split('\n')
+    .map((f) => f.trim().replaceAll('\\', '/'))
+    .filter(Boolean);
+  // Une session dont les commits ne portent que du suivi (bilan, statuts) n'a pas produit de code :
+  // rien à relire, pas de revue attendue.
+  const code = changes.filter((f) => !estFichierDeSuivi(f, fichiersDeSuivi) && !f.startsWith('.claude/'));
+  if (code.length === 0) return [];
+
+  const messages = git(cwd, 'log', '--format=%B', `${depuis}..HEAD`) || '';
+  const refs = new Set();
+  for (const m of messages.matchAll(/Plan:\s*(P\d+)\/(S[A-Za-z0-9_-]+)\//g)) refs.add(`${m[1]}/${m[2]}`);
+
+  const manquantes = [];
+  for (const ref of refs) {
+    const [plan, session] = ref.split('/');
+    const dossier = join(racineDepot(cwd), 'plans', plan);
+    // Un `.echec.md` dispense de revue : la session n'a pas livré, elle a passé la main.
+    if (existsSync(join(dossier, `${session}.revue.md`))) continue;
+    if (existsSync(join(dossier, `${session}.echec.md`))) continue;
+    manquantes.push(ref);
+  }
+  return manquantes;
 }
 
 export function repondre(objet) {

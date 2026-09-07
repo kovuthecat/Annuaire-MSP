@@ -4,12 +4,12 @@
 // fonctionne pas en cloud). Les vérifications de dérive n'écrivent RIEN si tout est sain ;
 // l'émission de CLAUDE-BASE.md, elle, a lieu à chaque session (coût token assumé, D-P2-2).
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
-  repondre, riendafaire,
+  repereSession, repondre, riendafaire,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -18,6 +18,21 @@ const entree = await lireEntree();
 const cwd = repertoireProjet(entree);
 
 if (!estUnDepot(cwd)) riendafaire();
+
+// Repère HEAD au démarrage — seule chose qui permette au hook Stop de savoir ce que CETTE session
+// a commité, et donc d'exiger la revue de session qui va avec (`revuesManquantes`). Écrit une seule
+// fois : sur `compact` ou `resume`, le repère existe déjà et réécrire HEAD effacerait les commits
+// déjà pris. Best-effort — un échec ici ne fait que désactiver le contrôle, jamais bloquer.
+try {
+  const { dossier, chemin } = repereSession(entree, cwd, 'head');
+  if (!existsSync(chemin)) {
+    const tete = git(cwd, 'rev-parse', 'HEAD');
+    if (tete) {
+      mkdirSync(dossier, { recursive: true });
+      writeFileSync(chemin, tete);
+    }
+  }
+} catch { /* repère indisponible : le Stop retombera en fail-open */ }
 
 const lignes = [];
 

@@ -91,20 +91,25 @@ session du mode (statuts, commits, rapport) AVANT de lancer la revue : le travai
 et le verdict acquis — plus rien n'attend la revue, elle ne peut plus coûter la session. Une session
 qui attend sa revue avant de committer compte, pour l'orchestrateur, comme jamais lancée.
 
-Lancer `/code-review` en effort `high` : à ce niveau il tourne dans un agent d'arrière-plan.
-Périmètre = le diff de la session, délimité par ses propres commits
-(`git log --oneline --grep "P<n>/S<k>/"`). Le sous-agent n'a pas vu la conversation : c'est tout
-l'intérêt, il ne partage pas ses angles morts.
+**Lancer l'agent `relecteur-session`, AU PREMIER PLAN** (jamais `run_in_background: true`, jamais
+`/code-review` en `high`+ : à ces niveaux il part dans un agent d'arrière-plan). Lui passer `P<n>`,
+`S<k>`, le mode, et — sous `.claude/wave.lock` uniquement — les chemins de la « Zone modifiée ».
 
-À son retour, écrire `plans/P<n>/S<k>.revue.md` — première ligne exactement `Bloquant : <n>` (elle
-sert de marqueur mécanique à l'orchestrateur), puis chaque trouvaille confirmée, classée :
+**C'est l'agent qui écrit `plans/P<n>/S<k>.revue.md`, pas toi.** La session ne fait que lire les
+deux lignes qu'il rend et les recopier dans son rapport. Une revue lancée en arrière-plan comme
+dernier geste ne dépose jamais rien : la session rend la main, le harnais la clôt, et le retour
+arrive dans un tour que plus personne ne lit — c'est le mécanisme de
+`docs/decisions/2026-09-04-delegation-au-premier-plan.md`, et il a coûté la totalité des revues d'un
+plan entier avant d'être vu (`2026-09-07-revue-orpheline.md`).
 
-- **bloquant** — défaut réel dans ce qui vient d'être livré : résultat faux, crash, code de sortie
-  erroné, régression. Seuil : ce qu'un utilisateur du livrable rencontrerait en s'en servant.
-- **backlog** — simplification, duplication, dette, style. Tout le reste.
+**Le fichier est déposé même sans trouvaille** (`Bloquant : 0`). L'absence de `.revue.md` ne veut
+donc plus dire qu'une chose — **la revue n'a pas tourné** — et c'est à ce titre que le hook `Stop`
+et l'orchestrateur la signalent. Si l'agent rend la main sans avoir pu écrire (périmètre
+indéterminable, diff vide), clore quand même en le signalant d'une ligne : la revue est **non
+bloquante**, sans rang dans la grille N0/N1/N2.
 
-Revue qui échoue, ne rend rien ou ne confirme rien → pas de fichier, clore quand même en le
-signalant d'une ligne : elle est **non bloquante**, sans rang dans la grille N0/N1/N2.
+Contenu du fichier (format, seuil bloquant/backlog) : c'est l'affaire de l'agent, ne pas le
+reformuler ici — `.claude/agents/relecteur-session.md`.
 
 Le fichier reste **non commité** : il est consommé au tri de clôture du plan (point 16). La session
 ne corrige rien — elle est close. Exception en mode solo, humain présent : un **bloquant** peut se
@@ -127,7 +132,10 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
     `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. **Trier les revues** :
     chaque `plans/P<n>/S<k>.revue.md` est versé dans `TASKS.md` — les **bloquants** en tête, marqués
     comme tels, le backlog à la suite, jamais dans `VALIDATION.md` — puis supprimé (transitoire,
-    comme `.claude/vague/`). Un commit dédié.
+    comme `.claude/vague/`). Un `Bloquant : 0` sans backlog ne se verse pas, il se supprime. **Une
+    session qui a produit du code et n'a laissé aucun `.revue.md` n'a pas eu de revue** : le
+    signaler dans le rapport de clôture plutôt que de le lire comme « rien à signaler ». Un commit
+    dédié.
 17. **Un seul push** pour l'ensemble du plan.
 
 ## Enchaînement — session suivante du plan

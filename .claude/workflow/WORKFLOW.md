@@ -182,16 +182,20 @@ Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contex
 (chemins, sorties, fausses pistes) qu'on paie ensuite à chaque tour — et c'est justement en cadrage
 Opus, le contexte le plus cher, qu'on en accumule le plus.
 
-Quatre agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
+Cinq agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
 
 - `explorateur` → localiser quelque chose qui touche plus d'1 fichier.
 - `verificateur-n0` → lancer build/typecheck/tests (jamais ces commandes en direct dans la
   conversation principale).
 - `resumeur-git` → résumer un diff ou un historique.
 - `lecteur-doc` → lire une doc externe.
+- `relecteur-session` → relire le diff d'une session close et **déposer** son `.revue.md`
+  (`/fin-de-tache`).
 
-Les quatre se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
-conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu.
+Les cinq se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
+conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
+cinquième est le dernier geste de la session : lancé en arrière-plan, son retour n'atteindrait
+aucun tour et la revue ne serait jamais déposée.
 
 Table de délégation détaillée : `CLAUDE-BASE.md` (section « Avant de coder »).
 
@@ -274,10 +278,10 @@ définition. Une instruction ne contraint rien ; un hook si.
 
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
-| `sessionstart-contexte.mjs` | SessionStart | Signale : vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain. |
+| `sessionstart-contexte.mjs` | SessionStart | Signale : vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
-| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
+| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans déposer son `.revue.md`, ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
 
 ### Plafonds de lignes
 
