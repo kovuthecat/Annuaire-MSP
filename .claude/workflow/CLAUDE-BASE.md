@@ -54,7 +54,8 @@ la régression visuelle scriptée est le rôle de Codex
 APRÈS commits et statuts, **au premier plan**, et c'est l'agent qui dépose
 `plans/P<n>/S<k>.revue.md` — **toujours**, même sans trouvaille (`Bloquant : 0`), pour qu'un fichier
 absent ne veuille dire qu'une chose : la revue n'a pas tourné. Versé dans `TASKS.md` au tri de
-clôture du plan (classé bloquant/backlog), jamais dans `VALIDATION.md`.
+clôture du plan (classé bloquant/backlog), jamais dans `VALIDATION.md`, **puis supprimé** — le commit
+du tri porte alors `Revues: P<n>/S<k>`, seule trace que la revue a existé.
 
 En mode autonome : enchaîner les tâches (gate = N0), accumuler les points N2, rendre la main en fin de lot.
 

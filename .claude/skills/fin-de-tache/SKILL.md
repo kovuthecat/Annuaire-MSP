@@ -135,7 +135,11 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
     comme `.claude/vague/`). Un `Bloquant : 0` sans backlog ne se verse pas, il se supprime. **Une
     session qui a produit du code et n'a laissé aucun `.revue.md` n'a pas eu de revue** : le
     signaler dans le rapport de clôture plutôt que de le lire comme « rien à signaler ». Un commit
-    dédié.
+    dédié, portant en dernière ligne le repère des revues **réellement trouvées et triées** :
+    `Revues: P<n>/S<k>, P<n>/S<k>`. Le `.revue.md` n'est jamais commité : ce repère est la seule
+    trace qu'il a existé, et sans lui le hook `Stop` relit la suppression que tu viens de faire
+    comme une revue jamais lancée. Une session sans `.revue.md` n'entre pas dans le repère — elle
+    part dans le rapport de clôture, à sa place.
 17. **Un seul push** pour l'ensemble du plan.
 
 ## Enchaînement — session suivante du plan

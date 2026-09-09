@@ -148,6 +148,11 @@ après coup (`git log --grep`), au lieu de la faire deviner :
 Plan: P<n>/S<k>/T<m>
 ```
 
+Un second repère, réservé au commit de tri de la clôture (`/fin-de-tache` point 16) : `Revues:
+P<n>/S<k>[, …]`, les revues de session versées dans `TASKS.md` puis supprimées. Le `.revue.md` n'est
+jamais commité — ce repère est la seule trace qu'il a existé, et sans lui le hook `Stop` relit sa
+suppression comme une revue jamais lancée (§7).
+
 - **Ce qu'une session committe** : les fichiers de ses tâches, et son `S<k>.md`. Rien d'autre.
 - **N0 vert d'abord** : `build` + `typecheck` + tests du périmètre. Un commit qui ne compile pas
   transforme le point de retour en piège.
@@ -281,7 +286,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 | `sessionstart-contexte.mjs` | SessionStart | Signale : vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
-| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans déposer son `.revue.md`, ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
+| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
 
 ### Plafonds de lignes
 

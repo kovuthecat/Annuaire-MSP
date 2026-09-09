@@ -122,12 +122,19 @@ export function repereSession(entree, cwd, suffixe) {
   return { dossier, chemin: join(dossier, `${cle}.${suffixe}`) };
 }
 
-/** Sessions de plan ayant commité du CODE dans `depuis..HEAD` sans déposer leur `plans/P<n>/S<k>.revue.md`.
+/** Sessions de plan ayant commité du CODE dans `depuis..HEAD` sans laisser trace de leur revue.
  *
- *  Le dépôt de la revue est inconditionnel (`Bloquant : 0` quand il n'y a rien à dire) : un fichier
- *  absent ne peut donc signifier qu'une chose — la revue n'a pas tourné. C'est le mode d'échec qui a
- *  emporté toutes les revues d'un plan entier (`docs/decisions/2026-09-07-revue-orpheline.md`), sans
- *  que rien ne le rende visible.
+ *  Le dépôt de la revue est inconditionnel (`Bloquant : 0` quand il n'y a rien à dire) : tant que le
+ *  plan est ouvert, un `plans/P<n>/S<k>.revue.md` absent ne peut signifier qu'une chose — la revue
+ *  n'a pas tourné. C'est le mode d'échec qui a emporté toutes les revues d'un plan entier
+ *  (`docs/decisions/2026-09-07-revue-orpheline.md`), sans que rien ne le rende visible.
+ *
+ *  Mais le fichier est transitoire : le tri de clôture le verse dans `TASKS.md` puis le supprime
+ *  (`/fin-de-tache` point 16). Une session qui clôt un plan voyait donc ses propres revues — faites,
+ *  puis rangées dans les règles — signalées comme manquantes : sur disque, « consommée au tri » et
+ *  « jamais lancée » sont le même vide. Et le `.revue.md` n'étant jamais commité, sa disparition ne
+ *  laisse aucune trace dans git. C'est donc au tri de la déposer, par le repère `Revues:` de son
+ *  commit dédié — une déclaration explicite, plutôt qu'une exemption devinée.
  *
  *  Fail-open partout : repère illisible, `git` en échec, aucun repère `Plan:` → tableau vide. Ce
  *  contrôle signale un manque, il n'invente jamais une session. */
@@ -148,13 +155,24 @@ export function revuesManquantes(cwd, depuis) {
   const refs = new Set();
   for (const m of messages.matchAll(/Plan:\s*(P\d+)\/(S[A-Za-z0-9_-]+)\//g)) refs.add(`${m[1]}/${m[2]}`);
 
+  // Repères `Revues: P<n>/S<k>[, …]` du commit de tri : ces revues ont existé, elles ont été versées
+  // dans `TASKS.md` puis supprimées. Lu ligne à ligne, plusieurs refs par ligne, plusieurs lignes.
+  const triees = new Set();
+  for (const ligne of messages.split('\n')) {
+    const declaration = /^\s*Revues?\s*:(.*)$/.exec(ligne);
+    if (!declaration) continue;
+    for (const m of declaration[1].matchAll(/(P\d+)\/(S[A-Za-z0-9_-]+)/g)) triees.add(`${m[1]}/${m[2]}`);
+  }
+
   const manquantes = [];
   for (const ref of refs) {
     const [plan, session] = ref.split('/');
     const dossier = join(racineDepot(cwd), 'plans', plan);
-    // Un `.echec.md` dispense de revue : la session n'a pas livré, elle a passé la main.
     if (existsSync(join(dossier, `${session}.revue.md`))) continue;
+    // Un `.echec.md` dispense de revue : la session n'a pas livré, elle a passé la main.
     if (existsSync(join(dossier, `${session}.echec.md`))) continue;
+    // Revue déjà triée à la clôture : le fichier a existé, il a été consommé (point 16).
+    if (triees.has(ref)) continue;
     manquantes.push(ref);
   }
   return manquantes;
