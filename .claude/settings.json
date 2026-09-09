@@ -55,6 +55,11 @@
   },
   "permissions": {
     "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
       "Bash(npm run build:*)",
       "Bash(npm run test:*)",
       "Bash(npm run lint:*)",
@@ -64,7 +69,13 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [
       "Read(.env*)",
