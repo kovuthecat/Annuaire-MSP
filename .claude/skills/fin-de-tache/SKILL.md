@@ -140,7 +140,8 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
     trace qu'il a existé, et sans lui le hook `Stop` relit la suppression que tu viens de faire
     comme une revue jamais lancée. Une session sans `.revue.md` n'entre pas dans le repère — elle
     part dans le rapport de clôture, à sa place.
-17. **Un seul push** pour l'ensemble du plan.
+17. **Un seul push**, sur `main`, pour l'ensemble du plan — session cloud comprise, jamais sur une
+    branche laissée derrière (`WORKFLOW.md` §4b).
 
 ## Enchaînement — session suivante du plan
 

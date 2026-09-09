@@ -338,8 +338,11 @@ français et sans jargon, **ce que ça l'empêche de faire** — quelles session
 côté, jamais traduit : c'est une citation de la session, pas une interprétation de l'orchestrateur.
 Sur `FAIL` ou `ARBITRAGE` non résolu : chemin du rapport de passation + `/reprendre-echec`, jamais
 le contenu ouvert ici ;
-`claude --resume <uuid>` en dernier recours seulement. Push groupé une fois le plan fini ou arrêté —
-jamais depuis une session, jamais si une vague reste `EN ATTENTE`.
+`claude --resume <uuid>` en dernier recours seulement. **Push groupé sur `main` une fois le plan fini
+ou arrêté** — jamais depuis une session, jamais si une vague reste `EN ATTENTE`, et jamais sur une
+branche laissée derrière, session cloud comprise (`WORKFLOW.md` §4b). L'orchestration est une unité
+de travail : elle se clôt poussée, y compris quand elle s'arrête sur un `FAIL` — ce qui a été fait
+avant l'échec doit être visible d'où repartira la reprise.
 
 **Ce qui reste à lancer à la main** — sessions restantes après une gate, un `FAIL` ou un repli
 pastille : une ligne « À régler AVANT de lancer » par session prête (`WORKFLOW.md` §3), modèle et

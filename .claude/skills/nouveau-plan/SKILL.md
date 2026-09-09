@@ -262,3 +262,14 @@ Le suivi d'avancement se lit dans l'`index.md`.
 
 En mode extension, mêmes lignes pour les seules tâches ajoutées ; les tâches déjà reportées ne
 bougent pas.
+
+## Étape 6 — Committer et pousser le plan
+
+Staging explicite du dossier `plans/P<n>/` et de `TASKS.md`, un commit
+(`plan(P<n>): <objectif en une ligne>`), puis **`git push` sur `main`** — session cloud comprise
+(`WORKFLOW.md` §4b).
+
+Le cadrage est fini, l'exécution ne l'est pas : c'est justement pourquoi le plan doit être poussé
+maintenant. Chaque session part d'une **conversation neuve** (§5b), souvent d'une autre machine ou
+d'une session cloud — un `index.md` resté local n'y existe pas, et la première session du plan
+démarre alors sur un dossier qu'elle ne trouve pas.

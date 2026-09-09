@@ -87,6 +87,11 @@ froid, pas celui d'un sous-agent.
 
 Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle sera refaite.
 
+**Committer et pousser l'écrit avant de rendre la main** — staging explicite du `docs/decisions/` et
+de la ligne de registre, puis `git push` sur `main` (`WORKFLOW.md` §4b), session cloud comprise. Une
+décision qui n'existe que sur ce poste ne sera pas lue par la session de plan qui devait s'en servir,
+et c'est elle qu'on refera. Le cadrage est une unité de travail : il se clôt poussé.
+
 **La décision écrite s'ouvre par ce qu'elle change, en clair.** Sa première section doit se tenir
 seule : quelqu'un qui la lit dans six mois, sans le contexte de la session, doit comprendre ce qui a
 été tranché et ce que ça implique avant d'atteindre la moindre justification technique. Le détail,

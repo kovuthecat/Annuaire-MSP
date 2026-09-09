@@ -156,7 +156,15 @@ suppression comme une revue jamais lancée (§7).
 - **Ce qu'une session committe** : les fichiers de ses tâches, et son `S<k>.md`. Rien d'autre.
 - **N0 vert d'abord** : `build` + `typecheck` + tests du périmètre. Un commit qui ne compile pas
   transforme le point de retour en piège.
-- **Jamais `git push`** depuis une session : le push est groupé, en fin de vague ou de plan.
+- **À jour avant de commencer.** Vérifier qu'on n'est pas en retard sur `origin/main` et rattraper
+  (`git pull --rebase`) **avant la première tâche** — le hook `SessionStart` le constate et le dit
+  (§7). Coder sur un arbre en retard, c'est préparer un conflit ou écraser ce qui a été poussé
+  d'ailleurs.
+- **Le push est groupé, et il va sur `main`.** Ni à chaque tâche ni à chaque session : à la clôture
+  d'une **unité de travail** — fin d'orchestration (`/orchestrer-plan` Étape 6), fin de plan
+  (`/fin-de-tache` point 17), fin de cadrage (`/cadrer` Étape 5), fin de `/nouveau-plan`. **Session
+  cloud comprise** : le travail atterrit sur `main`, jamais sur une branche laissée derrière — une
+  branche que personne ne rapatrie est un décalage de plus, pas une précaution.
 - **L'`index.md` suit le verrou, pas le mot « vague »** : `.claude/wave.lock` présent → la session
   n'y touche pas, l'orchestrateur coche en fin de vague ; verrou absent → la session coche **sa
   propre ligne** dans le commit de ses tâches. Un statut, une seule main (§4a) — mais la main est
@@ -164,6 +172,14 @@ suppression comme une revue jamais lancée (§7).
   jamais sa dépendance satisfaite.
 - `git add -A`, `git add .` et `git commit -a` restent refusés par hook : sans staging explicite,
   une session emporte les fichiers de ses voisines.
+
+*Précision du 2026-09-09.* Le push était dit « groupé, en fin de vague ou de plan » — mais `/cadrer`
+et `/nouveau-plan` n'en parlaient nulle part : leurs écrits (une décision, un dossier de plan)
+pouvaient rester locaux indéfiniment, et l'entrée dans un plan ne vérifiait rien. Le prix s'est vu le
+2026-09-09 : un clone du dépôt de distribution resté deux semaines sur une version périmée, et — déjà
+le 2026-08-28 — un dépôt source publié en `--force` depuis un arbre en retard, qui avait amputé le
+miroir public (d'où le garde-fou de `bin/publier.mjs`). Un commit qui dort en local n'existe pour
+aucune autre machine : ni le poste voisin, ni une session cloud, ni le mobile.
 
 **Parallélisme réel — l'unique exception.** Deux sessions lancées en même temps partagent un
 seul index git — sous-agents concurrents comme processus `claude -p` concurrents, indépendamment de
@@ -283,7 +299,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
-| `sessionstart-contexte.mjs` | SessionStart | Signale : vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
+| `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
 | `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
@@ -319,7 +335,8 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
   exploration de fichiers, lecture de doc externe).
 - Improviser des tâches hors du `S<k>.md` en cours ; mélanger deux sessions dans un même lancement.
 - Enchaîner deux sessions d'un même plan dans une seule et même conversation (§5b).
-- Reporter ses commits à plus tard, ou pusher depuis une session (§4b) — une session committe le sien, et lui seul.
+- Reporter ses commits à plus tard (§4b) — une session committe le sien, et lui seul.
+- Ouvrir une session sans vérifier qu'on est à jour, ou clore une unité de travail sans pousser sur `main` (§4b).
 - Écrire dans `VALIDATION.md` ce qu'un navigateur constate seul (§6).
 - Recopier un statut à deux endroits (§4a).
 - Recopier du texte au lieu de pointer vers la source (`WORKFLOW.md`, `docs/decisions/`…).

@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
   repereSession, repondre, riendafaire,
+  recupererAmont, etatAmont, aUnRemote, brancheCourante, brancheParDefaut,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -74,6 +75,31 @@ if (vagueParallele(cwd)) {
       "travail : le diff produit ici ne sera vu ni par l'orchestrateur ni par la consolidation, et " +
       "le verrou interdit le commit qui permettrait de le rapatrier. Ne code pas : signale-le, et " +
       "redemande la session dans l'arbre principal (pastille → « Démarrer localement »)."
+    );
+  }
+}
+
+// Retard sur l'amont, et branche d'atterrissage — les deux se constatent au démarrage, quand la
+// correction est encore gratuite. Un arbre en retard produit un conflit ou, sur un chemin qui pousse
+// en `--force`, écrase du travail déjà publié ; une branche autre que celle d'intégration produit du
+// travail que personne ne voit venir. Muet pendant une vague : ni pull ni push n'y sont permis.
+if (!vagueParallele(cwd) && aUnRemote(cwd)) {
+  recupererAmont(cwd);
+  const amont = etatAmont(cwd);
+  if (amont && amont.retard > 0) {
+    lignes.push(
+      `**Dépôt en retard de ${amont.retard} commit(s) sur \`${amont.amont}\`** — rattraper ` +
+      `(\`git pull --rebase\`) AVANT de commencer (\`WORKFLOW.md\` §4b). Travailler sur un arbre en ` +
+      `retard, c'est préparer un conflit ou écraser ce qui a été poussé d'ailleurs.`
+    );
+  }
+  const courante = brancheCourante(cwd);
+  const integration = brancheParDefaut(cwd);
+  if (courante && courante !== integration) {
+    lignes.push(
+      `**Branche \`${courante}\`, alors que l'intégration se fait sur \`${integration}\`** — le ` +
+      `travail de ce workflow vit et se pousse sur \`${integration}\`, **session cloud comprise** ` +
+      `(\`WORKFLOW.md\` §4b). Ne pas finir le plan ici sans l'avoir dit.`
     );
   }
 }

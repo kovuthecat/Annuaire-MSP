@@ -52,6 +52,64 @@ export function estUnDepot(cwd) {
   return git(cwd, 'rev-parse', '--is-inside-work-tree') === 'true';
 }
 
+/** Rafraîchit les refs de suivi, sous plafond de temps strict.
+ *
+ *  Sans `fetch`, `origin/main` vaut ce qu'en disait la dernière synchronisation : un clone laissé de
+ *  côté se croit à jour indéfiniment. Mais le hook qui appelle ceci porte aussi l'injection de
+ *  CLAUDE-BASE.md, et un remote injoignable ne doit jamais coûter les règles de la session — d'où le
+ *  plafond de 6 s, tenu à l'intérieur des 15 s du hook (démarrage node + appels git locaux compris)
+ *  pour n'obliger à retoucher aucun `settings.json` de projet. Échec (hors ligne, pas de remote,
+ *  dépassement) : la comparaison qui suit portera sur une référence peut-être périmée, jamais sur
+ *  une erreur. */
+export function recupererAmont(cwd, plafondMs = 6000) {
+  try {
+    execFileSync('git', ['fetch', '--quiet'], {
+      cwd,
+      stdio: ['ignore', 'ignore', 'ignore'],
+      windowsHide: true,
+      timeout: plafondMs,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function aUnRemote(cwd) {
+  return Boolean(git(cwd, 'remote'));
+}
+
+/** Branche courante, ou `null` si HEAD est détachée. */
+export function brancheCourante(cwd) {
+  const branche = git(cwd, 'rev-parse', '--abbrev-ref', 'HEAD');
+  return branche && branche !== 'HEAD' ? branche : null;
+}
+
+/** Branche d'intégration du dépôt : celle que désigne `origin/HEAD`, `main` à défaut.
+ *
+ *  Lue, jamais supposée : un dépôt hérité peut encore intégrer sur `master`. Le repli sur `main`
+ *  ne sert que si `origin/HEAD` n'a jamais été résolu localement. */
+export function brancheParDefaut(cwd) {
+  const ref = git(cwd, 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD');
+  return ref ? ref.replace(/^origin\//, '') : 'main';
+}
+
+/** Position par rapport à la branche amont : `{amont, retard, avance}`.
+ *
+ *  `null` dès qu'il n'y a pas d'amont — dépôt sans remote, branche non suivie, HEAD détachée. Le
+ *  contrôle est alors sans objet : quatre des dépôts d'ici n'ont aucun remote, et un silence y vaut
+ *  mieux qu'un rappel qu'on ne peut pas satisfaire. */
+export function etatAmont(cwd) {
+  const amont = git(cwd, 'rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}');
+  if (!amont) return null;
+  // `--left-right --count` sur A...B : commits de A absents de B, puis de B absents de A.
+  const comptes = git(cwd, 'rev-list', '--left-right', '--count', `${amont}...HEAD`);
+  if (!comptes) return null;
+  const [retard, avance] = comptes.split(/\s+/).map(Number);
+  if (!Number.isFinite(retard) || !Number.isFinite(avance)) return null;
+  return { amont, retard, avance };
+}
+
 /** Fichiers modifiés/ajoutés/supprimés dans l'arbre de travail (chemins relatifs, / comme séparateur). */
 export function fichiersModifies(cwd) {
   const sortie = gitBrut(cwd, 'status', '--porcelain');
