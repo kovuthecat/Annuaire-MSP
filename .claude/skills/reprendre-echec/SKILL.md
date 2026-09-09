@@ -30,8 +30,10 @@ arrêter le plan. Même procédure, trois différences :
 - **Les gates rendent `ARBITRAGE`** au lieu de rendre la main en prose : annulation destructive
   (Étape 2), prémisse de plan fausse (Étape 3, aiguillage `/nouveau-plan`), hypothèse épuisée
   (Étape 3). Le motif dit laquelle ; le `.echec.md` mis à jour reste en place.
-- **Le modèle vient de l'orchestrateur** (un cran au-dessus de la session en échec, plancher
-  Sonnet) : le `model` de ce frontmatter ne s'applique qu'à l'invocation manuelle.
+- **Le modèle vient de l'orchestrateur**, choisi d'après la ligne `Nature :` du rapport
+  (`WORKFLOW.md` §9a) : même modèle pour un échec d'environnement, un cran au-dessus (plancher
+  Sonnet) pour un échec d'exécution, aucune reprise pour une prémisse fausse. Le `model` de ce
+  frontmatter ne s'applique qu'à l'invocation manuelle.
 
 `FAIL` en mode orchestré = correction tentée mais N0 toujours rouge : c'est le deuxième échec
 consécutif de la session, l'orchestrateur ne relance jamais — la suite est humaine. Une seule
@@ -44,6 +46,15 @@ tentative ici comme en manuel : ne pas boucler pour éviter de rendre un mauvais
 > Cette section est la référence citée par `/orchestrer-plan`. Une session qui échoue écrit
 > ce fichier dans `plans/P<n>/S<k>.echec.md` **avant** de renvoyer son verdict.
 
+**Avant d'écrire : diagnostiquer, pas seulement constater** (`WORKFLOW.md` §9a, domicile). La
+session nomme la nature de l'échec, et n'écrit ce rapport que si l'échec n'est pas à sa portée :
+
+- **environnement** à portée (arbre en retard, dossier manquant, commande mal documentée…) →
+  corriger, continuer, et noter l'incident (§9b) — pas de rapport d'échec ;
+- **exécution** → une correction sur l'hypothèse principale, N0 juge ; encore rouge → rapport,
+  la tentative dans « Déjà écarté » ;
+- **prémisse** ou **environnement** hors de portée → rapport tout de suite, sans corriger.
+
 Il est écrit pour quelqu'un qui n'a rien vu de la session. Il ne raconte pas ce qui s'est passé :
 il donne ce qu'il faut pour reprendre. **Plafond : 40 lignes** — au-delà, c'est un journal, et un
 journal se relit intégralement à chaque tentative.
@@ -51,11 +62,19 @@ journal se relit intégralement à chaque tentative.
 ```md
 # S<k> — échec du YYYY-MM-DD
 
+Nature : <environnement | exécution | prémisse>
+
 ## Tâche visée
 <la tâche T<n>, en une ligne — pas le S<k>.md recopié>
 
 ## Où ça a cassé
 <commande ou étape exacte, message d'erreur en 3 lignes maximum>
+<environnement : la remédiation nommée — quoi ajouter à `permissions.allow`, quel outil manque,
+ qui doit être présent — et le chemin du fichier d'incident déposé>
+
+## Ce qu'il faudrait pour que ça passe
+<exécution : ce qui n'a pas été essayé et pourquoi c'est la piste suivante ;
+ prémisse : l'hypothèse du plan qui tombe, et ce qu'un cadrage devrait trancher>
 
 ## État laissé derrière
 - Fichiers modifiés non commités : <liste, ou « aucun »>
@@ -73,6 +92,11 @@ journal se relit intégralement à chaque tentative.
 La section **Déjà écarté** est la raison d'être du rapport. Un verdict d'une ligne fait recommencer
 l'enquête à zéro ; ces lignes-là sont ce qu'on a payé pour apprendre.
 
+La ligne `Nature :` est **mécanique** : troisième ligne du fichier, exactement ce format, l'un des
+trois mots. C'est la seule ligne que l'orchestrateur lit (`grep -m1 '^Nature :'`) pour choisir la
+reprise — comme il ne lit que `Bloquant :` d'une revue. Absente : l'orchestrateur suppose
+`exécution`.
+
 ---
 
 ## Étape 1 — Lire le rapport, et seulement lui
@@ -84,6 +108,16 @@ ni l'historique. Ce qui manque se délègue (`explorateur`, `resumeur-git`), on 
 Rapport absent ou vide (session tuée avant de l'écrire) → le dire, et repartir de la tâche du
 `S<k>.md` comme si elle n'avait jamais été lancée, après avoir fait l'Étape 2 avec d'autant plus
 de soin : c'est le cas où l'état laissé derrière est le moins connu.
+
+**La ligne `Nature :` oriente la reprise avant tout diagnostic** (`WORKFLOW.md` §9a) :
+
+- `prémisse` → ne pas reprendre : c'est l'aiguillage de l'Étape 3 dès maintenant (mode orchestré :
+  `VERDICT: ARBITRAGE`, motif « prémisse fausse → /nouveau-plan extension »). La session a déjà fait
+  le diagnostic ; le refaire est ce que cette ligne existe pour éviter.
+- `environnement` → vérifier que la remédiation nommée est acquise ici (permission héritée, outil
+  présent, humain là) **avant** l'Étape 2 ; si elle ne l'est pas non plus, `FAIL` immédiat avec la
+  même remédiation — corriger du code ne servirait à rien.
+- `exécution` (ou ligne absente) → Étapes 2 à 5, comme ci-dessous.
 
 ## Étape 2 — Vérifier l'état réel avant de toucher à quoi que ce soit
 

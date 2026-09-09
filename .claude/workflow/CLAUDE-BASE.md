@@ -110,6 +110,20 @@ Grille modèle/effort, niveaux de validation, règles de commit, plafonds de lig
 Quatre hooks appliquent ces règles (git, contexte à jour, plafonds, format) : ce ne sont pas des conseils,
 ils refusent l'action. Un plafond dépassé → `/purge-contexte` avant de continuer.
 
+## Échecs et incidents
+
+Une tâche qui casse se **diagnostique avant de conclure** (`WORKFLOW.md` §9a, domicile) : nature
+`environnement` (l'outillage a empêché — permission, outil absent, hook, humain requis),
+`exécution` (tentée, N0 toujours rouge) ou `prémisse` (une hypothèse du plan est fausse).
+Environnement à portée → corriger et continuer, ce n'est pas un échec ; exécution → **une**
+correction, N0 juge, pas plus ; prémisse → STOP sans corriger, on ne répare pas un plan dans une
+session. Rapport `plans/P<n>/S<k>.echec.md` avec sa ligne `Nature :` (gabarit `/reprendre-echec`) :
+c'est elle qui décide de la reprise, pas un modèle plus cher par réflexe.
+
+**Le workflow lui-même a cassé** (hook, permission, outil absent, verdict perdu, revue non
+déposée) → fichier `docs/workflow/incidents/<date>-<slug>.md` (gabarit `WORKFLOW.md` §9b), commité
+avec la tâche. C'est le seul canal qui remonte au dépôt source — ni `TASKS.md`, ni la conversation.
+
 ## Fin de tâche
 
 Dérouler la skill `/fin-de-tache`.

@@ -40,7 +40,13 @@ un `S<k>.md` ni dans `TASKS.md`.
 7. **Un fichier géré a-t-il été modifié ?** Si la tâche a touché un fichier listé dans
    `.claude/workflow/manifest.json`, **c'est une erreur à réparer, pas à committer** : porter la
    modification dans le dépôt source, publier, puis `/maj-workflow` ici.
-8. **Le workflow lui-même a changé ?** (tâche menée dans le dépôt source, sous `plugin/`) → bumper
+8. **Le workflow a cassé pendant la tâche ?** Hook qui refuse à tort, permission manquante, outil
+   absent du bac à sable, verdict ou revue perdus, cache périmé — tout ce qui vient de l'outillage
+   et pas du projet → un fichier `docs/workflow/incidents/<date>-<slug>.md` (gabarit et règle :
+   `WORKFLOW.md` §9b), stagé **avec le commit de la tâche** (point 4 ; sous verrou, l'orchestrateur
+   le committe en fin de vague). Ni `TASKS.md` ni la conversation : seul ce fichier remonte au
+   dépôt source, où les incidents de tous les projets sont analysés ensemble.
+8b. **Le workflow lui-même a changé ?** (tâche menée dans le dépôt source, sous `plugin/`) → bumper
    `version` dans `plugin/.claude-plugin/plugin.json` + une ligne dans `CHANGELOG.md`, **puis**
    `node plugin/bin/publier.mjs` (le dépôt source n'est pas vendoré — `publier.mjs` n'existe qu'à
    cet emplacement, jamais sous `.claude/workflow/bin/`). Sans bump, les projets vendorés ne voient
@@ -95,6 +101,14 @@ qui attend sa revue avant de committer compte, pour l'orchestrateur, comme jamai
 `/code-review` en `high`+ : à ces niveaux il part dans un agent d'arrière-plan). Lui passer `P<n>`,
 `S<k>`, le mode, et — sous `.claude/wave.lock` uniquement — les chemins de la « Zone modifiée ».
 
+**Pas d'outil `Agent` dans cette session ?** C'est le cas courant d'une session lancée en
+sous-agent par `/orchestrer-plan` (bac à sable sans outil de sous-agent, ou profondeur épuisée).
+Ne pas relire soi-même à la place du relecteur — la revue vaut par le fait qu'un autre que la
+session la fait. Le dire en une ligne dans le rapport et clore : **orchestrée**, l'orchestrateur
+lance la revue lui-même après avoir collecté la vague (`/orchestrer-plan` Étape 5) ; **à la
+main**, la relancer depuis une session qui a l'outil, et déposer un fichier d'incident (point 8)
+si l'outil manquait là où il aurait dû être.
+
 **C'est l'agent qui écrit `plans/P<n>/S<k>.revue.md`, pas toi.** La session ne fait que lire les
 deux lignes qu'il rend et les recopier dans son rapport. Une revue lancée en arrière-plan comme
 dernier geste ne dépose jamais rien : la session rend la main, le harnais la clôt, et le retour
@@ -125,7 +139,9 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
     traîne encore appartient à une session qui n'a pas déroulé cette checklist : la retrouver plutôt
     que de balayer le reste dans un commit fourre-tout. Un `plans/P<n>/S<k>.echec.md` encore présent
     signale un échec non résolu → ne pas clore le plan (`/reprendre-echec`). Les `S<k>.revue.md`
-    encore là sont normaux : ils attendent le tri du point 16.
+    encore là sont normaux : ils attendent le tri du point 16. Un `docs/workflow/incidents/*.md`
+    non commité se committe maintenant (`incident(workflow): <slug>`) — il part avec le push du
+    point 17, jamais avant.
 15. **Nettoyer les marqueurs** : `.claude/wave.lock` s'il existe, et `.claude/vague/` (sorties brutes
     et identifiants de session — transitoires).
 16. **Ranger le contexte** : statuts `[x]` complets dans l'`index.md`, lignes purgées de `TASKS.md`,

@@ -124,6 +124,7 @@ Le suivi a échoué chaque fois qu'une même information a dû être écrite à 
 | Décision (verdict) | registre `DECISIONS.md` | plans, `CLAUDE.md` |
 | Décision (justification) | `docs/decisions/<date>-<slug>.md` | registre |
 | Jugement visuel en attente | `VALIDATION.md` | `S<k>.md` (sauf vague parallèle) |
+| Incident de workflow (§9b) | `docs/workflow/incidents/<date>-<slug>.md` | `TASKS.md`, `STATUS.md`, la conversation |
 
 **Qui a le droit de cocher `index.md`** : un seul juge à la fois, décidé par `.claude/wave.lock` —
 mécanisme complet en §4b, ne pas le reformuler ici.
@@ -153,7 +154,8 @@ P<n>/S<k>[, …]`, les revues de session versées dans `TASKS.md` puis supprimé
 jamais commité — ce repère est la seule trace qu'il a existé, et sans lui le hook `Stop` relit sa
 suppression comme une revue jamais lancée (§7).
 
-- **Ce qu'une session committe** : les fichiers de ses tâches, et son `S<k>.md`. Rien d'autre.
+- **Ce qu'une session committe** : les fichiers de ses tâches, son `S<k>.md`, et le fichier
+  d'incident si le workflow a cassé pendant la tâche (§9). Rien d'autre.
 - **N0 vert d'abord** : `build` + `typecheck` + tests du périmètre. Un commit qui ne compile pas
   transforme le point de retour en piège.
 - **À jour avant de commencer.** Vérifier qu'on n'est pas en retard sur `origin/main` et rattraper
@@ -245,16 +247,34 @@ l'orchestrateur. Confondre les deux a déjà coûté plusieurs échecs — une s
 arrière-plan avant de committer se referme, elle aussi, sans rien avoir committé
 (`docs/decisions/2026-09-04-delegation-au-premier-plan.md`).
 
+**L'effort d'un sous-agent est celui de la conversation qui le lance.** L'outil `Agent` règle le
+modèle, pas l'effort : le sous-agent hérite de l'effort **ambiant** de la session d'orchestration.
+Régler cette conversation à l'effort le plus haut de la vague **avant** de dérouler
+`/orchestrer-plan` (le rappel « À régler AVANT de lancer » de §3 vaut pour l'orchestrateur
+lui-même) couvre donc `high` sans sortir de la voie normale — l'orchestrateur tourne sur Haiku et
+ne fait que lancer et collecter, l'effort élevé lui coûte peu.
+
 **Exception headless**, à déclarer et justifier dans la colonne `Env.` de l'index (`headless`) —
 jamais par défaut. Légitime dans exactement deux cas :
 
 | Cas | Pourquoi le sous-agent ne suffit pas |
 | --- | --- |
-| Effort `high`/`xhigh` à appliquer réellement | l'outil `Agent` règle le modèle, pas l'effort |
+| Effort **strictement supérieur** à l'effort ambiant de l'orchestration (en pratique `xhigh`) | le sous-agent hérite de l'effort ambiant, il ne le dépasse pas |
 | Vague à lancer sans garder la fenêtre ouverte | un `claude -p` détaché survit à la fermeture, un sous-agent non |
 
 Une vague headless lance un processus `claude -p` par session ; le verdict reste lu dans les commits
 (§4b) — un motif de sortie absent n'est qu'une information manquante, pas une panne à instruire.
+
+**Un `claude -p` n'a personne pour approuver un outil.** Tout ce qui n'est ni dans
+`permissions.allow` du projet ni dans les options de lancement est **refusé**, et la session échoue
+sans avoir pu écrire une ligne — constaté sur une session dont l'allowlist ne portait pas `Edit`.
+Trois garde-fous, tous appliqués par `/orchestrer-plan` : l'allowlist du gabarit
+`project-settings.json` porte le socle (`Edit`, `Write`, `git add`, `git commit`, `git pull`) ; le
+lancement ajoute `--permission-mode acceptEdits` et les commandes git de base en `--allowedTools`
+(elles s'**ajoutent** à l'allowlist du projet, sans la remplacer) ; et le préflight **sonde**
+l'écriture réelle avec ces mêmes options avant de lancer la vague. Un refus qui passe quand même
+est un échec d'**environnement** (§9) : la reprise se lance en sous-agent, qui hérite des
+permissions de la conversation — jamais en montant de modèle.
 
 **Repli — hors Claude Code Desktop** (VSCode, terminal, session cloud), quand aucune pastille ni
 navigateur in-app n'est disponible : revenir au chaînage manuel du premier point, une pastille
@@ -302,7 +322,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 | `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
-| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session. |
+| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session, et ne rappelle ensuite que si la liste des manquements a changé. **Sous `.claude/wave.lock`, seuls les plafonds sont signalés** : un diff non commité et une revue absente y sont le fonctionnement normal (§4b), pas un manquement — les signaler à chaque tour ne faisait que polluer l'orchestrateur. |
 
 ### Plafonds de lignes
 
@@ -323,6 +343,12 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
 ## 8. Anti-patterns
 
 - Lancer Opus sur une tâche déjà cadrée ; lancer Fable sans passage Opus préalable.
+- Reprendre un échec d'environnement ou de prémisse avec un modèle au-dessus (§9) : le modèle n'y
+  était pour rien, l'escalade paie deux fois le même diagnostic.
+- Conclure `FAIL` sans avoir nommé la nature de l'échec, ou s'entêter au-delà d'une correction sur
+  la même hypothèse (§9).
+- Signaler un incident de workflow en prose dans une conversation, ou dans `TASKS.md` : il ne
+  remonte jamais au dépôt source (§9).
 - **Relancer une 3ᵉ fois la même session en montant l'effort** alors que le modèle est le problème
   (§3) : sur du multi-étapes, un modèle plus capable coûte souvent moins cher au total qu'une suite
   d'allers-retours ratés.
@@ -341,3 +367,71 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
 - Recopier un statut à deux endroits (§4a).
 - Recopier du texte au lieu de pointer vers la source (`WORKFLOW.md`, `docs/decisions/`…).
 - Laisser grossir un fichier de contexte au-delà de son plafond « juste pour cette fois ».
+
+## 9. Échecs et incidents
+
+*Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
+
+### 9a. Diagnostiquer avant de conclure
+
+Une session qui échoue ne rend pas `FAIL` sur un symptôme : elle nomme d'abord la **nature** de
+l'échec, parce que c'est elle — pas le modèle en place — qui décide de ce qui doit suivre.
+
+| Nature | Ce que c'est | Ce que la session fait | Reprise (`/orchestrer-plan` 5c) |
+| --- | --- | --- | --- |
+| **environnement** | l'outillage a empêché la tâche, pas la tâche elle-même : permission refusée, outil absent (`Agent`, navigateur), hook qui refuse, verrou, worktree, dépendance non installée, humain requis absent | à portée → **corriger et continuer**, ce n'est pas un échec ; hors de portée → `FAIL` avec la remédiation nommée, **et un fichier d'incident** (§9b) | **même modèle**, en sous-agent (hérite de l'environnement) |
+| **exécution** | tentée dans un environnement sain, elle n'aboutit pas : N0 rouge, résultat faux, bug non localisé | **une** correction sur l'hypothèse principale, N0 juge ; encore rouge → `FAIL`, la tentative va dans « Déjà écarté » | **un cran au-dessus** (règle de 2026-08-30) |
+| **prémisse** | le diagnostic montre qu'une hypothèse du plan est fausse : attendu contredit par la mesure, contrat à changer, tâche irréalisable dans son périmètre | `FAIL` **sans corriger** — on ne corrige pas un plan dans une session | **aucune** : `ARBITRAGE` direct → `/nouveau-plan` Étape 0 |
+
+Le plafond d'une correction n'est pas négociable : au-delà, c'est l'anti-pattern de §3 (tourner en
+rond sur la même erreur), et c'est précisément ce qu'un modèle au-dessus règle mieux qu'une
+troisième tentative. Le rapport `plans/P<n>/S<k>.echec.md` porte la nature en ligne mécanique
+(`Nature : …`, gabarit dans `/reprendre-echec`) : l'orchestrateur ne lit que cette ligne, comme il
+ne lit que `Bloquant :` d'une revue.
+
+*Pourquoi.* Sur neuf rapports d'échec relus le 2026-09-09 dans quatre projets, la majorité étaient
+des prémisses fausses ou des blocages d'environnement (permission `Edit` absente en headless,
+humain requis absent) — et chacun avait déclenché une reprise un cran au-dessus, parfois Fable sur
+Opus, qui n'a fait que refaire le diagnostic avant de rendre `ARBITRAGE`. Le modèle n'était jamais
+la cause. Une session qui corrige elle-même ce qui est à sa portée économise en plus le démarrage à
+froid de la reprise.
+
+### 9b. Incident de workflow — le fichier qui remonte
+
+**Quand le workflow lui-même casse** — hook qui refuse à tort, permission manquante, outil absent
+du bac à sable, verdict perdu en route, revue non déposée, cache périmé, préflight rouge — le
+signaler en prose ne sert à rien : la conversation disparaît, et le dépôt source ne le saura
+jamais. Le mainteneur du workflow ne maîtrise pas le contexte de chaque projet ; c'est le fichier,
+précis et versionné, qui rend l'analyse possible depuis le dépôt source (`bin/collecter-incidents.mjs`).
+
+Un incident = un fichier `docs/workflow/incidents/YYYY-MM-DD-<slug>.md`, **commité et poussé avec
+le projet** (§4b : il entre dans ce qu'une session committe ; sous verrou, l'orchestrateur le
+committe en fin de vague ; c'est le push de fin d'unité de travail qui le fait sortir). Plafond
+25 lignes, en-tête mécanique, faits bruts, aucune interprétation :
+
+```md
+# Incident workflow — YYYY-MM-DD — <titre court>
+
+- Projet : <nom du dépôt>
+- Workflow : v<version, lue dans .claude/workflow/manifest.json>
+- Plan : P<n>/S<k>[/T<m>] ou —
+- Environnement : <Desktop | VSCode | cloud> · <sous-agent | headless | à la main>
+- Étape : <skill et étape — /orchestrer-plan Étape 4, /fin-de-tache relecture, hook Stop…>
+- Nature : <environnement | exécution | prémisse | orchestration>
+
+## Symptôme
+<ce qui a été observé, tel quel : message d'erreur, refus de hook, verdict — 5 lignes max>
+
+## Preuve
+<commande, chemin ou sortie brute courte qui permet de le vérifier — pas d'interprétation>
+
+## Sur place
+<contournement appliqué, ou « rien »>
+```
+
+Qui écrit : la session qui rencontre l'incident (`/fin-de-tache`, avant son commit) ; la session en
+échec d'environnement, à côté de son `.echec.md` ; l'orchestrateur pour ce que lui seul voit
+(verdict perdu, `partial`, `permission_denials`, revue qu'il n'a pas pu lancer, préflight rouge).
+Ni `TASKS.md` ni `STATUS.md` : un incident n'est pas une tâche du projet, c'est une donnée pour le
+dépôt source. Un `.echec.md` se supprime quand l'échec est résolu ; un incident **reste** — c'est
+sa raison d'être.

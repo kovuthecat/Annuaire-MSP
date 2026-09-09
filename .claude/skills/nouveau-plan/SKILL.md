@@ -140,8 +140,11 @@ annuler, zone sensible). Voies et
 colonne `Env.` : domicile `WORKFLOW.md` §5b, ne pas le reformuler ici. Résumé pour le découpage :
 
 Colonne **Env.** : `—` (sous-agent, défaut) sauf exception `headless` déclarée et justifiée dans le
-bandeau du `S<k>.md` — légitime dans deux cas seulement (§5b) : effort `high`/`xhigh` à appliquer
-réellement, ou vague à lancer sans garder la fenêtre ouverte. *Legacy : dans un plan antérieur à
+bandeau du `S<k>.md` — légitime dans deux cas seulement (§5b) : effort **strictement supérieur** à
+celui que portera la conversation d'orchestration (le sous-agent en hérite — une orchestration
+lancée en `high` couvre `high`), ou vague à lancer sans garder la fenêtre ouverte. Écrire dans
+l'index l'effort d'orchestration attendu quand une session dépasse `medium`, pour que le rappel
+« À régler AVANT de lancer » de `/orchestrer-plan` porte la bonne valeur. *Legacy : dans un plan antérieur à
 P3, `Desktop` se lit comme `—`.*
 
 **Ce que le découpage doit peser** : une vague mixte est valide, mais elle ne se termine pas d'un
@@ -178,9 +181,11 @@ L'« Objectif d'ensemble » ne bouge pas. S'il faut le récrire, ce n'était pas
 
 > **Modèle : <Sonnet/Haiku/Codex> · effort : <low|medium|high|xhigh> · Vague : <v> (parallèle : oui/non)**
 > **Environnement : <indifférent | headless (<motif : effort high/xhigh réellement appliqué | vague fenêtre fermée>)>**
-> **Lancement (si headless) : `claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le." --model <modèle> --effort <effort>`**
+> **Lancement (si headless) : `claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le." --model <modèle> --effort <effort> --permission-mode acceptEdits`**
+> (personne n'approuve un outil en `claude -p` : sans cette option ni l'allowlist du projet, la session ne peut pas écrire — `WORKFLOW.md` §5b)
 > Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
-> Design fixé — ne reconçois pas. Doute ou blocage → STOP, signale, rends la main.
+> Design fixé — ne reconçois pas. Doute ou blocage → nomme sa nature (`WORKFLOW.md` §9a) ; ce qui
+> est à ta portée se corrige, le reste → STOP, rapport, rends la main.
 
 - Date : YYYY-MM-DD · Branche : <ou —>
 
