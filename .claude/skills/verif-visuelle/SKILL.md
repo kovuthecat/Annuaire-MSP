@@ -29,6 +29,13 @@ dans ta session.
 Si le bandeau de la session indique `Environnement : Desktop` et que les outils sont absents, la
 session a été lancée au mauvais endroit → **STOP**, signale-le, rends la main.
 
+**En sous-agent orchestré, `navigate` vers `localhost` peut être refusé** (« navigation to … was
+denied or failed » — constaté deux fois le 2026-09-10/11, cause non documentée) alors que
+`preview_start` ouvre l'onglet sans problème. **Un seul essai** : refusé → basculer en mode B et
+écrire dans le bilan de session (`/fin-de-tache` point 3) la ligne « N1 à dérouler au premier plan :
+<écran> ». Une session orchestrée qui conclut `PASS` avec cette ligne l'ajoute aussi à son `MOTIF`
+final (« N1 à dérouler au premier plan : <écran> ») — c'est ce que `/orchestrer-plan` Étape 6 relaie.
+
 ## Mode A — Navigateur in-app (Desktop)
 
 1. **Ouvrir la preview** : `preview_start` avec le `name` de `.claude/launch.json`. Si le fichier

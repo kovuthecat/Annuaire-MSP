@@ -12,11 +12,10 @@ charge qu'au cadrage. Ce fichier reste lisible d'un bout à l'autre sans coûter
 **Opus pense, les autres font.**
 
 - **Opus** (cher) : design, cadrage, écrit les plans.
-- **Fable** (2× Opus, rare) : uniquement les problèmes qu'Opus n'arrive pas à résoudre.
+- **Fable** : hors workflow — lancé à la main par le mainteneur pour un cadrage ou une analyse ;
+  jamais dans une grille, une escalade ou une skill.
 - **Sonnet** : exécute les tâches cadrées de complexité moyenne, juge le code.
 - **Haiku** (rapide) : exécute les tâches cadrées et mécaniques.
-- **Codex** (hors budget Claude) : régression visuelle scriptée via Playwright (`AGENTS.md`) —
-  plus le premier recours depuis que le navigateur in-app couvre le N1 (§6).
 - **Claude Design** (claude.ai, humain aux commandes) : maquette UI au cadrage d'un projet ou d'un
   nouvel écran — entrée = `ARCHITECTURE.md` envoyé tel quel, sortie = `design/maquettes/`. Le
   câblage se fait ensuite sur la maquette, jamais l'inverse.
@@ -28,11 +27,9 @@ Une fois le plan écrit, chaque exécutant lit **UNIQUEMENT** les fichiers list�
 
 | Nature de la tâche | Modèle | Exemples |
 | --- | --- | --- |
-| Problème que même Opus n'a pas résolu (rare, cher) | **Fable** | Bug retors resté sans cause après un passage Opus |
 | Design, bug non localisé, scope flou, transverse, arbitrage produit | **Opus** | Architecture, cadrage neuf, plan multi-tâche |
 | Cadré, jugement de code, localisé, complexité moyenne | **Sonnet** | Bug isolé, refactor limité, feature moyenne, code review |
 | Cadré, mécanique, peu de jugement, petit | **Haiku** | Renommage, purge de contexte, boilerplate, consolidation de fin de plan |
-| Régression visuelle scriptée, rapport JSON | **Codex** | Audit Playwright d'un parcours complet |
 
 **Départage une fois le périmètre clair :**
 
@@ -77,11 +74,33 @@ session écrit donc, juste avant, cette ligne — valeurs prises dans l'`index.m
 À régler AVANT de lancer — S<k> : modèle <M> · effort <E>   (la pastille hérite des réglages courants)
 ```
 
-Seule exception : une session lancée en `claude -p` porte `--model`/`--effort` dans sa commande,
-donc la commande affichée suffit — le rappel devient inutile.
-
 Un effort élevé consomme plus de tokens sur *chaque* tour de la session : le laisser à `xhigh` en
 permanence est le poste de dépense le plus silencieux du workflow.
+
+## 3b. Coût et cache
+
+Faits vérifiés (source : <https://code.claude.com/docs/en/prompt-caching.md>). Un hit de cache
+coûte **0,1×** le prix d'entrée ; TTL 5 min par défaut, 1 h possible. **Invalident le préfixe** :
+`/model`, une skill avec `model:` en frontmatter invoquée en cours de conversation, un changement
+d'effort, l'ajout ou le retrait d'un serveur MCP, `/compact`. `/rewind` **conserve** le préfixe.
+Éditer `CLAUDE.md` en cours de session n'invalide rien — l'édition ne s'applique qu'après `/clear`.
+Deux sessions parallèles du même dossier partagent le cache **si le snapshot git est identique**.
+Un sous-agent **ne lit jamais** le cache de son parent : son premier appel est à froid.
+
+Conséquences pour le workflow :
+
+- Régler modèle **et effort** avant de lancer (§3) est une règle de cache, pas d'hygiène : un
+  changement en cours de session repaie tout le préfixe.
+- `/rewind` pour couper une fausse piste ; `/compact` seulement avant une pause.
+- Une skill avec `model:` en frontmatter invoquée en cours de conversation coûte un préfixe
+  complet — acceptable pour une skill qui ouvre la session (`/orchestrer-plan`), pas pour une
+  skill courte lancée en cours de route (`/purge-contexte`).
+- Chaque sous-agent d'une vague part à froid : le préfixe (règles injectées, descriptions de
+  skills, `CLAUDE.md`) est payé plein tarif **par session**, pas à 1/10 — d'où l'exigence d'un
+  socle commun court.
+- Une vague parallèle lancée d'un bloc après le dernier commit est la seule configuration où des
+  sessions partagent un préfixe : ne rien committer entre deux lancements de la même vague.
+- Éditer `CLAUDE.md` en cours de session ne sert à rien avant `/clear`.
 
 ## 4. Plans
 
@@ -184,8 +203,8 @@ miroir public (d'où le garde-fou de `bin/publier.mjs`). Un commit qui dort en l
 aucune autre machine : ni le poste voisin, ni une session cloud, ni le mobile.
 
 **Parallélisme réel — l'unique exception.** Deux sessions lancées en même temps partagent un
-seul index git — sous-agents concurrents comme processus `claude -p` concurrents, indépendamment de
-la voie (§5b) : `git commit` prend l'état du dépôt, pas celui de la session, donc chacune emporterait
+seul index git — sous-agents concurrents (§5b) : `git commit` prend l'état du dépôt, pas celui de la
+session, donc chacune emporterait
 le travail en cours de l'autre. Pour ces vagues-là **seulement**, poser `.claude/wave.lock` (à mettre
 en `.gitignore` — marqueur local, pas du contenu de projet) : un hook refuse alors commit et push
 (§7), les sessions laissent leur diff dans l'arbre, et **l'orchestrateur committe pour elles en fin
@@ -220,7 +239,15 @@ conditionne la suite de la même tâche — une session ne rend la main qu'aprè
 cinquième est le dernier geste de la session : lancé en arrière-plan, son retour n'atteindrait
 aucun tour et la revue ne serait jamais déposée.
 
-Table de délégation détaillée : `CLAUDE-BASE.md` (section « Avant de coder »).
+**`fork`** : légitime quand la tâche a besoin du contexte courant **et** produit du bruit à
+retenir dehors (outils, itérations) — il hérite la conversation et réutilise le cache, seul son
+résultat revient. Jamais pour une session de plan ni une reprise d'échec (il rapatrierait le
+contexte qu'elles existent pour laisser derrière), ni pour une restitution pure sans appel d'outil
+(écrire soi-même coûte moins). Détail : `docs/decisions/2026-08-30-contexte-des-sous-agents.md`.
+
+**Pas de `memory:` sur les cinq agents** : une mémoire d'agent n'est légitime que pour une
+information dont aucun fichier du dépôt n'est déjà la source — commandes (`CLAUDE.md`),
+localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 
 ## 5b. Sessions & voies d'orchestration
 
@@ -254,27 +281,12 @@ Régler cette conversation à l'effort le plus haut de la vague **avant** de dé
 lui-même) couvre donc `high` sans sortir de la voie normale — l'orchestrateur tourne sur Haiku et
 ne fait que lancer et collecter, l'effort élevé lui coûte peu.
 
-**Exception headless**, à déclarer et justifier dans la colonne `Env.` de l'index (`headless`) —
-jamais par défaut. Légitime dans exactement deux cas :
-
-| Cas | Pourquoi le sous-agent ne suffit pas |
-| --- | --- |
-| Effort **strictement supérieur** à l'effort ambiant de l'orchestration (en pratique `xhigh`) | le sous-agent hérite de l'effort ambiant, il ne le dépasse pas |
-| Vague à lancer sans garder la fenêtre ouverte | un `claude -p` détaché survit à la fermeture, un sous-agent non |
-
-Une vague headless lance un processus `claude -p` par session ; le verdict reste lu dans les commits
-(§4b) — un motif de sortie absent n'est qu'une information manquante, pas une panne à instruire.
-
-**Un `claude -p` n'a personne pour approuver un outil.** Tout ce qui n'est ni dans
-`permissions.allow` du projet ni dans les options de lancement est **refusé**, et la session échoue
-sans avoir pu écrire une ligne — constaté sur une session dont l'allowlist ne portait pas `Edit`.
-Trois garde-fous, tous appliqués par `/orchestrer-plan` : l'allowlist du gabarit
-`project-settings.json` porte le socle (`Edit`, `Write`, `git add`, `git commit`, `git pull`) ; le
-lancement ajoute `--permission-mode acceptEdits` et les commandes git de base en `--allowedTools`
-(elles s'**ajoutent** à l'allowlist du projet, sans la remplacer) ; et le préflight **sonde**
-l'écriture réelle avec ces mêmes options avant de lancer la vague. Un refus qui passe quand même
-est un échec d'**environnement** (§9) : la reprise se lance en sous-agent, qui hérite des
-permissions de la conversation — jamais en montant de modèle.
+**Voie headless retirée (v0.30.0).** L'orchestrateur tournait en Sonnet `high` de toute façon (les
+sous-agents héritent de l'effort ambiant, §3b) : la voie `claude -p` ne servait plus qu'à survivre à
+une fenêtre fermée, et elle a produit une classe entière d'incidents propres à son outillage
+(allowlist incomplète, trust dialog, refus d'`Edit`, classificateur de sortie) — le sous-agent, seule
+voie désormais, hérite de tout l'environnement de la conversation et n'a besoin d'aucun de ces
+garde-fous. Réintroduire une voie headless : `docs/decisions/2026-09-12-une-seule-voie-d-orchestration-et-hooks-testes.md`.
 
 **Repli — hors Claude Code Desktop** (VSCode, terminal, session cloud), quand aucune pastille ni
 navigateur in-app n'est disponible : revenir au chaînage manuel du premier point, une pastille
@@ -305,8 +317,7 @@ ni VSCode, ni terminal, ni session cloud (`claude.ai/code`, appli mobile). D'où
   checklist** au lieu de vérifier, et rend la main.
 
 Hors navigateur in-app, Claude ne valide **jamais** l'UI autrement : pas de Playwright, pas de
-capture par script. Les audits Playwright restent le rôle de Codex (`AGENTS.md`), pour la
-régression scriptée.
+capture par script.
 
 Protocole complet : skill **`/verif-visuelle`**.
 
@@ -319,7 +330,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
-| `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
+| `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés, dépôt sous un dossier synchronisé (`SynologyDrive`/`OneDrive`/`Dropbox`/`iCloud`) sans témoin `.git/info/synchro-exclue`. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
 | `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session, et ne rappelle ensuite que si la liste des manquements a changé. **Sous `.claude/wave.lock`, seuls les plafonds sont signalés** : un diff non commité et une revue absente y sont le fonctionnement normal (§4b), pas un manquement — les signaler à chaque tour ne faisait que polluer l'orchestrateur. |
@@ -342,16 +353,12 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
 
 ## 8. Anti-patterns
 
-- Lancer Opus sur une tâche déjà cadrée ; lancer Fable sans passage Opus préalable.
-- Reprendre un échec d'environnement ou de prémisse avec un modèle au-dessus (§9) : le modèle n'y
-  était pour rien, l'escalade paie deux fois le même diagnostic.
+- Lancer Opus sur une tâche déjà cadrée.
+- Reprendre un échec d'environnement ou de prémisse avec un modèle au-dessus (§9a).
 - Conclure `FAIL` sans avoir nommé la nature de l'échec, ou s'entêter au-delà d'une correction sur
-  la même hypothèse (§9).
-- Signaler un incident de workflow en prose dans une conversation, ou dans `TASKS.md` : il ne
-  remonte jamais au dépôt source (§9).
-- **Relancer une 3ᵉ fois la même session en montant l'effort** alors que le modèle est le problème
-  (§3) : sur du multi-étapes, un modèle plus capable coûte souvent moins cher au total qu'une suite
-  d'allers-retours ratés.
+  la même hypothèse (§9a).
+- Signaler un incident de workflow en prose dans une conversation, ou dans `TASKS.md` (§9b).
+- **Relancer une 3ᵉ fois la même session en montant l'effort** alors que le modèle est le problème (§3).
 - Laisser `xhigh` comme effort permanent « au cas où ».
 - Envoyer à Sonnet/Haiku un scope flou ou trop large → dérive.
 - Empiler dans une session des tâches qui ne remplissent pas les critères de regroupement — ou, à
@@ -382,6 +389,10 @@ l'échec, parce que c'est elle — pas le modèle en place — qui décide de ce
 | **environnement** | l'outillage a empêché la tâche, pas la tâche elle-même : permission refusée, outil absent (`Agent`, navigateur), hook qui refuse, verrou, worktree, dépendance non installée, humain requis absent | à portée → **corriger et continuer**, ce n'est pas un échec ; hors de portée → `FAIL` avec la remédiation nommée, **et un fichier d'incident** (§9b) | **même modèle**, en sous-agent (hérite de l'environnement) |
 | **exécution** | tentée dans un environnement sain, elle n'aboutit pas : N0 rouge, résultat faux, bug non localisé | **une** correction sur l'hypothèse principale, N0 juge ; encore rouge → `FAIL`, la tentative va dans « Déjà écarté » | **un cran au-dessus** (règle de 2026-08-30) |
 | **prémisse** | le diagnostic montre qu'une hypothèse du plan est fausse : attendu contredit par la mesure, contrat à changer, tâche irréalisable dans son périmètre | `FAIL` **sans corriger** — on ne corrige pas un plan dans une session | **aucune** : `ARBITRAGE` direct → `/nouveau-plan` Étape 0 |
+
+Un échec par **filtre de contenu** (sortie bloquée par la politique du modèle) est une nature à
+part, ni environnement ni exécution : il ne se reprend jamais à mécanique d'écriture identique.
+Table et motif d'arbitrage : `/orchestrer-plan` 5c.
 
 Le plafond d'une correction n'est pas négociable : au-delà, c'est l'anti-pattern de §3 (tourner en
 rond sur la même erreur), et c'est précisément ce qu'un modèle au-dessus règle mieux qu'une
@@ -415,7 +426,7 @@ committe en fin de vague ; c'est le push de fin d'unité de travail qui le fait 
 - Projet : <nom du dépôt>
 - Workflow : v<version, lue dans .claude/workflow/manifest.json>
 - Plan : P<n>/S<k>[/T<m>] ou —
-- Environnement : <Desktop | VSCode | cloud> · <sous-agent | headless | à la main>
+- Environnement : <Desktop | VSCode | cloud> · <sous-agent | à la main>
 - Étape : <skill et étape — /orchestrer-plan Étape 4, /fin-de-tache relecture, hook Stop…>
 - Nature : <environnement | exécution | prémisse | orchestration>
 
@@ -431,7 +442,7 @@ committe en fin de vague ; c'est le push de fin d'unité de travail qui le fait 
 
 Qui écrit : la session qui rencontre l'incident (`/fin-de-tache`, avant son commit) ; la session en
 échec d'environnement, à côté de son `.echec.md` ; l'orchestrateur pour ce que lui seul voit
-(verdict perdu, `partial`, `permission_denials`, revue qu'il n'a pas pu lancer, préflight rouge).
+(verdict perdu, `partial`, revue qu'il n'a pas pu lancer, préflight rouge).
 Ni `TASKS.md` ni `STATUS.md` : un incident n'est pas une tâche du projet, c'est une donnée pour le
 dépôt source. Un `.echec.md` se supprime quand l'échec est résolu ; un incident **reste** — c'est
 sa raison d'être.

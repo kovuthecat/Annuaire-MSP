@@ -81,6 +81,12 @@ manifeste. Un fichier propre et déjà à jour n'est pas réécrit : le diff git
 4. **Nouvelle session** (la config n'est lue qu'au démarrage) : un `git add -A` de test doit être
    refusé, et les skills doivent être proposées. C'est la preuve que le câblage est actif.
 
+## Signaler l'`AGENTS.md` racine, s'il existe
+
+Codex est sorti du workflow (v0.29.0) : plus de fichier central `.claude/workflow/AGENTS.md`. Si le
+projet a un `AGENTS.md` à la racine qui y renvoie, le signaler à l'utilisateur — fichier du projet,
+jamais touché par le sync — à supprimer ou à réécrire à sa main.
+
 ## Fin
 
 - Staging explicite (`git add -A` est refusé par hook). Commit :

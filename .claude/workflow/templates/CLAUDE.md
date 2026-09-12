@@ -7,6 +7,8 @@ il pointe vers le reste, sans le recopier. Plafond : **200 lignes** — au-delà
 ## Commandes
 
 > Remplir avec les commandes réelles du projet. Section la plus utile : évite à Claude de deviner.
+> **Avec reporter compact** (`--reporter=dot`, `--silent`, `-q`…) : un runner qui imprime 400 tests
+> remplit le contexte de l'agent `verificateur-n0` (mesure A7).
 
 ```bash
 # Dev / serveur local

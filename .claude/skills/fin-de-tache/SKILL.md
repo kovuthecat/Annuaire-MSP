@@ -14,13 +14,17 @@ un `S<k>.md` ni dans `TASKS.md`.
 ## Après CHAQUE tâche (les deux modes)
 
 1. **N0** : `build` + `typecheck` (+ tests unitaires si logique pure) passent. Sinon la tâche n'est
-   pas finie.
+   pas finie. **Juste après** : toute skill du projet nommée `verif-<chose>` (`.claude/skills/`,
+   propre au projet, jamais du workflow vendoré) se déroule ici, avant le N1 — c'est le point
+   d'entrée d'un contrôle mécanique propre au projet (mesure A6).
 2. **N1** : si la tâche touchait l'UI, dérouler `/verif-visuelle`. Un défaut N1 se corrige
    maintenant, il ne se reporte pas.
 3. **Bilan dans le `S<k>.md`** — section « Bilan de session », complétée au fil des tâches :
    fichiers modifiés · résumé · N0 lancé · N1 constaté · N2 à faire · prochaine action. **Toujours**,
    y compris quand la tâche n'a produit aucun fichier durable (session de vérification, de mesure,
-   d'audit) : c'est alors le livrable lui-même, la conversation qui l'a produit disparaît.
+   d'audit) : c'est alors le livrable lui-même, la conversation qui l'a produit disparaît. **Écarts
+   au plan** : rubrique en plus, **uniquement si le bandeau du `S<k>.md` a déclaré une `Latitude`** —
+   sinon la ligne est absente et tout écart reste un STOP (mesure B3).
 4. **Commit de la tâche** — sauf si `.claude/wave.lock` est présent (§4b). Staging explicite des
    fichiers de la tâche **et du `S<k>.md`**, message prévu dans le `T<n>`, repère de tâche en
    dernière ligne :
@@ -37,6 +41,9 @@ un `S<k>.md` ni dans `TASKS.md`.
 6. **Skill projet ?** : une procédure spécifique au projet a été déroulée ≥ 2 fois ou dictée en
    prompt ? → la proposer comme `.claude/skills/<nom>/` du projet (critères : `/choisir-mecanisme`).
    On PROPOSE, on ne crée JAMAIS silencieusement ; nom **distinct** de ceux du workflow vendoré.
+   **Un contrôle manuel revenu ≥ 2 fois** (relecture d'un écran, vérification d'un export, contrôle
+   qu'aucune régression n'a eu lieu sur une zone sensible) → proposer explicitement une skill nommée
+   `verif-<chose>` : c'est ce nom précis que le point 1 reconnaît et déroule après le N0.
 7. **Un fichier géré a-t-il été modifié ?** Si la tâche a touché un fichier listé dans
    `.claude/workflow/manifest.json`, **c'est une erreur à réparer, pas à committer** : porter la
    modification dans le dépôt source, publier, puis `/maj-workflow` ici.
@@ -78,7 +85,8 @@ un `S<k>.md` ni dans `TASKS.md`.
 10. Les points **N2** restent dans le `S<k>.md` (à côté du bilan du point 3) — reversés dans
     `VALIDATION.md` en fin de plan.
 11. **Ce que l'orchestrateur lira** : les commits du point 12, et rien d'autre. Ni le `S<k>.md`, ni
-    une confirmation verbale.
+    une confirmation verbale. **Ne rien lancer en arrière-plan** : orchestrée, une session ne
+    connaît que sa propre réponse finale — ce qui finit après elle n'est lu par personne.
 12. **Commit ou pas, selon le verrou.** Absent → committer ses tâches comme au point 4, `S<k>.md`
     compris, sans toucher aux fichiers partagés. Présent → ne rien committer : l'orchestrateur le
     fera en fin de vague. Dans les deux cas, **jamais de push**.
@@ -108,6 +116,10 @@ session la fait. Le dire en une ligne dans le rapport et clore : **orchestrée**
 lance la revue lui-même après avoir collecté la vague (`/orchestrer-plan` Étape 5) ; **à la
 main**, la relancer depuis une session qui a l'outil, et déposer un fichier d'incident (point 8)
 si l'outil manquait là où il aurait dû être.
+
+**Le relecteur dépose le fichier en premier geste, avant même de lire le diff** : une `Couverture :
+en cours` dans le fichier signifie tours épuisés, revue partielle — non bloquant, à relayer tel
+quel.
 
 **C'est l'agent qui écrit `plans/P<n>/S<k>.revue.md`, pas toi.** La session ne fait que lire les
 deux lignes qu'il rend et les recopier dans son rapport. Une revue lancée en arrière-plan comme
@@ -147,7 +159,8 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
 16. **Ranger le contexte** : statuts `[x]` complets dans l'`index.md`, lignes purgées de `TASKS.md`,
     `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. **Trier les revues** :
     chaque `plans/P<n>/S<k>.revue.md` est versé dans `TASKS.md` — les **bloquants** en tête, marqués
-    comme tels, le backlog à la suite, jamais dans `VALIDATION.md` — puis supprimé (transitoire,
+    comme tels, le backlog à la suite, jamais dans `VALIDATION.md`. `Couverture : en cours` : verser
+    ce qui est là quand même et noter « revue partielle » dans le rapport de clôture — puis supprimé (transitoire,
     comme `.claude/vague/`). Un `Bloquant : 0` sans backlog ne se verse pas, il se supprime. **Une
     session qui a produit du code et n'a laissé aucun `.revue.md` n'a pas eu de revue** : le
     signaler dans le rapport de clôture plutôt que de le lire comme « rien à signaler ». Un commit
@@ -161,9 +174,9 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
 
 ## Enchaînement — session suivante du plan
 
-**D'abord : suis-je orchestrée ?** Si cette session a été lancée par `/orchestrer-plan` — sous-agent
-ou `claude -p` (§5b) — l'enchaînement ne la regarde pas : l'orchestrateur collecte les verdicts et
-ouvre la vague suivante lui-même. Rendre la main, point.
+**D'abord : suis-je orchestrée ?** Si cette session a été lancée par `/orchestrer-plan` (sous-agent,
+§5b) l'enchaînement ne la regarde pas : l'orchestrateur collecte les verdicts et ouvre la vague
+suivante lui-même. Rendre la main, point.
 
 Le reste ne vaut que pour une session **lancée à la main**, ou par une pastille de repli (§5b, repli
 hors Desktop) :

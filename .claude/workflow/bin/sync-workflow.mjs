@@ -43,6 +43,7 @@ const PLAN = [
   { de: 'hooks',            vers: '.claude/workflow/hooks',    recursif: true, sauf: ['hooks.json'] },
   { de: 'templates',        vers: '.claude/workflow/templates', recursif: true },
   { de: 'CLAUDE-BASE.md',   vers: '.claude/workflow/CLAUDE-BASE.md' },
+  { de: 'EXECUTANT.md',     vers: '.claude/workflow/EXECUTANT.md' },
   { de: 'WORKFLOW.md',      vers: '.claude/workflow/WORKFLOW.md' },
   { de: 'CONVENTIONS.md',   vers: '.claude/workflow/CONVENTIONS.md' },
   { de: 'MIGRATION.md',     vers: '.claude/workflow/MIGRATION.md' },
@@ -54,11 +55,6 @@ const PLAN = [
   // source pour y ramasser leurs `docs/workflow/incidents/` — un geste de mainteneur, sans objet
   // dans un projet équipé.
   { de: 'bin',              vers: '.claude/workflow/bin',      recursif: true, sauf: ['publier.mjs', 'collecter-incidents.mjs'] },
-  // AGENTS.md NE VA PAS à la racine. Le AGENTS.md racine appartient au projet : il porte
-  // couramment des règles propres (version de framework, contraintes maison) qu'un écrasement
-  // perdrait. Le fichier central est donc vendoré ici, et le AGENTS.md du projet y renvoie par
-  // un chemin RELATIF — ce qu'un pointeur absolu ne peut pas faire survivre à une session cloud.
-  { de: 'AGENTS.md',        vers: '.claude/workflow/AGENTS.md' },
 ];
 
 // `hooks.json` est exclu : en mode vendoré le câblage vit dans .claude/settings.json du projet.

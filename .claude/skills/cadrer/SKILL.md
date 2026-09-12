@@ -72,6 +72,10 @@ Couper plutôt : écrire l'état — ce qui est tranché, ce qui reste ouvert, l
 dans le fichier de décision, puis **rouvrir une session neuve** qui repart de ce fichier. Le
 contexte retombe d'un ordre de grandeur, et rien d'acquis n'est perdu.
 
+**Pour couper une fausse piste en cours de route, préférer `/rewind` à `/compact`** : le cache du
+préfixe est conservé, là où `/compact` réécrit tout. Réserver `/compact` au moment de s'arrêter
+avant une pause longue (mesure C2).
+
 Ne pas déléguer cette synthèse à un agent : rédiger une conclusion qu'Opus détient déjà lui coûte
 quelques centaines de tokens, là où un agent devrait relire tout l'historique pour la reconstruire.
 **La délégation empêche le contexte d'entrer, elle ne l'évacue pas** — c'est le rôle du démarrage à

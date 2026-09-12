@@ -45,8 +45,8 @@ sens. Tout autre arbitrage (deux conceptions possibles, une décision technique 
   relire », « trois écrans font la même chose différemment ») ou le jalon. Une revue sans
   déclencheur trouve tout, donc rien.
 
-**L'interview exige un humain disponible.** Une revue lancée en sous-agent, en `claude -p` ou en
-tâche planifiée n'a personne à qui parler : elle s'arrête après l'Étape 2, écrit le constat, et dit
+**L'interview exige un humain disponible.** Une revue lancée en sous-agent ou en tâche planifiée n'a
+personne à qui parler : elle s'arrête après l'Étape 2, écrit le constat, et dit
 en clair que **l'objectif n'a pas été recalé** — donc qu'aucun écart n'est classé. Un constat sans
 étalon arrêté n'est pas une revue, c'est de la matière pour la vraie.
 

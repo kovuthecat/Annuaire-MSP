@@ -140,23 +140,16 @@ Ordre imposé : le gain décroît, le risque croît.
    rapatrier au démarrage des fichiers désormais présents dans le repo ; les garder chargerait le
    workflow **deux fois**.
 
-   Poser aussi la confiance du workspace sur les deux formes du chemin projet (`claude -p` ignore
-   silencieusement `permissions.allow` sinon — la confiance est indexée sur la chaîne du chemin,
-   `C:\Users\...` et `C:/Users/...` comptant comme deux entrées) :
-
-   ```bash
-   node -e "const fs=require('fs'),os=require('os'),p=require('path');const f=p.join(os.homedir(),'.claude.json');const c=JSON.parse(fs.readFileSync(f,'utf8'));c.projects=c.projects||{};const cwd=process.cwd();for(const k of [cwd, cwd.replace(/\\\\/g,'/')]){c.projects[k]=c.projects[k]||{};c.projects[k].hasTrustDialogAccepted=true;}fs.writeFileSync(f,JSON.stringify(c,null,2));"
-   ```
-
 3. **Bootstrap obsolète** — supprimer `.claude/hooks/session-start.sh` s'il existe.
 
 4. **`CLAUDE.md`** — supprimer la ligne d'import `@…CLAUDE-BASE.md`. Ne **rien** mettre à la place
    (le hook `SessionStart` vendoré injecte les règles). Garder tout le reste. Ajouter en fin de
    fichier la section `# Compact instructions` de `.claude/workflow/templates/CLAUDE.md` si absente.
 
-5. **`AGENTS.md` racine** — s'il pointe vers un chemin **absolu** (`C:\Users\…`, `/home/…`), le
-   remplacer par `.claude/workflow/AGENTS.md`. Un chemin absolu ne survit ni à une autre machine ni
-   à une session cloud. Conserver intégralement les règles propres au projet qu'il porte.
+5. **`AGENTS.md` racine** — Codex est sorti du workflow (v0.29.0) : il n'y a plus de fichier central
+   à pointer. S'il existe et renvoie vers `.claude/workflow/AGENTS.md` (chemin relatif ou absolu),
+   le signaler dans le rapport final — à supprimer ou à réécrire par l'utilisateur, jamais par cette
+   skill. Conserver intégralement les règles propres au projet qu'il porte.
 
 6. **Skills locales et copies** — supprimer les copies locales de la doc centrale (point 4 du
    diagnostic) et les **jonctions** `~/.claude/skills/<nom>` du workflow, qui masqueraient les
@@ -186,8 +179,9 @@ Câblage d'abord (mécanique, sans risque), contenu ensuite (du jugement).
    `permissions.allow` si un settings existait déjà). Rien de spécifique à l'adoption ici : les
    deux voies posent le même socle.
 
-2. **`AGENTS.md`** — créer à la racine un fichier renvoyant à `.claude/workflow/AGENTS.md` par un
-   chemin **relatif**. S'il en existe déjà un, conserver son contenu et n'ajouter que le renvoi.
+2. **`AGENTS.md` racine** — ne plus en créer : Codex est sorti du workflow (v0.29.0). S'il en existe
+   déjà un renvoyant à `.claude/workflow/AGENTS.md`, le signaler dans le rapport final — à supprimer
+   ou à réécrire par l'utilisateur.
 
 3. **`.gitignore`** — y ajouter `.claude/wave.lock` s'il manque (marqueur local, jamais versionné).
 
@@ -256,6 +250,12 @@ cinquième exige une **nouvelle session**, la configuration n'étant lue qu'au d
 6. **Tout est versionné.** `git status` ne doit laisser hors du commit ni `.claude/skills`, ni
    `.claude/agents`, ni `.claude/workflow`. C'est la condition qui rend le workflow disponible en
    session cloud et à quiconque clone : ces environnements ne voient que le dépôt.
+7. **Dépôt sous un dossier synchronisé ?** (`SynologyDrive`, `OneDrive`, `Dropbox`, `iCloud` dans le
+   chemin) : demander à l'utilisateur d'exclure le dossier `.git` dans son client de synchro (gate :
+   attendre le oui), puis `touch .git/info/synchro-exclue` — corruption vue le 2026-09-11
+   (torrent-uploader), sinon rappelé à chaque session par `sessionstart-contexte.mjs`.
+8. **Coût de contexte** (mesure A1, `/choisir-mecanisme` point 8) : `/context` dans une session
+   neuve pour ce projet, MCP scopés au projet, `CLAUDE.md` élagué si `/doctor` le propose.
 
 Un point rouge = rattachement non fini. Ne jamais conclure sur « ça devrait marcher ».
 

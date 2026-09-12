@@ -158,7 +158,7 @@ d'être invalidé) et rendre la main (mode orchestré : `VERDICT: ARBITRAGE`, mo
    servir le plan** est une nouvelle tâche : la noter dans `TASKS.md`, ne pas la faire ici. Si elle
    déborde **en servant le plan**, c'est l'aiguillage de l'Étape 3 : `/nouveau-plan` en extension.
 2. **N0** : `build` + `typecheck` (+ tests du périmètre) via `verificateur-n0`, lancé **au premier
-   plan** (`CLAUDE-BASE.md` §Avant de coder) — jamais en arrière-plan en attendant sa notification :
+   plan** (`WORKFLOW.md` §5) — jamais en arrière-plan en attendant sa notification :
    c'est son verdict qui décide de committer à l'Étape 5, une reprise qui rend la main avant de le
    lire compte, pour l'orchestrateur, comme un deuxième échec silencieux. Sans N0 vert, la session
    est toujours en échec — on ne remonte pas un PASS sur une intuition.

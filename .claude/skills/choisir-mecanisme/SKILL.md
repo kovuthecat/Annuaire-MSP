@@ -79,6 +79,8 @@ problème de façon fiable, jamais le plus impressionnant :
 **Créer une skill PROJET quand** : la procédure a plusieurs étapes · elle sera répétée au moins
 2 fois · elle est spécifique à ce projet (sinon candidate à une skill globale) · **coût** : chaque
 skill installée paie sa description à CHAQUE session, même non utilisée — ne pas en créer « au cas où ».
+Un `model:` en frontmatter coûte un préfixe de cache complet s'il est invoqué **en cours** de
+conversation — sans effet pour une skill qui ouvre la session : `WORKFLOW.md` §3b.
 
 **Output style plutôt que CLAUDE.md quand** : ce qui doit changer est la **façon de répondre** (ton,
 rôle, format), pas ce que Claude sait du projet — le style modifie le prompt système, `CLAUDE.md`
@@ -116,6 +118,9 @@ un wrapper MCP ajouterait de la complexité sans bénéfice récurrent.
 7. Classer chaque proposition A (gain fort/complexité faible, à faire en premier) / B (gain
    net/complexité modérée, si l'usage le justifie) / C (gain marginal, ne pas implémenter par
    défaut) / D (sur-ingénierie, à rejeter explicitement).
+8. **Coût de contexte mesuré** (mesure A1) : `/context` dans une session neuve — part de
+   `CLAUDE.md`, des skills, des serveurs MCP. Scoper les MCP au projet (`.mcp.json`, `/mcp`), couper
+   ceux sans rapport ; `/doctor` (≥ 2.1.206) propose des coupes dans `CLAUDE.md`.
 
 ## Vérifier avant de construire
 

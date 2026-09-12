@@ -16,8 +16,7 @@ du plan, pas en amont.
 **Tâche entrée dans un plan** — elle ne porte **plus de statut ici** (il vit dans l'`index.md`) :
 `- T-ID — titre · → plans/P<n>/S<k>.md`
 
-- **modèle** : Opus · Sonnet · Haiku (· Fable, rare · Codex pour la régression visuelle scriptée) —
-  grille : `WORKFLOW.md` §2
+- **modèle** : Opus · Sonnet · Haiku — grille : `WORKFLOW.md` §2
 - **effort** : `low · medium · high · xhigh · max` (défaut `medium`) —
   suggestion à **vérifier à la main avant de lancer la session**. Repère : `WORKFLOW.md` §3
 

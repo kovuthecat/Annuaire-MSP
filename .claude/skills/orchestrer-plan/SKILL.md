@@ -28,10 +28,9 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
 - **Ne jamais corriger soi-même, ni reprendre la conversation d'une session en échec.** Une session
   qui échoue rend la main ; l'orchestrateur ne touche ni au code ni au rapport de passation. Ce
   qu'il a le droit de lancer après un `FAIL` : la **reprise automatique** de l'Étape 5c (une seule,
-  à froid, dans une session dédiée qui corrige *chez elle*) et la passe de diagnostic optionnelle
-  de l'Étape 5b. Jamais un `SendMessage` ou un `fork` vers l'agent en échec. Ce qu'il lance
-  après un `PASS` : la **revue de session** qui manque (Étape 5) — le relecteur écrit son fichier,
-  l'orchestrateur n'en lit que deux lignes.
+  à froid, dans une session dédiée qui corrige *chez elle*). Jamais un `SendMessage` ou un `fork`
+  vers l'agent en échec. Ce qu'il lance après un `PASS` : la **revue de session** qui manque
+  (Étape 5) — le relecteur écrit son fichier, l'orchestrateur n'en lit que deux lignes.
 - **Ne jamais interpréter le rapport d'une session.** Le verdict est extrait par format contraint ou
   schéma, pas relu : un rapport détaillé est une tentation à enquêter plutôt qu'à relayer tel quel.
 
@@ -55,21 +54,7 @@ Dans cet ordre :
 2. **Verrou si la vague est parallèle** — zones disjointes seulement ; au moindre doute, séquentiel.
    Poser `.claude/wave.lock` juste avant le premier lancement (jamais avant : un préflight rouge le
    laisserait orphelin) — mécanique complète : `WORKFLOW.md` §4b, ne pas la reformuler ici.
-3. **CLI/trust/allowlist — uniquement pour les sessions `Env. = headless` déclarées de cette vague**
-   (`WORKFLOW.md` §5b, cas d'exception). Un sous-agent n'a besoin d'aucun de ces trois contrôles : il
-   hérite de l'environnement de cette conversation.
-   - `command -v claude` sur le PATH, sinon STOP sans poser de verrou ;
-   - `.claude/settings.json` porte une `permissions.allow` non vide ;
-   - elle est **effective** : `claude -p "Reponds uniquement par OK." --model
-     claude-haiku-4-5-20251001 2>&1 | head -2` — une ligne `Ignoring ... not been trusted` → STOP,
-     poser `hasTrustDialogAccepted: true` sur cette forme exacte du chemin ;
-   - **l'écriture passe réellement**, avec les options exactes du bloc headless (Étape 3) :
-     `claude -p "Écris le mot OK dans le fichier .claude/vague/sonde.txt, puis réponds OK."
-     --model claude-haiku-4-5-20251001 --permission-mode acceptEdits` puis
-     `test -s .claude/vague/sonde.txt` — fichier absent → STOP **et fichier d'incident**
-     (`WORKFLOW.md` §9b, nature `environnement`) : une session lancée ainsi échouerait sans avoir
-     pu écrire une ligne, c'est le mode d'échec observé le 2026-09-09.
-4. **Effort ambiant** — un sous-agent hérite de l'effort de cette conversation (`WORKFLOW.md`
+3. **Effort ambiant** — un sous-agent hérite de l'effort de cette conversation (`WORKFLOW.md`
    §5b). Si une session `—` de la vague demande plus que l'effort courant, le dire **avant** de
    lancer, sur la ligne « À régler AVANT de lancer » (§3) appliquée à cette conversation, et
    s'arrêter : c'est un humain qui règle l'effort, jamais la skill.
@@ -91,7 +76,7 @@ imposé, une strophe par session :
 
    S<k> · <titre>
       En clair : <ligne « en clair » de l'index, relayée mot pour mot>
-      Tâches <T<a>-T<b>> · <Modèle>/<effort> · <sous-agent|headless>
+      Tâches <T<a>-T<b>> · <Modèle>/<effort>
       Fichiers touchés : `<zone modifiée>` · Dépend de : <S<j>, déjà passée | —>
 
    <une strophe par session de la vague, dans l'ordre de l'index>
@@ -114,10 +99,9 @@ repère de l'utilisateur entre deux vagues, et il ne coûte que des lignes déj�
 
 **Repli pastille uniquement** (voir plus bas) : ajouter à l'annonce la consigne `/rename P<n>·S<k>`
 — trois sessions ouvertes en parallèle sont indistinguables dans la liste, et le nom suit la session
-jusqu'à son `--resume`. Inutile pour un sous-agent ou un `claude -p`, qui n'ont pas de fenêtre.
+jusqu'à son `--resume`. Inutile pour un sous-agent, qui n'a pas de fenêtre.
 
-**Sous-agent, la voie par défaut** (`WORKFLOW.md` §5b) — pour toute session, quel que soit `Env.`,
-sauf déclaration explicite `headless` :
+**Sous-agent, la seule voie** (`WORKFLOW.md` §5b) — pour toute session, quel que soit `Env.` :
 
 ```
 Agent({
@@ -125,9 +109,11 @@ Agent({
   subagent_type: "claude",
   model: <modèle lu dans l'index>,
   run_in_background: true,
-  prompt: "Ouvre plans/P<n>/S<k>.md et exécute-le. Reste dans l'arbre de travail courant : n'ouvre
-AUCUN worktree. Déroule /fin-de-tache en fin de session. Tu es orchestrée : si l'outil Agent
+  prompt: "Lis d'abord .claude/workflow/EXECUTANT.md. Ouvre plans/P<n>/S<k>.md et exécute-le. Reste
+dans l'arbre de travail courant : n'ouvre AUCUN worktree. Déroule /fin-de-tache en fin de session. Tu es orchestrée : si l'outil Agent
 n'est pas disponible dans ton bac à sable, saute la relecture de session (je la lance moi-même).
+Ne lance rien en arrière-plan (ni Agent en run_in_background, ni commande détachée) : ta réponse
+finale est ton seul retour, ce qui finit après elle n'est lu par personne.
 Un blocage se diagnostique avant de conclure (WORKFLOW.md §9a) : ce qui est à ta portée se
 corrige et n'est pas un échec. En cas d'ÉCHEC, écris d'abord un rapport de passation dans
 plans/P<n>/S<k>.echec.md, ligne `Nature :` comprise (gabarit : skill /reprendre-echec), puis
@@ -143,45 +129,30 @@ la conversation d'orchestration, alors que l'invariant du workflow est qu'un ex�
 que son `S<k>.md`. Ne jamais recopier le contenu du `S<k>.md` dans le prompt.
 Attendre la notification de fin ; ne pas sonder.
 
-**Bloc headless**, uniquement pour les sessions déclarées `Env. = headless` — effort réellement
-appliqué, ou vague à lancer sans garder la fenêtre ouverte (`WORKFLOW.md` §5b) :
+**Exception `pastille`** : une session dont la ligne « en clair » de l'index porte le mot `pastille`
+se lance par le repli pastille ci-dessous, **même en Desktop** — le cadreur (`/nouveau-plan`) l'a
+décidé pour un N1 structurant de cette session précise. Le reste de la vague continue en sous-agent ;
+seule cette session-là part en pastille.
 
-```bash
-claude -p "Ouvre plans/P<n>/S<k>.md et exécute-le. [même consigne d'échec et de relecture que ci-dessus]" \
-  --session-id "$(node -e "console.log(require('crypto').randomUUID())")" \
-  --model <modèle index> --effort <effort index> \
-  --permission-mode acceptEdits \
-  --allowedTools "Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git rev-parse:*),Bash(git fetch:*),Bash(git pull:*),Bash(git add:*),Bash(git commit:*)" \
-  --settings '{"outputStyle":"Concise"}' \
-  --output-format json \
-  --json-schema '{"type":"object","properties":{"verdict":{"type":"string","enum":["PASS","FAIL"]},"motif":{"type":"string"},"rapport":{"type":"string"}},"required":["verdict","motif","rapport"]}' \
-  > ".claude/vague/$k.json" 2> ".claude/vague/$k.stderr.log"; echo $? > ".claude/vague/$k.exit"
-```
-
-`--permission-mode acceptEdits` et `--allowedTools` **s'ajoutent** à l'allowlist du projet, sans
-la remplacer : un `claude -p` n'a personne pour approuver un outil, et une session privée d'`Edit`
-échoue sans avoir écrit une ligne (`WORKFLOW.md` §5b). Les commandes propres au projet (build,
-tests) restent dans `permissions.allow` — le préflight (Étape 2) vérifie que l'ensemble tient.
-
-Lancer détaché (arrière-plan du harnais) et sonder `.exit` plutôt qu'un `wait` bloquant : un appel
-Bash plafonné tuerait une session longue et produirait un JSON vide. Le `--settings` neutralise
-l'`outputStyle` de l'utilisateur pour ce processus : un exécutant headless n'a pas de lecteur, ses
-explications ne seraient que des tokens de sortie. `Concise` plutôt que `Default` — style intégré
-depuis v2.1.237, qui attaque par le résultat et supprime préambule et narration sans toucher au
-travail. Sur une version antérieure le nom serait inconnu et le réglage silencieusement sans effet :
-repasser à `Default` en cas de doute. Un sous-agent n'en a pas besoin — un style ne
-s'applique jamais à un sous-agent, qui a son propre prompt système.
-
-**Repli pastille**, uniquement hors Claude Code Desktop (aucun navigateur à transmettre, ni pour un
-sous-agent ni pour cette conversation) : une pastille `spawn_task` par session, « Démarrer
-localement » — jamais le worktree proposé par défaut — puis rendre la main : la vague ne finit plus
-dans ce tour. C'est un humain qui lance : titrer la pastille `P<n> · S<k> — <titre> · <M>/<E>` et
-sortir la ligne « À régler AVANT de lancer » de chaque session (`WORKFLOW.md` §3) — la pastille
-hérite des réglages courants, elle ne pose ni le modèle ni l'effort du plan.
+**Repli pastille**, hors Claude Code Desktop (aucun navigateur à transmettre, ni pour un sous-agent
+ni pour cette conversation) ou sur une session marquée `pastille` : une pastille `spawn_task` par
+session, « Démarrer localement » — jamais le worktree proposé par défaut — puis rendre la main : la
+vague ne finit plus dans ce tour. C'est un humain qui lance : titrer la pastille
+`P<n> · S<k> — <titre> · <M>/<E>` et sortir la ligne « À régler AVANT de lancer » de chaque session
+(`WORKFLOW.md` §3) — la pastille hérite des réglages courants, elle ne pose ni le modèle ni l'effort
+du plan.
 
 ## Étape 4 — Collecter le verdict de chaque session
 
 **Sous-agent** : lire la ligne `VERDICT: … · MOTIF: … · RAPPORT: …`, rien d'autre.
+
+**Une réponse sans ligne `VERDICT:` et sans commit n'est pas forcément finie.** C'est le cas d'une
+session qui a lancé une tâche de fond (un `Agent` en `run_in_background`, une conversion longue)
+puis a rendu la main avant que cette tâche ne se termine. Avant de conclure `FAIL` et de lancer une
+reprise : `ListAgents` — si un enfant de cette session tourne encore, attendre sa notification de
+fin plutôt que de conclure sur une réponse partielle. Une reprise Opus a déjà été payée pour rien
+sur ce mode d'échec (2026-09-11) : 40 minutes après le `FAIL`, l'agent avait fini par rendre
+`VERDICT: PASS` avec ses commits.
 
 **Un retour marqué `partial` n'est jamais un `PASS`.** Depuis 2.1.246, un sous-agent qui épuise son
 `maxTurns` rend ce qu'il a en le marquant partiel, au lieu d'avoir l'air d'avoir fini — c'est
@@ -190,37 +161,14 @@ lire directement. Le traiter comme un `FAIL`, motif « tours épuisés », et **
 `SendMessage`** : continuer l'agent rapatrierait ses fausses pistes, alors que la réparation passe
 par le rapport de passation et un démarrage à froid (`/reprendre-echec`).
 
-**Headless** : lecteur réduit à l'extraction, ~30 lignes — les commits jugent déjà (§4b), donc plus
-de verdict `PANNE` élaboré, plus de fail-closed à trois branches :
-
-```bash
-lire() { node -e "
-  const fs=require('fs');
-  const [fj,fe]=process.argv.slice(1);
-  let s={};
-  try{ s=(JSON.parse(fs.readFileSync(fj,'utf8')).structured_output)??{}; }catch(e){}
-  const complet = typeof s.verdict==='string' && typeof s.motif==='string' && typeof s.rapport==='string';
-  const l = t => String(t??'').replace(/[\r\n]+/g,' ').trim();
-  console.log(complet && s.verdict==='PASS' ? 'PASS' : 'FAIL');
-  console.log(complet ? l(s.motif) : 'motif absent');
-  console.log(complet ? l(s.rapport) : '');
-" "$1" "$2"; }
-{ read -r verdict; read -r motif; read -r rapport; } < <(lire ".claude/vague/$k.json" ".claude/vague/$k.exit")
-```
-
-Passer des **chemins** en argument, jamais du contenu (dépassement de taille) ; lire les trois champs
-avec `read -r` un par un, jamais un split sur tabulation (IFS l'effondre si deux se suivent).
-
-**Dans les deux voies : recoupement obligatoire par les commits avant de conclure `FAIL`** (§4b) —
+**Recoupement obligatoire par les commits avant de conclure `FAIL`** (§4b) —
 `git log --oneline --grep "P<n>/S<k>/"` par tâche listée dans l'index. Toutes les tâches ont leur
 commit → `PASS`, motif « verdict perdu en route ». Aucun commit → `FAIL` inchangé. Un `FAIL` rendu par
-un JSON ou une ligne **lisible** ne se recoupe pas : la session a parlé.
+une ligne **lisible** ne se recoupe pas : la session a parlé.
 
-Si l'enveloppe JSON porte `permission_denials`, le lister dans le rapport final avec la remédiation
-(compléter `permissions.allow`, après la vague) — **et déposer un fichier d'incident**
-(`WORKFLOW.md` §9b, nature `environnement`, la liste des refus en « Preuve »). Même chose pour un
-verdict « perdu en route » et un retour `partial` (nature `orchestration`) : ce sont des pannes du
-workflow, pas du projet, et seul ce fichier les fait remonter au dépôt source.
+Un verdict « perdu en route » et un retour `partial` (nature `orchestration`) sont des pannes du
+workflow, pas du projet : **déposer un fichier d'incident** (`WORKFLOW.md` §9b) — seul ce fichier
+les fait remonter au dépôt source.
 
 ## Étape 5 — Statuts, puis vague suivante ou arrêt
 
@@ -254,6 +202,10 @@ s'enchaîne, l'arbitrage appartient à l'humain, le versement dans `TASKS.md` au
 (`/fin-de-tache` point 16). Un bloquant qui invalide une hypothèse du plan suit le chemin déjà
 écrit : extension (`/nouveau-plan` Étape 0), sur décision humaine.
 
+**Lire aussi la ligne 2, `Couverture :`.** Si elle n'est pas `complète` : relayer `Revue S<k> :
+partielle → plans/P<n>/S<k>.revue.md`, non bloquant, **sans fichier d'incident** — le fichier
+existe, c'est précisément le but du dépôt en premier geste.
+
 **Une revue absente se lance ici, elle ne se relaie pas comme un silence.** Le dépôt est
 inconditionnel (`Bloquant : 0` quand il n'y a rien à dire) : un `.revue.md` manquant veut donc dire
 que la revue n'a pas tourné, jamais qu'elle n'a rien trouvé — et la cause la plus fréquente est
@@ -273,6 +225,13 @@ Agent({
 \"P<n>/S<k>/\"). Écris plans/P<n>/S<k>.revue.md toi-même, puis rends tes deux lignes."
 })
 ```
+
+**`Agent type 'relecteur-session' not found`** : repli, même appel avec `subagent_type:
+"general-purpose"`, `model: "sonnet"`, `run_in_background: false`, prompt commençant par « Lis
+`.claude/agents/relecteur-session.md` et tiens ce rôle pour la session S<k> du plan P<n> … » — deux
+revues perdues le 2026-09-11 faute de cet agent dans la liste disponible, alors qu'un agent
+générique tenu par le même fichier suffit. Le fichier d'incident ne se dépose que si ce repli échoue
+aussi.
 
 **Au premier plan, une à la fois**, dans l'ordre de l'index : le fichier est le livrable, et
 l'orchestrateur ne lit que les deux lignes rendues — jamais les trouvailles. Ce n'est pas lire un
@@ -304,21 +263,6 @@ explicite de cette skill.
 **Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]`) → l'enchaîner dans le même
 tour, retour à l'Étape 2. Plan épuisé (dernière vague collectée) → Étape 6 puis fin.
 
-## Étape 5b — Diagnostic escaladé (optionnel, à la demande)
-
-Désactivé par défaut ; utile pour une vague headless lancée sans surveillance. N'enrichit que le
-rapport de passation, ne corrige rien, ne relance rien. Escalade d'un cran au-dessus du modèle en
-échec (Haiku→Sonnet, Sonnet→Opus, Opus→Fable en le signalant, Fable→rien) :
-
-```bash
-claude -p "Lis plans/P<n>/S<k>.echec.md et la tâche visée. NE CORRIGE RIEN. Approfondis le
-diagnostic et réécris le rapport au même format. Seul fichier autorisé en écriture :
-plans/P<n>/S<k>.echec.md" --model <cran au-dessus> --effort high --disallowed-tools Edit
-```
-
-`--disallowed-tools Edit` n'est pas une preuve : diffs `avant`/`après` (`git status --porcelain`) à
-comparer — tout écart hors `S<k>.echec.md` → arrêter et signaler.
-
 ## Étape 5c — Reprise automatique (une par session, à froid)
 
 Activée par défaut ; opt-out par le mot `reprise-manuelle` sur la ligne d'ordonnancement de la
@@ -336,12 +280,15 @@ jamais le reste : `grep -m1 '^Nature :' plans/P<n>/S<k>.echec.md` (rapport absen
 | `Nature :` | Reprise | Modèle |
 | --- | --- | --- |
 | `prémisse` | **aucune** — la session a déjà diagnostiqué que le plan est faux, une reprise ne ferait que le redire | `ARBITRAGE` direct, motif « prémisse fausse → /nouveau-plan extension », `RAPPORT: <chemin>` |
-| `environnement` | oui, **en sous-agent même si l'index disait `headless`** : c'est l'héritage de l'environnement de cette conversation (permissions, outils) qui débloque | **même modèle** que l'index |
-| `exécution` (ou absente) | oui | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus, Opus→Fable en le signalant) ; session Fable en échec → pas de cran au-dessus, `ARBITRAGE` direct |
+| `environnement` | oui, en sous-agent : c'est l'héritage de l'environnement de cette conversation (permissions, outils) qui débloque | **même modèle** que l'index |
+| `exécution` (ou absente) | oui | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus) ; session Opus en échec → pas de cran au-dessus, `ARBITRAGE` direct |
+| session **tuée par le filtre de contenu** (`Output blocked by content filtering`, HTTP 400, visible dans la notification du harnais — la session n'a pas pu écrire de `.echec.md`) | **aucune** | `ARBITRAGE` direct, motif « sortie filtrée : changer la mécanique d'écriture, pas le modèle » |
 
 Monter de modèle sur un échec d'environnement ou de prémisse a coûté plusieurs reprises Opus et
 Fable pour rien (constat du 2026-09-09) : le modèle n'était pas la cause, et la reprise ne faisait
-que refaire le diagnostic.
+que refaire le diagnostic. Même constat pour le filtre de contenu : quatre relances identiques
+payées le 2026-09-10 pour un verdict identique — à sortie filtrée inchangée, seule la mécanique
+d'écriture change quelque chose.
 
 ```
 Agent({
@@ -381,13 +328,15 @@ rapport, avec leur `.echec.md` intact).
 
 ## Étape 6 — Rapport final
 
-Une ligne par session lancée (`S<k> · PASS/FAIL · motif`), les deux voies confondues ; une session
+Une ligne par session lancée (`S<k> · PASS/FAIL · motif`) ; une session
 reprise porte les deux verdicts (`S<k> · FAIL → reprise PASS/FAIL/ARBITRAGE · motif`). Signaler tout
 écart entre effort demandé et effort réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
 Une ligne par revue à bloquants — **et par revue absente** — non encore relayée (Étape 5,
 « Revues de session »). Une ligne par fichier d'incident déposé pendant l'orchestration
 (`Incident : docs/workflow/incidents/<fichier>`), tous commités avant le push — c'est ce push qui
-les fait remonter au dépôt source (`WORKFLOW.md` §9b).
+les fait remonter au dépôt source (`WORKFLOW.md` §9b). Une ligne par motif portant « N1 à dérouler
+au premier plan » (`/verif-visuelle` Étape 0, mode A tombé en mode B faute de navigateur) — relayée
+telle quelle, préfixée `N1 S<k> : à faire — <écran>` : c'est un N1 qui reste à dérouler à la main.
 
 **Écrit pour qui n'a pas suivi la vague.** Sur `PASS`, le titre suffit — le travail est commité, il
 se relit. C'est sur `FAIL` et `ARBITRAGE` que l'utilisateur a besoin de comprendre : ajouter, en

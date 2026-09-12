@@ -4,12 +4,12 @@
 // fonctionne pas en cloud). Les vérifications de dérive n'écrivent RIEN si tout est sain ;
 // l'émission de CLAUDE-BASE.md, elle, a lieu à chaque session (coût token assumé, D-P2-2).
 
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
-  repereSession, repondre, riendafaire,
+  repereSession, repondre, riendafaire, racineDepot,
   recupererAmont, etatAmont, aUnRemote, brancheCourante, brancheParDefaut,
 } from './lib.mjs';
 
@@ -115,6 +115,25 @@ if (dernierStatus) {
 for (const d of depassements(cwd)) {
   lignes.push(`**${d.fichier} : ${d.lignes}/${d.plafond} lignes** — archivage dû (/purge-contexte).`);
 }
+
+// Dépôt sous un dossier synchronisé (Synology Drive, OneDrive, Dropbox, iCloud) : le client ne
+// synchronise qu'au fichier près, jamais `.git` en bloc — une reprise en cours d'écriture git
+// corrompt l'objet (torrent-uploader, 2026-09-11). Le témoin dit que l'exclusion manuelle a été
+// posée dans le client ; sans lui, rappel à chaque session plutôt qu'une découverte tardive.
+try {
+  const racine = racineDepot(cwd);
+  if (/SynologyDrive|OneDrive|Dropbox|iCloud/i.test(racine)) {
+    const cheminGit = join(racine, '.git');
+    const gitEstUnDossier = existsSync(cheminGit) && statSync(cheminGit).isDirectory();
+    if (gitEstUnDossier && !existsSync(join(cheminGit, 'info', 'synchro-exclue'))) {
+      lignes.push(
+        '**Dépôt sous un dossier synchronisé** : vérifier que le dossier `.git` est exclu de la ' +
+        "synchro (une règle client n'exclut que des fichiers), puis poser le témoin " +
+        '`.git/info/synchro-exclue` — corruption vue le 2026-09-11 (torrent-uploader).'
+      );
+    }
+  }
+} catch { /* détection best-effort : jamais bloquante */ }
 
 const blocs = [];
 if (claudeBase) blocs.push(claudeBase);
