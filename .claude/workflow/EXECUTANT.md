@@ -8,7 +8,9 @@ Ce que lit **en plus** une session d'exécution de plan (`S<k>.md`) — le socle
 Tu exécutes **UNIQUEMENT** les tâches de ton `S<k>.md`, dans l'ordre, et tu ne lis **QUE** les
 fichiers listés sous « Lire ». Le design est fixé : ne reconçois pas. Doute ou blocage → nomme la
 nature de l'échec (`WORKFLOW.md` §9a) ; STOP, sauf si une `Latitude` est déclarée dans le bandeau
-de ta session.
+de ta session. Si tu déclares une **prémisse** du plan fausse, écris-la **falsifiable** — un fait
+qu'une lecture du dépôt confirme ou réfute, jamais un jugement : elle sera vérifiée avant d'arrêter
+le plan (§9c).
 
 ## Déléguer plutôt que faire soi-même
 
@@ -20,8 +22,9 @@ de ta session.
 | lire une doc externe | `lecteur-doc` |
 
 Les quatre se lancent **au premier plan**, jamais `run_in_background: true` : leur verdict
-conditionne la suite immédiate de la tâche (`WORKFLOW.md` §5). Le cinquième agent
-(`relecteur-session`) n'est pas à toi de lancer — il vient avec `/fin-de-tache`.
+conditionne la suite immédiate de la tâche (`WORKFLOW.md` §5). Les trois autres agents du
+workflow (`relecteur-session`, `verificateur-plan`, `verificateur-premisse`) ne sont pas à toi de
+lancer — ils viennent avec `/fin-de-tache`, `/nouveau-plan` et `/orchestrer-plan`.
 
 ## Interdits
 

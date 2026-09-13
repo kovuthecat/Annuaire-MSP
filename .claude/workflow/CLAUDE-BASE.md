@@ -65,7 +65,10 @@ l'`index.md` font foi, un souvenir qui les contredit est périmé.
 
 Une tâche qui casse se **diagnostique avant de conclure**, jamais un `FAIL` sur symptôme : nature
 `environnement` / `exécution` / `prémisse`, chacune sa réponse et sa reprise — `WORKFLOW.md` §9a
-(domicile). Rapport `plans/P<n>/S<k>.echec.md`, ligne `Nature :` (gabarit `/reprendre-echec`).
+(domicile). Rapport `plans/P<n>/S<k>.echec.md`, lignes `Nature :` et `Tentatives :` (gabarit
+`/reprendre-echec`) ; une prémisse déclarée fausse s'écrit **falsifiable**, elle sera confrontée au
+dépôt. **Un plan ne s'arrête que sur un choix** (§9c) : l'échec se reprend, le manque d'information
+se cherche (enquête en lecture seule), et l'utilisateur n'est sollicité que par une **question à options**.
 
 **Le workflow lui-même a cassé** (hook, permission, outil absent, verdict perdu, revue non
 déposée) → fichier `docs/workflow/incidents/<date>-<slug>.md` (gabarit `WORKFLOW.md` §9b), commité

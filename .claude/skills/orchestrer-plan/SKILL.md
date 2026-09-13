@@ -1,6 +1,6 @@
 ---
 name: orchestrer-plan
-description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, un échec non repris ou une gate humaine déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
+description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, une décision qui appartient à l'utilisateur ou une gate déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
 model: haiku
 ---
 
@@ -27,10 +27,17 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
   qui ne rendent que leur conclusion.
 - **Ne jamais corriger soi-même, ni reprendre la conversation d'une session en échec.** Une session
   qui échoue rend la main ; l'orchestrateur ne touche ni au code ni au rapport de passation. Ce
-  qu'il a le droit de lancer après un `FAIL` : la **reprise automatique** de l'Étape 5c (une seule,
-  à froid, dans une session dédiée qui corrige *chez elle*). Jamais un `SendMessage` ou un `fork`
-  vers l'agent en échec. Ce qu'il lance après un `PASS` : la **revue de session** qui manque
-  (Étape 5) — le relecteur écrit son fichier, l'orchestrateur n'en lit que deux lignes.
+  qu'il a le droit de lancer après un `FAIL` : la **vérification de prémisse** et la **reprise** de
+  l'Étape 5c, puis l'**enquête** de l'Étape 5d — chacune à froid, dans une session dédiée qui
+  travaille *chez elle*, chacune bornée par le budget de la session (`Tentatives :`). Jamais un
+  `SendMessage` ou un `fork` vers l'agent en échec. Ce qu'il lance après un `PASS` : la **revue de
+  session** qui manque (Étape 5) — le relecteur écrit son fichier, l'orchestrateur n'en lit que
+  deux lignes.
+- **Ne jamais rendre la main sur un manque d'information.** Un plan ne s'arrête que sur une
+  **décision** qui appartient à l'utilisateur, et elle se pose alors en **question à options**
+  (`WORKFLOW.md` §9c, Étape 6). Ce qui manque se cherche : c'est le rôle de l'Étape 5d. Rendre la
+  main avec « la session a échoué, voici le rapport » transfère à l'utilisateur un travail que
+  l'orchestrateur sait lancer, et le lui fait payer en latence.
 - **Ne jamais interpréter le rapport d'une session.** Le verdict est extrait par format contraint ou
   schéma, pas relu : un rapport détaillé est une tentation à enquêter plutôt qu'à relayer tel quel.
 
@@ -70,8 +77,9 @@ imposé, une strophe par session :
 ```
 ▶ Vague <w>/<W> — <n> session(s) en <parallèle|séquentiel>
    Pourquoi cette vague maintenant : <« Pourquoi maintenant » de l'ordonnancement, tel quel>
-   Si une session échoue : <une reprise automatique en <modèle du cran au-dessus>, puis arbitrage
-     humain si elle échoue aussi | reprise manuelle — je m'arrête et je te rends la main>
+   Si une session échoue : <je diagnostique, je reprends une fois, j'enquête si la reprise cale —
+     je ne te sollicite que s'il y a un choix à faire, et sous forme de question |
+     reprise manuelle — je m'arrête et je te rends la main>
    Fin de vague : <gate — je m'arrête même si tout passe | j'enchaîne sur la vague <w+1>>
 
    S<k> · <titre>
@@ -251,15 +259,15 @@ rend la main sans fichier, ou si cette conversation n'a pas non plus l'outil `Ag
 `Revue S<k> : absente` — **non bloquante** — et un fichier d'incident (`WORKFLOW.md` §9b, nature
 `orchestration`). C'est le seul signal qui rende visible une panne du canal de revue.
 
-### Échec — finir la vague, puis une reprise automatique
+### Échec — finir la vague, puis le cycle de remédiation
 
 Un `FAIL` ne tue pas les sous-agents déjà lancés de la vague en cours : ils vont au bout, on ne peut
 pas les rappeler et leur travail est déjà commencé. La vague se collecte et se clôt normalement
-(Étapes 4 et 5 — verrou retiré, commits des `PASS` faits), puis chaque session `FAIL` a droit à
-**une reprise automatique** (Étape 5c) — sauf si la ligne d'ordonnancement de la vague porte le mot
-**`reprise-manuelle`**, auquel cas le plan s'arrête directement, comportement historique.
+(Étapes 4 et 5 — verrou retiré, commits des `PASS` faits), puis chaque session `FAIL` entre dans le
+**cycle de remédiation** des Étapes 5c et 5d — sauf si la ligne d'ordonnancement de la vague porte
+le mot **`reprise-manuelle`**, auquel cas le plan s'arrête directement, comportement historique.
 
-**Le plan ne s'arrête que si une reprise rend autre chose que `PASS`** (ou en `reprise-manuelle`).
+**Le plan ne s'arrête que sur un `DECISION`** (ou en `reprise-manuelle`) — §9c.
 Le rapport final (Étape 6) distingue alors les sessions **bloquées** par l'échec (qui en dépendent,
 directement ou transitivement, via la colonne Dépend de) des sessions **encore indépendantes** —
 pour que l'utilisateur choisisse entre réparer d'abord ou relancer le reste.
@@ -267,39 +275,76 @@ pour que l'utilisateur choisisse entre réparer d'abord ou relancer le reste.
 ### Gate humaine
 
 Une vague dont la ligne d'ordonnancement de l'index porte le mot **`gate`** arrête l'orchestrateur
-**après** l'avoir collectée — reprise automatique (Étape 5c) comprise —, même si tout est `PASS` :
+**après** l'avoir collectée — reprises (5c) et enquêtes (5d) comprises —, même si tout est `PASS` :
 il rend la main avec l'état et ce qui reste. La vague suivante ne se lance qu'à une relance
 explicite de cette skill.
 
 **Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]` ou `[x]!` — §4a) → l'enchaîner dans le même
 tour, retour à l'Étape 2. Plan épuisé (dernière vague collectée) → Étape 6 puis fin.
 
-## Étape 5c — Reprise automatique (une par session, à froid)
+## Étape 5c — Remédiation automatique (à froid, sous budget)
 
 Activée par défaut ; opt-out par le mot `reprise-manuelle` sur la ligne d'ordonnancement de la
-vague. Elle ne change rien aux invariants : l'orchestrateur lance et collecte, la correction vit
-dans la session de reprise — qui ne connaît que le rapport de passation, jamais cette conversation.
+vague. Elle ne change rien aux invariants : l'orchestrateur lance et collecte, le jugement vit dans
+la session lancée — qui ne connaît que le rapport de passation, jamais cette conversation.
 
 **Quand** : après la clôture de la vague (Étape 5 — verrou retiré, arbre propre), avant la vague
-suivante. Une reprise à la fois, dans l'ordre de l'index, **jamais en parallèle** — l'arbre est
+suivante. Une session à la fois, dans l'ordre de l'index, **jamais en parallèle** — l'arbre est
 partagé et la vague est déjà close. Rapport `S<k>.echec.md` absent (session tuée avant de
 l'écrire) : lancer quand même, `/reprendre-echec` couvre ce cas.
 
-**Nature d'abord, modèle ensuite** (`WORKFLOW.md` §9a, domicile). Lire **une ligne** du rapport,
-jamais le reste : `grep -m1 '^Nature :' plans/P<n>/S<k>.echec.md` (rapport absent → `exécution`).
+**Deux greps, rien d'autre** (`WORKFLOW.md` §9a et §9c, domiciles) :
 
-| `Nature :` | Reprise | Modèle |
+```
+grep -m1 '^Nature :'     plans/P<n>/S<k>.echec.md    # absent → exécution
+grep -m1 '^Tentatives :' plans/P<n>/S<k>.echec.md    # absent → reprise=0 enquete=0
+```
+
+**Budget** (§9c) : par session **2 reprises et 1 enquête** ; par plan **2 enquêtes** au total,
+comptées dans cette conversation. Épuisé → `DECISION`, sans rien relancer.
+
+### La nature décide, et une prémisse se vérifie avant d'arrêter le plan
+
+| `Nature :` | Ce que l'orchestrateur lance | Modèle |
 | --- | --- | --- |
-| `prémisse` | **aucune** — la session a déjà diagnostiqué que le plan est faux, une reprise ne ferait que le redire | `ARBITRAGE` direct, motif « prémisse fausse → /nouveau-plan extension », `RAPPORT: <chemin>` |
-| `environnement` | oui, en sous-agent : c'est l'héritage de l'environnement de cette conversation (permissions, outils) qui débloque | **même modèle** que l'index |
-| `exécution` (ou absente) | oui | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus) ; session Opus en échec → pas de cran au-dessus, `ARBITRAGE` direct |
-| session **tuée par le filtre de contenu** (`Output blocked by content filtering`, HTTP 400, visible dans la notification du harnais — la session n'a pas pu écrire de `.echec.md`) | **aucune** | `ARBITRAGE` direct, motif « sortie filtrée : changer la mécanique d'écriture, pas le modèle » |
+| `prémisse` | **`verificateur-premisse` d'abord** — l'affirmation n'a été vérifiée par personne, et elle arrête un plan entier | Haiku, lecture seule |
+| `environnement` | reprise en sous-agent : c'est l'héritage de l'environnement de cette conversation (permissions, outils) qui débloque | **même modèle** que l'index |
+| `exécution` (ou absente) | reprise | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus) ; **session Opus → pas de reprise, l'enquête directement** (Étape 5d) |
+| session **tuée par le filtre de contenu** (`Output blocked by content filtering`, HTTP 400, visible dans la notification du harnais — la session n'a pas pu écrire de `.echec.md`) | rien | `DECISION`, motif « sortie filtrée : changer la mécanique d'écriture, pas le modèle » |
 
 Monter de modèle sur un échec d'environnement ou de prémisse a coûté plusieurs reprises Opus et
 Fable pour rien (constat du 2026-09-09) : le modèle n'était pas la cause, et la reprise ne faisait
 que refaire le diagnostic. Même constat pour le filtre de contenu : quatre relances identiques
-payées le 2026-09-10 pour un verdict identique — à sortie filtrée inchangée, seule la mécanique
-d'écriture change quelque chose.
+payées le 2026-09-10 pour un verdict identique.
+
+**Vérification de prémisse** — l'affirmation est recopiée depuis la section « Ce qu'il faudrait
+pour que ça passe » du rapport, **elle seule**, jamais le rapport entier :
+
+```
+Agent({
+  description: "P<n>/S<k> prémisse",
+  subagent_type: "verificateur-premisse",
+  run_in_background: false,
+  prompt: "Vérifie cette affirmation contre le dépôt : « <l'affirmation, telle quelle> ».
+Réponse finale en UNE ligne, exactement : PREMISSE: CONFIRMEE|REFUTEE|INDECIDABLE · PREUVE: <une phrase>"
+})
+```
+
+Agent introuvable dans le bac à sable → même repli que pour la revue : `general-purpose`,
+`model: "haiku"`, prompt commençant par « Lis `.claude/agents/verificateur-premisse.md` et tiens ce
+rôle… ». Trois issues :
+
+- **`REFUTEE`** → la session s'est trompée de diagnostic : reprise comme une nature `exécution`
+  (un cran au-dessus), **la preuve recopiée dans le prompt de lancement** — elle dit où la cause
+  n'est pas. Et **déposer un fichier d'incident** (`WORKFLOW.md` §9b, nature `prémisse`) : une
+  prémisse fausse est une donnée pour le dépôt source, c'est sur ce comptage qu'on saura si la
+  vérification vaut son coût.
+- **`CONFIRMEE`** → `DECISION` : le périmètre du plan change, c'est un arbitrage. Options à poser
+  (Étape 6) déjà connues.
+- **`INDECIDABLE`** → `DECISION`, motif « prémisse invérifiable par lecture : <l'affirmation> » —
+  ni enquête ni reprise, c'est exactement ce qu'un humain tranche.
+
+### Lancer la reprise
 
 ```
 Agent({
@@ -309,7 +354,10 @@ Agent({
   run_in_background: true,
   prompt: "Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
 P<n>). Mode orchestré. Reste dans l'arbre de travail courant : n'ouvre AUCUN worktree.
-Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ARBITRAGE · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
+<si prémisse réfutée : « La prémisse du rapport a été vérifiée et RÉFUTÉE : <preuve, telle quelle>.
+Traite la session comme une nature exécution et cherche la cause ailleurs. »>
+Incrémente la ligne `Tentatives :` du rapport avant de rendre la main, sauf si tu le supprimes.
+Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
 ```
 
@@ -317,31 +365,67 @@ Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ARBITRAGE · MOTIF
 de la reprise. Ne jamais recopier le contenu du `.echec.md` dans le prompt, ne jamais l'ouvrir ici.
 
 **Collecte** : mêmes règles que l'Étape 4 — ligne de verdict seule, `partial` = `FAIL`, recoupement
-par les commits avant de conclure `FAIL`. Trois issues :
+par les commits avant de conclure `FAIL`. Quatre issues :
 
-- **`PASS`** — la reprise a elle-même commité, supprimé le `.echec.md` et coché `[x]`
-  (`/reprendre-echec` Étape 5) : vérifier la coche dans l'index, lancer la revue de la session si
-  son `.revue.md` manque (Étape 5, « Revues de session » — une reprise est un sous-agent, elle n'a
-  souvent pas pu la lancer), puis reprendre le plan là où il
-  s'était arrêté — les sessions **jamais lancées** de la même vague d'abord (vague séquentielle
-  arrêtée au `FAIL`, retour Étape 3), sinon la vague suivante (Étape 5, cas « Sinon » — la gate
-  d'une vague `gate` s'applique toujours).
-- **`FAIL`** — deuxième échec consécutif sur la même session : **jamais de seconde reprise auto**,
-  arrêt du plan, arbitrage humain. Le `.echec.md` mis à jour (section « Déjà écarté » enrichie) est
-  le point de départ de l'humain.
-- **`ARBITRAGE`** — une gate de `/reprendre-echec` demande une décision humaine avant toute
-  correction (annulation destructive, prémisse de plan fausse → `/nouveau-plan` en extension,
-  hypothèse épuisée) : arrêt du plan, motif relayé tel quel, sans l'interpréter.
+| Verdict | Ce que fait l'orchestrateur |
+| --- | --- |
+| **`PASS`** | la reprise a commité, supprimé le `.echec.md` et coché `[x]` : vérifier la coche, lancer la revue de session si son `.revue.md` manque (Étape 5 — une reprise est un sous-agent, elle n'a souvent pas pu la lancer), puis reprendre le plan où il s'était arrêté : les sessions **jamais lancées** de la même vague d'abord (vague séquentielle arrêtée au `FAIL`, retour Étape 3), sinon la vague suivante (Étape 5, cas « Sinon » — la gate d'une vague `gate` s'applique toujours) |
+| **`ENQUETE`** | l'hypothèse est épuisée : **Étape 5d**, si le budget le permet ; sinon `DECISION` |
+| **`FAIL`** | correction tentée, N0 toujours rouge : **Étape 5d**, si le budget le permet ; sinon `DECISION` |
+| **`DECISION`** | arrêt du plan, motif relayé tel quel, sans l'interpréter — question posée à l'Étape 6 |
 
-Plusieurs `FAIL` dans la même vague : reprises une par une ; la première qui rend autre chose que
-`PASS` arrête le plan, les reprises restantes ne se lancent pas (leurs sessions restent `FAIL` au
-rapport, avec leur `.echec.md` intact).
+`FAIL` n'est plus un arrêt : un humain qui le recevait n'avait aucune information de plus que
+l'orchestrateur, il lançait une enquête (§9c). Elle se lance ici.
+
+Plusieurs `FAIL` dans la même vague : une session à la fois, cycle complet (5c puis 5d) avant de
+passer à la suivante ; la première qui rend `DECISION` arrête le plan, les sessions restantes ne
+sont pas remédiées (elles restent `FAIL` au rapport, leur `.echec.md` intact).
+
+## Étape 5d — Enquête (lecture seule, une par session)
+
+**Quand** : une reprise a rendu `ENQUETE` ou `FAIL`, et le budget le permet (`enquete=0` sur cette
+session, moins de 2 enquêtes sur ce plan). Sinon : `DECISION`, motif = celui de la reprise.
+
+Elle ne corrige rien, ne committe rien, ne lance pas N0 : elle cherche une hypothèse neuve, ou
+constate qu'il n'y en a pas et nomme les issues (procédure : `/reprendre-echec`, « Mode enquête »).
+
+```
+Agent({
+  description: "P<n>/S<k> enquête",
+  subagent_type: "claude",
+  model: <modèle de l'index, plancher Sonnet — jamais un cran au-dessus : le levier est
+          l'information, pas le modèle>,
+  run_in_background: true,
+  prompt: "Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
+P<n>). Mode enquête : LECTURE SEULE — ne corrige rien, ne committe rien, ne lance pas N0.
+Reste dans l'arbre de travail courant : n'ouvre AUCUN worktree. Une passe.
+Écris le rapport mis à jour avant de répondre, `Tentatives :` comprise.
+Réponse finale en UNE ligne, exactement : ENQUETE: PISTE|OPTIONS · MOTIF: <une phrase> · RAPPORT: <chemin>"
+})
+```
+
+- **`PISTE`** → **une** reprise de plus (Étape 5c, `reprise=2`), même modèle que la reprise
+  précédente — l'enquête a fourni ce qui manquait, pas un problème de modèle. Son verdict est
+  terminal : `PASS` → le plan reprend ; autre chose → `DECISION`, le budget est épuisé.
+- **`OPTIONS`** → `DECISION`. La question est déjà écrite : la section `## Issues` du rapport.
+
+**La seule lecture de fichier autorisée à cette skill**, et elle est bornée :
+
+```
+sed -n '/^## Issues/,/^## /p' plans/P<n>/S<k>.echec.md
+```
+
+Relayée **mot pour mot** à l'Étape 6, jamais résumée, jamais réordonnée, jamais complétée. Ce n'est
+pas ouvrir un rapport pour enquêter (interdit en tête de skill) : c'est recopier une section écrite
+pour l'utilisateur, comme la ligne « en clair » de l'index l'est à l'Étape 3. Section absente ou
+vide → relayer le motif seul et le dire.
 
 ## Étape 6 — Rapport final
 
-Une ligne par session lancée (`S<k> · PASS/FAIL · motif`) ; une session
-reprise porte les deux verdicts (`S<k> · FAIL → reprise PASS/FAIL/ARBITRAGE · motif`). Signaler tout
-écart entre effort demandé et effort réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
+Une ligne par session lancée (`S<k> · PASS/FAIL · motif`) ; une session remédiée porte tout son
+cycle (`S<k> · FAIL → reprise FAIL → enquête PISTE → reprise PASS · motif`) — c'est la seule trace
+de ce que l'autonomie a coûté et rapporté. Signaler tout écart entre effort demandé et effort
+réellement appliqué (le sous-agent ne règle pas l'effort, §5b).
 Une ligne par revue à bloquants — **et par revue absente** — non encore relayée (Étape 5,
 « Revues de session »). Une ligne par fichier d'incident déposé pendant l'orchestration
 (`Incident : docs/workflow/incidents/<fichier>`), tous commités avant le push — c'est ce push qui
@@ -350,19 +434,52 @@ au premier plan » (`/verif-visuelle` Étape 0, mode A tombé en mode B faute de
 telle quelle, préfixée `N1 S<k> : à faire — <écran>` : c'est un N1 qui reste à dérouler à la main.
 
 **Écrit pour qui n'a pas suivi la vague.** Sur `PASS`, le titre suffit — le travail est commité, il
-se relit. C'est sur `FAIL` et `ARBITRAGE` que l'utilisateur a besoin de comprendre : ajouter, en
-français et sans jargon, **ce que ça l'empêche de faire** — quelles sessions restantes sont bloquées
-(colonne Dépend de) et lesquelles restent lançables. Le motif technique reste relayé tel quel à
-côté, jamais traduit : c'est une citation de la session, pas une interprétation de l'orchestrateur.
-Sur `FAIL` ou `ARBITRAGE` non résolu : chemin du rapport de passation + `/reprendre-echec`, jamais
-le contenu ouvert ici ;
-`claude --resume <uuid>` en dernier recours seulement. **Push groupé sur `main` une fois le plan fini
-ou arrêté** — jamais depuis une session, jamais si une vague reste `EN ATTENTE`, et jamais sur une
-branche laissée derrière, session cloud comprise (`WORKFLOW.md` §4b). L'orchestration est une unité
-de travail : elle se clôt poussée, y compris quand elle s'arrête sur un `FAIL` — ce qui a été fait
-avant l'échec doit être visible d'où repartira la reprise.
+se relit. C'est sur un arrêt que l'utilisateur a besoin de comprendre : ajouter, en français et sans
+jargon, **ce que ça l'empêche de faire** — quelles sessions restantes sont bloquées (colonne Dépend
+de) et lesquelles restent lançables. Le motif technique reste relayé tel quel à côté, jamais
+traduit : c'est une citation de la session, pas une interprétation de l'orchestrateur.
 
-**Ce qui reste à lancer à la main** — sessions restantes après une gate, un `FAIL` ou un repli
+### Un arrêt se pose en question, jamais en rapport à lire
+
+Domicile de la règle : `WORKFLOW.md` §9c. Le plan ne s'arrête que sur un `DECISION` — c'est-à-dire
+sur un **choix entre plusieurs issues**, jamais sur un manque d'information. Ce qui a été cherché
+l'a été (5c, 5d) ; ce qui reste ne se cherche pas, il se tranche. Donc le dernier bloc du rapport
+est une question, en **dernière position**, format imposé :
+
+```
+❓ P<n>/S<k> — <la question, une phrase, en français>
+   Pourquoi je m'arrête ici : <ce qui a été tenté et ce que ça a donné — deux lignes max,
+     motifs relayés tels quels>
+
+   1. <option> — <coût> · débloque <ce que ça rouvre>
+   2. <option> — <coût> · débloque <ce que ça rouvre>
+   3. <option> — <coût> · débloque <ce que ça rouvre>
+
+   Ma recommandation : <n°>, parce que <une phrase>.
+   Rapport : plans/P<n>/S<k>.echec.md · reste lançable sans décider : <S<j>, S<l> | rien>
+```
+
+**D'où viennent les options** — jamais inventées ici :
+
+| Motif du `DECISION` | Options |
+| --- | --- |
+| enquête `OPTIONS` | la section `## Issues` du rapport, recopiée mot pour mot (5d) |
+| prémisse `CONFIRMEE` | étendre le plan (`/nouveau-plan` Étape 0) · réduire la tâche à ce qui reste vrai · abandonner la session |
+| annulation destructive | annuler ce que le motif nomme · reprendre en l'état · abandonner la session |
+| remédiation d'environnement hors de portée | appliquer la remédiation nommée (permission, outil) puis relancer · lancer la session à la main · abandonner |
+| budget épuisé, prémisse `INDECIDABLE`, filtre de contenu | pas de liste toute faite : poser la question avec les deux issues réelles — relancer autrement (dire quoi) ou arrêter là — et le dire franchement plutôt que d'inventer une troisième option |
+
+**Une seule question par arrêt.** Le plan s'arrête à la première session non remédiée : il n'y en a
+donc jamais deux. Et pas de question sur une gate (`gate`) ni sur un plan épuisé — ce ne sont pas
+des arrêts à trancher, l'utilisateur relance quand il veut.
+
+**Push groupé sur `main` une fois le plan fini ou arrêté** — jamais depuis une session, jamais si
+une vague reste `EN ATTENTE`, et jamais sur une branche laissée derrière, session cloud comprise
+(`WORKFLOW.md` §4b). L'orchestration est une unité de travail : elle se clôt poussée, y compris
+quand elle s'arrête sur une question — ce qui a été fait avant l'arrêt, rapports d'échec et
+enquêtes compris, doit être visible d'où repartira la suite.
+
+**Ce qui reste à lancer à la main** — sessions restantes après une gate, un arrêt ou un repli
 pastille : une ligne « À régler AVANT de lancer » par session prête (`WORKFLOW.md` §3), modèle et
 effort pris dans l'index. Une relance de cette skill ne dispense pas du rappel : son frontmatter
 fixe son propre modèle, pas l'effort de la conversation qui l'accueille.

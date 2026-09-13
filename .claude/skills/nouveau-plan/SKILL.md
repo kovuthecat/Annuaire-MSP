@@ -137,19 +137,19 @@ Même exigence pour le *Pourquoi maintenant* d'une vague : il justifie l'**ordre
 
 **Trois mots-clés déclarent une exception à l'exécution normale**, deux sur la ligne d'une **vague**,
 un sur la ligne « en clair » d'une **session** : `gate` (la vague arrête l'orchestrateur une fois
-collectée, même si tout est `PASS`) et `reprise-manuelle` (un `FAIL` de cette vague n'a pas droit à
-la reprise automatique) portent sur la vague entière ; **`pastille`**, lui, porte sur une session
+collectée, même si tout est `PASS`) et `reprise-manuelle` (un `FAIL` de cette vague n'a droit ni à
+la reprise ni à l'enquête automatiques) portent sur la vague entière ; **`pastille`**, lui, porte sur une session
 précise — elle se lance par le repli pastille (premier plan, navigateur complet), **même en
 Desktop** : c'est le cadreur qui le décide ici, au cadrage, quand le N1 de cette session est
 structurant (nouvel écran, refonte de mise en page) et mérite un déroulé surveillé plutôt qu'un
 sous-agent (`/orchestrer-plan` Étape 3, `/verif-visuelle`).
 
 **Vagues orchestrées (optionnel)** — toute vague s'exécute via `/orchestrer-plan`, qui déroule les
-sessions les unes après les autres jusqu'à épuisement, un échec non repris, ou une gate humaine.
-Un `FAIL` déclenche par défaut **une** reprise automatique à froid (`/orchestrer-plan` Étape 5c) ;
-le mot **`reprise-manuelle`** sur la ligne d'ordonnancement d'une vague la désactive — à déclarer
-au cadrage quand un échec dans cette vague doit passer par un humain d'emblée (état coûteux à
-annuler, zone sensible). Voies et
+sessions les unes après les autres jusqu'à épuisement, une gate, ou une **question** à l'utilisateur.
+Un `FAIL` déclenche par défaut le cycle de remédiation à froid (`/orchestrer-plan` 5c et 5d,
+budget : 2 reprises et 1 enquête par session, `WORKFLOW.md` §9c) ; le mot **`reprise-manuelle`** sur
+la ligne d'ordonnancement d'une vague le désactive — à déclarer au cadrage quand un échec dans
+cette vague doit passer par un humain d'emblée (état coûteux à annuler, zone sensible). Voies et
 colonne `Env.` : domicile `WORKFLOW.md` §5b, ne pas le reformuler ici. Résumé pour le découpage :
 
 Colonne **Env.** : toujours `—` (sous-agent — seule voie depuis v0.30.0, §5b) ; une session dont

@@ -286,7 +286,7 @@ Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contex
 (chemins, sorties, fausses pistes) qu'on paie ensuite à chaque tour — et c'est justement en cadrage
 Opus, le contexte le plus cher, qu'on en accumule le plus.
 
-Six agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
+Sept agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
 
 - `explorateur` → localiser quelque chose qui touche plus d'1 fichier.
 - `verificateur-n0` → lancer build/typecheck/tests (jamais ces commandes en direct dans la
@@ -297,12 +297,15 @@ Six agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces
   (`/fin-de-tache`).
 - `verificateur-plan` → confronter un plan fraîchement écrit au dépôt, avant son commit
   (`/nouveau-plan` Étape 4b).
+- `verificateur-premisse` → confronter au dépôt l'affirmation par laquelle une session en échec
+  déclare le plan faux, **avant** qu'elle n'arrête le plan (`/orchestrer-plan` 5c, §9c).
 
-**Les deux derniers ont la même raison d'être : personne ne relit son propre travail.** Le
-cadreur ne voit pas sa découpe fausse, l'exécutant ne voit pas son PASS vide — dans les deux cas
-le contrôle vaut par le fait qu'il vient d'ailleurs, pas par sa finesse.
+**Les trois derniers ont la même raison d'être : personne ne relit son propre travail.** Le
+cadreur ne voit pas sa découpe fausse, l'exécutant ne voit pas son PASS vide, la session en échec
+ne voit pas que sa prémisse est fausse — dans les trois cas le contrôle vaut par le fait qu'il
+vient d'ailleurs, pas par sa finesse.
 
-Les six se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
+Les sept se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
 conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
 `relecteur-session` est le dernier geste de la session : lancé en arrière-plan, son retour
 n'atteindrait aucun tour et la revue ne serait jamais déposée.
@@ -313,7 +316,7 @@ résultat revient. Jamais pour une session de plan ni une reprise d'échec (il r
 contexte qu'elles existent pour laisser derrière), ni pour une restitution pure sans appel d'outil
 (écrire soi-même coûte moins). Détail : `docs/decisions/2026-08-30-contexte-des-sous-agents.md`.
 
-**Pas de `memory:` sur les six agents** : une mémoire d'agent n'est légitime que pour une
+**Pas de `memory:` sur les sept agents** : une mémoire d'agent n'est légitime que pour une
 information dont aucun fichier du dépôt n'est déjà la source — commandes (`CLAUDE.md`),
 localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 
@@ -345,7 +348,7 @@ arrière-plan avant de committer se referme, elle aussi, sans rien avoir committ
 **L'effort d'un sous-agent est celui de la conversation qui le lance.** L'outil `Agent` règle le
 modèle, pas l'effort : le sous-agent hérite de l'effort **ambiant** de la session d'orchestration.
 `/tasks` pendant qu'une vague tourne affiche le modèle réel de chaque sous-agent — vérifier plutôt
-que supposer. Les six agents du workflow portent leur `model:` en frontmatter ; les agents
+que supposer. Les sept agents du workflow portent leur `model:` en frontmatter ; les agents
 intégrés lancés au fil de l'eau (`Explore`, `general-purpose`, `Plan`), eux, suivent
 `CLAUDE_CODE_SUBAGENT_MODEL` du gabarit de settings, faute de quoi ils hériteraient du modèle de la
 conversation — donc d'Opus dans un cadrage.
@@ -431,6 +434,12 @@ Ces fichiers sont relus à chaque session — leur longueur est un coût récurr
 - Reprendre un échec d'environnement ou de prémisse avec un modèle au-dessus (§9a).
 - Conclure `FAIL` sans avoir nommé la nature de l'échec, ou s'entêter au-delà d'une correction sur
   la même hypothèse (§9a).
+- **Arrêter un plan sur une prémisse que personne n'a confrontée au dépôt** (§9c).
+- **Rendre la main à un humain sur un manque d'information** — il lancera l'enquête qu'on savait
+  lancer, et la latence est le coût dominant d'une orchestration (§9c).
+- Poser un arrêt comme un rapport à lire plutôt que comme une question à options (§9c).
+- À l'inverse : trancher à la place de l'utilisateur — étendre un plan, annuler une migration,
+  élargir une permission — ou relancer hors budget (2 reprises, 1 enquête par session, §9c).
 - Signaler un incident de workflow en prose dans une conversation, ou dans `TASKS.md` (§9b).
 - **Relancer une 3ᵉ fois la même session en montant l'effort** alors que le modèle est le problème (§3).
 - Laisser `xhigh` comme effort permanent « au cas où ».
@@ -462,11 +471,12 @@ l'échec, parce que c'est elle — pas le modèle en place — qui décide de ce
 | --- | --- | --- | --- |
 | **environnement** | l'outillage a empêché la tâche, pas la tâche elle-même : permission refusée, outil absent (`Agent`, navigateur), hook qui refuse, verrou, worktree, dépendance non installée, humain requis absent | à portée → **corriger et continuer**, ce n'est pas un échec ; hors de portée → `FAIL` avec la remédiation nommée, **et un fichier d'incident** (§9b) | **même modèle**, en sous-agent (hérite de l'environnement) |
 | **exécution** | tentée dans un environnement sain, elle n'aboutit pas : N0 rouge, résultat faux, bug non localisé | **une** correction sur l'hypothèse principale, N0 juge ; encore rouge → `FAIL`, la tentative va dans « Déjà écarté » | **un cran au-dessus** (règle de 2026-08-30) |
-| **prémisse** | le diagnostic montre qu'une hypothèse du plan est fausse : attendu contredit par la mesure, contrat à changer, tâche irréalisable dans son périmètre | `FAIL` **sans corriger** — on ne corrige pas un plan dans une session | **aucune** : `ARBITRAGE` direct → `/nouveau-plan` Étape 0 |
+| **prémisse** | le diagnostic montre qu'une hypothèse du plan est fausse : attendu contredit par la mesure, contrat à changer, tâche irréalisable dans son périmètre | `FAIL` **sans corriger** — on ne corrige pas un plan dans une session ; l'hypothèse qui tombe s'écrit **falsifiable**, un fait qu'une lecture confirme ou réfute | **vérification d'abord** (`verificateur-premisse`) : réfutée → reprise comme une `exécution` ; confirmée → question à l'utilisateur (§9c) |
 
 Un échec par **filtre de contenu** (sortie bloquée par la politique du modèle) est une nature à
 part, ni environnement ni exécution : il ne se reprend jamais à mécanique d'écriture identique.
-Table et motif d'arbitrage : `/orchestrer-plan` 5c.
+Table complète : `/orchestrer-plan` 5c. **Ce qui suit un `FAIL` — reprise, enquête ou question à
+l'utilisateur — est en §9c** ; la nature ne décide que du premier geste.
 
 Le plafond d'une correction n'est pas négociable : au-delà, c'est l'anti-pattern de §3 (tourner en
 rond sur la même erreur), et c'est précisément ce qu'un modèle au-dessus règle mieux qu'une
@@ -477,8 +487,9 @@ ne lit que `Bloquant :` d'une revue.
 *Pourquoi.* Sur neuf rapports d'échec relus le 2026-09-09 dans quatre projets, la majorité étaient
 des prémisses fausses ou des blocages d'environnement (permission `Edit` absente en headless,
 humain requis absent) — et chacun avait déclenché une reprise un cran au-dessus, parfois Fable sur
-Opus, qui n'a fait que refaire le diagnostic avant de rendre `ARBITRAGE`. Le modèle n'était jamais
-la cause. Une session qui corrige elle-même ce qui est à sa portée économise en plus le démarrage à
+Opus, qui n'a fait que refaire le diagnostic avant de rendre un arbitrage. Le modèle n'était jamais
+la cause. Ces mêmes neuf rapports ont servi une seconde fois le 2026-09-13 : les prémisses y étaient
+non seulement chères à reprendre, mais **fausses** — d'où la vérification, et §9c. Une session qui corrige elle-même ce qui est à sa portée économise en plus le démarrage à
 froid de la reprise.
 
 ### 9b. Incident de workflow — le fichier qui remonte
@@ -520,3 +531,41 @@ Qui écrit : la session qui rencontre l'incident (`/fin-de-tache`, avant son com
 Ni `TASKS.md` ni `STATUS.md` : un incident n'est pas une tâche du projet, c'est une donnée pour le
 dépôt source. Un `.echec.md` se supprime quand l'échec est résolu ; un incident **reste** — c'est
 sa raison d'être.
+
+### 9c. Ce qui remonte à un humain — et sous quelle forme
+
+*Domicile de cette règle. `/orchestrer-plan` (5c, 5d, Étape 6) et `/reprendre-echec` l'appliquent,
+ne la reformulent pas.*
+
+**Un plan ne s'arrête que sur un choix.** Pas sur un échec, pas sur un manque d'information, pas
+sur une hypothèse qui tombe : sur une question dont la réponse change ce qu'il faut faire, et que
+seul l'utilisateur peut trancher. Tout le reste se cherche — et se cherche automatiquement.
+
+| Ce qui arrive | Ce que ça est vraiment | Ce qui suit |
+| --- | --- | --- |
+| N0 rouge après une correction | une hypothèse fausse | **enquête** (lecture seule, une passe) |
+| « aucune autre piste en une passe » | un manque d'information | **enquête** |
+| « une hypothèse du plan est fausse » | une **affirmation non vérifiée**, écrite par la session qui vient d'échouer | **vérification** (`verificateur-premisse`) — puis reprise si elle est réfutée, question si elle tient |
+| remédiation d'environnement à portée dans l'arbre | rien du tout | **appliquer et continuer** (§9a) |
+| une migration jouée à annuler, une permission à élargir, une prémisse confirmée, un budget épuisé | un choix | **question** |
+
+*Pourquoi.* La latence humaine est le coût dominant d'une orchestration ; et un humain qui reçoit
+« la session a échoué, voici le rapport » n'a **aucune information de plus** que l'orchestrateur —
+il lance l'enquête que l'orchestrateur savait lancer. Lui transférer ce travail, c'est lui facturer
+une attente pour un geste déterministe. À l'inverse, un orchestrateur qui *décide* à la place de
+l'utilisateur — étendre un plan, annuler une migration, élargir une permission — dépasse son rôle :
+il lance et collecte, il n'arbitre pas.
+
+**Le budget est ce qui rend l'autonomie sûre.** Par session : 2 reprises, 1 enquête. Par plan :
+2 enquêtes. Il vit dans une ligne mécanique du rapport d'échec — `Tentatives : reprise=<n>
+enquete=<n>`, gabarit dans `/reprendre-echec` —, donc il survit à une orchestration interrompue
+puis relancée, ce qu'un compte tenu en contexte ne ferait pas. Budget épuisé → question, sans rien
+relancer. Sans ce plafond, « chercher au lieu de demander » devient l'anti-pattern de §3.
+
+**La forme n'est pas cosmétique.** Un arrêt se pose en **question** : une phrase, 2 à 4 options
+avec leur coût et ce que chacune débloque, une recommandation, et ce qui reste lançable sans
+décider. Un arrêt qui renvoie vers un fichier à lire fait refaire à l'utilisateur le diagnostic
+déjà payé ; et une question sans option ne se répond pas, elle se re-cadre. Les options ne
+s'inventent pas au moment du rapport : elles viennent de l'enquête (section `## Issues` du
+`.echec.md`, recopiée mot pour mot) ou de la table de `/orchestrer-plan` Étape 6.
+
