@@ -196,3 +196,40 @@ hors Desktop) :
 
 **Ne pas essayer de prévenir l'orchestrateur par message** (`SendMessage` ne résout pas
 l'auto-identification d'une session, et un message reste éphémère). La pastille, elle, attend.
+
+## Passation — quand il n'y a pas de `S<k>.md`
+
+Ce qui précède s'appuie sur un fichier déjà écrit : la pastille dit « Ouvre `plans/P<n>/S<k>.md` et
+exécute-le », parce que **le `S<k>.md` est la passation**. Rien à recopier.
+
+Mais une session qui se termine **sans** `S<k>.md` — cadrage, analyse, exploration, escalade de
+modèle — n'a rien à passer, et le démarrage à froid qu'impose §5b lui fait tout perdre. Dans ce
+cas, et seulement dans ce cas, **terminer par ce bloc, copiable sans retouche, et rien après lui** :
+
+````
+```
+Session suivante — modèle <M> · effort <E>
+
+Lis, dans cet ordre, et rien d'autre :
+- <chemin> — <pourquoi ce fichier>
+- <chemin> — <pourquoi ce fichier>
+
+État : <où en est le travail, 2-3 lignes>
+Déjà tenté et écarté : <ce qui a échoué, et pourquoi>
+À faire : <objectif de la session suivante, et son critère de fin>
+```
+````
+
+Trois règles pour qu'il serve à quelque chose :
+
+- **« Déjà tenté et écarté » n'est pas optionnel.** C'est la ligne que ni un résumé ni une
+  compaction ne conservent, et c'est exactement ce dont une session d'escalade a besoin — on
+  escalade parce que le modèle précédent a échoué ; lui transmettre le positif sans le négatif le
+  condamne à repayer les mêmes impasses. Même logique que « Écartés — ne pas reproposer » de
+  `/revue-de-conception`. Rien à écarter → écrire `aucune`, jamais supprimer la ligne.
+- **« et rien d'autre »** applique au cas non planifié la règle que le socle impose au cas planifié :
+  un exécutant ne lit que les fichiers listés. Sans elle, la session neuve relit le contexte par
+  défaut et repaie un préfixe entier (`WORKFLOW.md` §3b).
+- **Bloc de code clos, dans la conversation** — pas seulement une pastille : le bloc doit être
+  copiable en Desktop, VS Code, cloud et mobile. Quand une pastille est possible, elle vient **en
+  plus**, avec la ligne « À régler AVANT de lancer » (`WORKFLOW.md` §3).

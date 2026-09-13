@@ -2,7 +2,7 @@
 // Aucune dépendance externe (pas de jq, pas de npm install).
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -234,6 +234,58 @@ export function revuesManquantes(cwd, depuis) {
     manquantes.push(ref);
   }
   return manquantes;
+}
+
+/** Famille de modèle (`opus`, `sonnet`, `haiku`, `fable`) depuis un identifiant ou un libellé.
+ *
+ *  Le hook reçoit un identifiant complet (`claude-sonnet-5`), le plan écrit un libellé (`Sonnet`) :
+ *  seule la famille est comparable, et c'est la seule chose que la grille §2 distingue. `null` sur
+ *  tout ce qui n'est reconnu — un modèle inconnu ne doit jamais produire de faux signal. */
+export function familleModele(valeur) {
+  const s = String(valeur || '').toLowerCase();
+  return ['opus', 'sonnet', 'haiku', 'fable'].find((f) => s.includes(f)) ?? null;
+}
+
+/** Sessions restant à faire dans les plans ouverts : `[{plan, session, modele, effort}]`.
+ *
+ *  Lues dans `plans/P<n>/index.md`, **seul porteur des statuts** (§4a) — jamais dans les `S<k>.md`,
+ *  qui les dupliqueraient. Colonnes attendues : Session, Tâches, Titre, Modèle, Effort, Env.,
+ *  Dépend de, Zone, Statut ; une ligne qui n'a pas cette forme est ignorée.
+ *
+ *  Tolérant de bout en bout : dossier absent, table mal formée, fichier illisible → tableau vide.
+ *  Ce qui s'appuie dessus signale un écart, il n'invente jamais une session. */
+export function sessionsOuvertes(cwd) {
+  const dossierPlans = join(racineDepot(cwd), 'plans');
+  if (!existsSync(dossierPlans)) return [];
+  let entrees;
+  try {
+    entrees = readdirSync(dossierPlans);
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const plan of entrees) {
+    if (!/^P\d+$/.test(plan)) continue;
+    const index = join(dossierPlans, plan, 'index.md');
+    if (!existsSync(index)) continue;
+    let contenu;
+    try {
+      contenu = readFileSync(index, 'utf8');
+    } catch {
+      continue;
+    }
+    for (const ligne of contenu.split('\n')) {
+      if (!ligne.trim().startsWith('|')) continue;
+      const cellules = ligne.split('|').slice(1, -1).map((c) => c.trim());
+      if (cellules.length < 9) continue;
+      const session = /\b(S\d+)\b/.exec(cellules[0]);
+      if (!session) continue;
+      // `[ ]` = reste à faire. `[x]`, `[~]`, l'en-tête et le séparateur sont hors sujet.
+      if (!/\[\s\]/.test(cellules[8])) continue;
+      out.push({ plan, session: session[1], modele: cellules[3], effort: cellules[4] });
+    }
+  }
+  return out;
 }
 
 export function repondre(objet) {

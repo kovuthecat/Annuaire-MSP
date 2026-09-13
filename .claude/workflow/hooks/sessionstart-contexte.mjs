@@ -11,6 +11,7 @@ import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
   repereSession, repondre, riendafaire, racineDepot,
   recupererAmont, etatAmont, aUnRemote, brancheCourante, brancheParDefaut,
+  familleModele, sessionsOuvertes,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -101,6 +102,28 @@ if (!vagueParallele(cwd) && aUnRemote(cwd)) {
       `travail de ce workflow vit et se pousse sur \`${integration}\`, **session cloud comprise** ` +
       `(\`WORKFLOW.md\` §4b). Ne pas finir le plan ici sans l'avoir dit.`
     );
+  }
+}
+
+// Modèle courant contre celui que le plan demande. La ligne « À régler AVANT de lancer » (§3) ne
+// fait que **rappeler** : jusqu'ici rien ne vérifiait, et une session partie au hasard des réglages
+// de la veille ne se découvrait qu'au résultat. Le hook reçoit `model` — si aucune session restant
+// à faire ne demande cette famille, le dire maintenant, quand la correction est encore gratuite.
+// Muet pendant une vague (les sous-agents héritent du modèle de l'orchestrateur, pas du plan) et
+// dès qu'aucun plan ouvert ne déclare de modèle.
+if (!vagueParallele(cwd)) {
+  const familleCourante = familleModele(entree.model);
+  if (familleCourante) {
+    const ouvertes = sessionsOuvertes(cwd).filter((s) => familleModele(s.modele));
+    const attendues = new Set(ouvertes.map((s) => familleModele(s.modele)));
+    if (attendues.size > 0 && !attendues.has(familleCourante)) {
+      const detail = ouvertes.map((s) => `${s.plan}/${s.session} ${s.modele}/${s.effort}`).join(' · ');
+      lignes.push(
+        `**Session lancée en ${familleCourante}, qu'aucune session restant à faire ne demande** ` +
+        `(${detail}). Régler modèle **et** effort avant de commencer (\`WORKFLOW.md\` §3) : en ` +
+        `changer en cours de route repaie tout le préfixe (§3b).`
+      );
+    }
   }
 }
 

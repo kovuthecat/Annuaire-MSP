@@ -55,8 +55,9 @@ entre deux sessions, pour ne pas traîner le contexte de l'une dans l'autre (voi
 
 Backlog : `TASKS.md`. Un plan = `plans/P<n>/` : `index.md` (orchestration, seul porteur des
 statuts) + un `S<k>.md` par session (`/nouveau-plan`). Grille modèle/effort, validation, commits,
-plafonds : `.claude/workflow/WORKFLOW.md`. Quatre hooks les appliquent (git, contexte, plafonds,
-format) — ce ne sont pas des conseils, ils refusent l'action ; dépassement → `/purge-contexte`.
+plafonds : `.claude/workflow/WORKFLOW.md`. Cinq hooks les appliquent (git, contexte, plafonds,
+format, journal des changements de modèle) — ce ne sont pas des conseils, ils refusent l'action ;
+dépassement → `/purge-contexte`.
 La mémoire automatique de Claude Code ne porte jamais un état de projet : `STATUS.md` et
 l'`index.md` font foi, un souvenir qui les contredit est périmé.
 

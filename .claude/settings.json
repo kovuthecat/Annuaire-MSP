@@ -51,6 +51,17 @@
           }
         ]
       }
+    ],
+    "PostModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/postmodelswitch-journal.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "permissions": {
@@ -82,5 +93,20 @@
       "Read(**/*.pem)",
       "Read(**/secrets/**)"
     ]
+  },
+  "_comment_effort": "DEUX clés, et la seconde gagne. `effortLevel` à la racine est le repli pour tout modèle non listé ; `modelSettings.<modèle>.effortLevel` est consulté EN PREMIER par Claude Code — et ce quel que soit le fichier d'où vient chaque clé. Un `/effort` lancé une fois écrit `modelSettings` dans les settings UTILISATEUR et battrait ensuite l'`effortLevel` d'ici, silencieusement. Cette table reprend la main : `modelSettings` suit, lui, la précédence normale (local > projet > utilisateur). Valeurs alignées sur WORKFLOW.md §2-3. `/effort` en session court-circuite tout et reste la dérogation explicite, à consigner dans le bandeau du S<k>.md.",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "high"
+    },
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    },
+    "claude-haiku-4-5": {
+      "effortLevel": "low"
+    }
+  },
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   }
 }

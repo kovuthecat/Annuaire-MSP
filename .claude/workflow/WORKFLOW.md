@@ -60,9 +60,21 @@ sur des symptômes différents, et les confondre coûte cher dans les deux sens 
 - `max` : au-delà de `xhigh`, mêmes réserves d'usage — jamais par défaut ; non réglable via
   `effortLevel` du projet, seulement via `/effort max` en session (rendements décroissants documentés).
 
-Le défaut vient de `.claude/settings.json` du projet (`"effortLevel": "medium"`), pas de Claude
-Code. Chaque session porte **modèle + effort + environnement** dans le bandeau de son `S<k>.md` —
-à **régler à la main avant de lancer la session**, aucun routing automatique.
+Le défaut vient de `.claude/settings.json` du projet, pas de Claude Code. Chaque session porte
+**modèle + effort + environnement** dans le bandeau de son `S<k>.md` — à **régler avant de lancer
+la session**, aucun routing automatique.
+
+**L'effort suit le modèle** (v0.31.0). Le gabarit pose une table `modelSettings` alignée sur la
+grille ci-dessus — Opus `high`, Sonnet `medium`, Haiku `low` — donc choisir le modèle porte
+l'effort avec lui, et il n'y a plus qu'un réglage à faire au lancement. `/effort` en session
+court-circuite la table : c'est la dérogation explicite, à consigner dans le bandeau du `S<k>.md`.
+
+⚠️ **La table n'est pas une commodité, c'est un cran d'arrêt.** Claude Code consulte
+`modelSettings.<modèle>.effortLevel` **avant** la clé racine `effortLevel`, et ce quel que soit le
+fichier d'où vient chacune. Un `/effort` lancé une fois écrit `modelSettings` dans les settings
+**utilisateur**, qui battrait ensuite l'`effortLevel` du projet — dans tous les projets, en
+silence. La table du gabarit reprend la main : `modelSettings` suit, lui, la précédence normale
+(local > projet > utilisateur).
 
 **Rappel systématique à l'humain qui lance** — *domicile de cette règle, les skills y renvoient.*
 Une pastille `spawn_task`, une commande affichée ou un « lance S3 » démarre avec les **réglages
@@ -79,28 +91,58 @@ permanence est le poste de dépense le plus silencieux du workflow.
 
 ## 3b. Coût et cache
 
-Faits vérifiés (source : <https://code.claude.com/docs/en/prompt-caching.md>). Un hit de cache
-coûte **0,1×** le prix d'entrée ; TTL 5 min par défaut, 1 h possible. **Invalident le préfixe** :
-`/model`, une skill avec `model:` en frontmatter invoquée en cours de conversation, un changement
-d'effort, l'ajout ou le retrait d'un serveur MCP, `/compact`. `/rewind` **conserve** le préfixe.
-Éditer `CLAUDE.md` en cours de session n'invalide rien — l'édition ne s'applique qu'après `/clear`.
-Deux sessions parallèles du même dossier partagent le cache **si le snapshot git est identique**.
-Un sous-agent **ne lit jamais** le cache de son parent : son premier appel est à froid.
+Sources : <https://code.claude.com/docs/en/prompt-caching.md> et la doc API du prompt caching.
+Un hit de cache coûte **0,1×** le prix d'entrée ; TTL 5 min par défaut, 1 h possible.
+
+**L'invalidation a trois étages, pas un.** Un changement n'invalide que son étage et ceux du
+dessous — « ✓ » = le cache survit :
+
+| Changement | Outils | Système | Messages |
+| --- | :---: | :---: | :---: |
+| Modèle (`/model`), définitions d'outils, serveur MCP ajouté/retiré | ✗ | ✗ | ✗ |
+| Contenu du prompt système | ✓ | ✗ | ✗ |
+| Effort, `thinking` | ✓ | selon modèle | ✗ |
+| Contenu des messages, images | ✓ | ✓ | ✗ |
+
+Seuls un changement d'**outils** et un changement de **modèle** forcent une reconstruction
+complète — et le modèle n'a **aucune échappatoire** : les caches sont scopés par modèle.
+`/rewind` conserve le préfixe. Éditer `CLAUDE.md` en cours de session n'invalide rien et ne sert à
+rien : l'édition ne s'applique qu'après `/clear`.
+
+**Deux seuils à connaître.** Le minimum cacheable dépend du modèle et n'est pas monotone :
+512 tokens sur Opus 5, 1 024 sur Sonnet 5, **4 096 sur Haiku 4.5**. En dessous, rien n'est mis en
+cache — sans erreur ni signal. Et chaque point de reprise ne remonte que **20 positions** : un run
+d'appels d'outils *parallèles* compte pour une seule position, un long run *séquentiel* peut
+pousser l'entrée précédente hors de portée.
 
 Conséquences pour le workflow :
 
 - Régler modèle **et effort** avant de lancer (§3) est une règle de cache, pas d'hygiène : un
-  changement en cours de session repaie tout le préfixe.
-- `/rewind` pour couper une fausse piste ; `/compact` seulement avant une pause.
+  changement en cours de session repaie tout le préfixe. Depuis la v0.31.0 ce n'est plus seulement
+  écrit — le hook `SessionStart` le vérifie, et `PostModelSwitch` trace les changements (§7).
+- `/rewind` pour couper une fausse piste ; `/compact` seulement avant une pause — ou **juste avant
+  un changement de modèle délibéré** (fin d'exploration en Opus, exécution en Sonnet) : le cache
+  est détruit par le switch de toute façon, et tant qu'il est chaud la requête de résumé relit le
+  préfixe au tarif cache. Jamais avant une **escalade** en revanche : on escalade parce que le
+  modèle précédent a échoué, et un résumé écrit par lui perd justement les impasses et le texte des
+  erreurs qui justifiaient l'escalade. Là, c'est le bloc de passation qu'il faut (`/fin-de-tache`).
+- Compacter **tôt** n'économise rien : ça déplace le coût. (À ne pas confondre avec
+  `/purge-contexte`, qui range des fichiers sur disque et n'a rien à voir avec le cache.)
 - Une skill avec `model:` en frontmatter invoquée en cours de conversation coûte un préfixe
   complet — acceptable pour une skill qui ouvre la session (`/orchestrer-plan`), pas pour une
   skill courte lancée en cours de route (`/purge-contexte`).
-- Chaque sous-agent d'une vague part à froid : le préfixe (règles injectées, descriptions de
-  skills, `CLAUDE.md`) est payé plein tarif **par session**, pas à 1/10 — d'où l'exigence d'un
-  socle commun court.
-- Une vague parallèle lancée d'un bloc après le dernier commit est la seule configuration où des
-  sessions partagent un préfixe : ne rien committer entre deux lancements de la même vague.
-- Éditer `CLAUDE.md` en cours de session ne sert à rien avant `/clear`.
+- Chaque sous-agent part à froid : il **ne lit jamais** le cache de son parent, et son préfixe
+  (règles injectées, descriptions de skills, `CLAUDE.md`) est payé plein tarif **par session**,
+  pas à 1/10 — d'où l'exigence d'un socle commun court. Corollaire du seuil ci-dessus : sur un
+  agent Haiku multi-tours, un préfixe descendu sous 4 096 tokens ne cache plus rien du tout. L'effet
+  absolu reste petit (il est borné par la taille du préfixe) : ce n'est pas un argument contre le
+  raccourcissement du socle, qui profite à toutes les sessions.
+- **Lancer une vague en décalé, pas d'un bloc.** Deux sessions du même dossier partagent le cache
+  si le snapshot git est identique — mais une entrée n'est lisible qu'**après le début du streaming
+  de la première réponse**. Des sessions démarrées ensemble écrivent chacune la leur et n'en lisent
+  aucune. Lancer la première, attendre ses premiers tokens, puis lancer les suivantes : sur une
+  vague de 4, la part partagée passe d'environ 5,0× à 1,55× le prix d'entrée. Et toujours : ne rien
+  committer entre deux lancements de la même vague.
 
 ## 4. Plans
 
@@ -276,6 +318,11 @@ arrière-plan avant de committer se referme, elle aussi, sans rien avoir committ
 
 **L'effort d'un sous-agent est celui de la conversation qui le lance.** L'outil `Agent` règle le
 modèle, pas l'effort : le sous-agent hérite de l'effort **ambiant** de la session d'orchestration.
+`/tasks` pendant qu'une vague tourne affiche le modèle réel de chaque sous-agent — vérifier plutôt
+que supposer. Les cinq agents du workflow portent leur `model:` en frontmatter ; les agents
+intégrés lancés au fil de l'eau (`Explore`, `general-purpose`, `Plan`), eux, suivent
+`CLAUDE_CODE_SUBAGENT_MODEL` du gabarit de settings, faute de quoi ils hériteraient du modèle de la
+conversation — donc d'Opus dans un cadrage.
 Régler cette conversation à l'effort le plus haut de la vague **avant** de dérouler
 `/orchestrer-plan` (le rappel « À régler AVANT de lancer » de §3 vaut pour l'orchestrateur
 lui-même) couvre donc `high` sans sortir de la voie normale — l'orchestrateur tourne sur Haiku et
@@ -324,15 +371,16 @@ Protocole complet : skill **`/verif-visuelle`**.
 ## 7. Garde-fous appliqués (hooks)
 
 Les règles ci-dessus qui comptent vraiment ne sont pas seulement écrites : elles sont **appliquées**
-par quatre hooks (`.claude/workflow/hooks/`). Le câblage réel vit désormais dans `hooks.json` du
+par cinq hooks (`.claude/workflow/hooks/`). Le câblage réel vit désormais dans `hooks.json` du
 plugin (chemins `.claude/workflow`) — le `settings.json` d'un projet n'en porte plus la
 définition. Une instruction ne contraint rien ; un hook si.
 
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
-| `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, `STATUS.md` en retard de ≥3 commits, plafonds dépassés, dépôt sous un dossier synchronisé (`SynologyDrive`/`OneDrive`/`Dropbox`/`iCloud`) sans témoin `.git/info/synchro-exclue`. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
+| `sessionstart-contexte.mjs` | SessionStart | Signale : retard sur `origin/main` (après un `git fetch` plafonné à 6 s) et branche autre que celle d'intégration (§4b), vague en cours, **session lancée dans un modèle qu'aucune session `[ ]` des plans ouverts ne demande** (lu dans `plans/P*/index.md`, seul porteur des statuts — §4a ; muet pendant une vague, où les sous-agents héritent du modèle de l'orchestrateur), `STATUS.md` en retard de ≥3 commits, plafonds dépassés, dépôt sous un dossier synchronisé (`SynologyDrive`/`OneDrive`/`Dropbox`/`iCloud`) sans témoin `.git/info/synchro-exclue`. Silencieux si tout est sain, et sans objet sur un dépôt sans remote. Mémorise `HEAD` au démarrage — c'est ce repère qui permet au hook `Stop` de savoir ce que la session a commité. |
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
+| `postmodelswitch-journal.mjs` | PostModelSwitch | Écrit une ligne JSONL par changement de modèle dans `.claude/journal-modeles.jsonl` (date, `de`, `vers`, session). **Ne bloque jamais** : `PreModelSwitch` pourrait refuser un switch, mais mettre de la friction sur une escalade que §2 recommande serait le mauvais arbitrage — on trace, on n'empêche pas. Le journal est le seul retour d'expérience sur la grille §2 : un modèle systématiquement escaladé n'est pas un incident, c'est une ligne de grille fausse (entrée de `/analyser-incidents`). Sous `.claude/`, donc invisible au hook `Stop` — il ne peut ni déclencher un faux « fin de session non consignée », ni en satisfaire un à tort. |
 | `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session, et ne rappelle ensuite que si la liste des manquements a changé. **Sous `.claude/wave.lock`, seuls les plafonds sont signalés** : un diff non commité et une revue absente y sont le fonctionnement normal (§4b), pas un manquement — les signaler à chaque tour ne faisait que polluer l'orchestrateur. |
 
 ### Plafonds de lignes

@@ -122,8 +122,16 @@ Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL · MOTIF: <une phr
 })
 ```
 
-Un agent par session, dans l'ordre de l'index ; vague parallèle → tous en arrière-plan d'affilée,
-vague séquentielle → un seul à la fois, arrêt au premier `FAIL` (Étape 5). `isolation: "worktree"`
+Un agent par session, dans l'ordre de l'index ; vague parallèle → tous en arrière-plan, **le premier
+seul, les autres une fois qu'il a commencé à produire** ; vague séquentielle → un seul à la fois,
+arrêt au premier `FAIL` (Étape 5).
+
+**Pourquoi décaler le premier** (`WORKFLOW.md` §3b) : les sous-agents d'une vague partagent le même
+préfixe (règles injectées, descriptions de skills, `CLAUDE.md`), mais une entrée de cache n'est
+lisible qu'**après le début du streaming de la première réponse**. Lancés tous ensemble, ils
+écrivent chacun la leur et n'en lisent aucune ; lancés en décalé, le premier écrit et les suivants
+lisent à 0,1×. Le décalage se compte en secondes et ne change ni l'ordre, ni le parallélisme réel,
+ni quoi que ce soit au résultat. `isolation: "worktree"`
 interdit — la vague partage un arbre. **`subagent_type: "fork"` interdit** : un fork hérite de toute
 la conversation d'orchestration, alors que l'invariant du workflow est qu'un exécutant ne connaisse
 que son `S<k>.md`. Ne jamais recopier le contenu du `S<k>.md` dans le prompt.
