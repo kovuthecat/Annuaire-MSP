@@ -34,7 +34,8 @@ Constater, ne rien corriger encore. Huit points :
    `extraKnownMarketplaces`, hook `SessionStart` de bootstrap (`.claude/hooks/session-start.sh`),
    entrées de hooks à **chemins absolus** — tous à retirer. Une `permissions.allow` enrichie par
    l'usage réel du projet est en revanche à **préserver**, jamais à écraser.
-2. `CLAUDE.md` — existe-t-il ? ligne d'import `@…CLAUDE-BASE.md` ? section `# Compact instructions` ?
+2. `CLAUDE.md` — existe-t-il ? ligne d'import `@…CLAUDE-BASE.md` ? section `# Compact instructions`
+   héritée (elle a été centralisée dans `CLAUDE-BASE.md` §Compactage — à retirer, pas à compléter) ?
    vraies commandes du projet, ou placeholders jamais remplis ?
 3. **Workflow déjà vendoré ?** — `.claude/workflow/manifest.json` présent = le projet est déjà au
    format cible, seule une synchronisation peut être due (`/maj-workflow`). Repérer aussi les
@@ -143,8 +144,9 @@ Ordre imposé : le gain décroît, le risque croît.
 3. **Bootstrap obsolète** — supprimer `.claude/hooks/session-start.sh` s'il existe.
 
 4. **`CLAUDE.md`** — supprimer la ligne d'import `@…CLAUDE-BASE.md`. Ne **rien** mettre à la place
-   (le hook `SessionStart` vendoré injecte les règles). Garder tout le reste. Ajouter en fin de
-   fichier la section `# Compact instructions` de `.claude/workflow/templates/CLAUDE.md` si absente.
+   (le hook `SessionStart` vendoré injecte les règles). Garder tout le reste. Supprimer aussi une
+   section `# Compact instructions` héritée : elle vit désormais dans `CLAUDE-BASE.md` §Compactage,
+   injecté à chaque session — la garder ici la fige à la version du jour de la migration.
 
 5. **`AGENTS.md` racine** — Codex est sorti du workflow (v0.29.0) : il n'y a plus de fichier central
    à pointer. S'il existe et renvoie vers `.claude/workflow/AGENTS.md` (chemin relatif ou absolu),

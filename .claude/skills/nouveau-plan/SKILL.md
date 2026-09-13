@@ -108,6 +108,10 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 | [S1](S1.md) | T1-T3 | … | Haiku | low | — | — | `css/`, `index.html` | [ ] |
 | [S2](S2.md) | T5 | … | Sonnet | high | — | S1 | `js/edit/` | [ ] |
 
+<!-- Statut : [ ] à faire · [x] fait, revue sans bloquant · [x]! fait, revue à bloquant non trié -->
+<!-- Vocabulaire complet : WORKFLOW.md §4a — ne pas inventer d'autre marque ici. -->
+
+
 ## Ordonnancement
 - **Vague 1 — parallélisable** : S1 · S3 (zones disjointes, aucune dépendance).
   *Pourquoi maintenant* : <ce que cette vague débloque pour la suite, une ligne>
@@ -228,6 +232,7 @@ L'« Objectif d'ensemble » ne bouge pas. S'il faut le récrire, ce n'était pas
 - **Tests** : <créés/mis à jour : fichiers, cas couverts> — ou « — » justifié en 1 ligne
 - **N1 visuel auto** : <écran/parcours à vérifier au navigateur in-app, ou `—`> → `/verif-visuelle`
 - **N2 humain (jugement esthétique/UX)** : <checklist ou `—`> → à consigner dans `VALIDATION.md`
+- **Anti-raccourci** : <ce qui ressemblerait à un PASS sans en être un, ou `—`>
 
 ### Si bloqué
 <condition d'arrêt SPÉCIFIQUE → STOP + quoi signaler>
@@ -264,12 +269,39 @@ Principes :
   dit *ce que ça sert*. Si les deux se paraphrasent, c'est le pourquoi qui manque : remonter d'un
   cran vers l'objectif d'ensemble du plan jusqu'à trouver ce que cette tâche-là rend possible.
 - **« Validation » = critères vérifiables** (commande + résultat, ou écran + attendu), jamais « ça marche ».
+- **« Anti-raccourci » nomme le faux-vert de CETTE tâche**, celui qu'un exécutant pressé ou un
+  outillage muet produirait sans mentir : `typecheck` qui ne compile aucun fichier, test skippé ou
+  marqué `todo`, assertion adaptée au résultat observé, fixture figée à la place de l'appel réel,
+  build qui ne recompile pas le fichier touché. C'est le seul champ de la Validation que l'exécutant
+  ne peut pas satisfaire en le lisant : il sert au relecteur, qui vérifie que le PASS est vrai. Le
+  cadreur est le seul à savoir où est le raccourci — s'il ne voit pas lequel, `—`, jamais une
+  formule générique.
 - **Toute décision de `docs/decisions/` en jeu s'écrit sous sa forme opérationnelle** : la
   mécanique à employer (« passe par le script X »), jamais seulement l'interdit de contenu
   (« n'écris jamais de paroles ») — un exécutant reconnaît une mécanique, pas une interdiction
   abstraite écrite la veille (constat du 2026-09-10).
 - **N1 ≠ N2** : ce qu'un navigateur peut constater (erreur console, texte absent, 404, débordement)
   est N1 et ne va **jamais** dans `VALIDATION.md`. N2 = uniquement le jugement humain.
+
+## Étape 4b — Faire vérifier la découpe (jamais par soi-même)
+
+Le plan est écrit, rien n'est encore commité. Lancer l'agent **`verificateur-plan`**, **au premier
+plan** (§5), en lui donnant `P<n>` et, en mode extension, les sessions ajoutées :
+
+> Vérifie `plans/P<n>/` — les quatre contrôles.
+
+Il ne juge pas la conception : il confronte le plan au dépôt (fichiers de « Modifier » qui
+n'existent pas sans étape de création, sessions parallèles dont les fichiers se recoupent,
+Validation sans commande vérifiable, `Dépend de` incohérent). Haiku, un tour, quelques secondes.
+
+**Pourquoi un autre que le cadreur** : l'Étape 1 finit par « plan rédigeable maintenant ? », et
+c'est le rédacteur qui répond. Une découpe fausse ne se voit pas de l'intérieur — elle se voit à
+la troisième vague de remédiation (Étape 0), quand elle a déjà coûté deux plans.
+
+Chaque écart rendu se corrige **ici**, avant l'Étape 6, ou se justifie en une ligne dans le
+`S<k>.md` concerné s'il est volontaire (un fichier créé par une session antérieure de la même
+vague, par exemple). `RAS` → continuer sans rien écrire : la vérification ne laisse pas de trace,
+c'est le plan corrigé qui en est la trace.
 
 ## Étape 5 — Reporter dans `TASKS.md`
 

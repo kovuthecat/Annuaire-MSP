@@ -280,7 +280,8 @@ export function sessionsOuvertes(cwd) {
       if (cellules.length < 9) continue;
       const session = /\b(S\d+)\b/.exec(cellules[0]);
       if (!session) continue;
-      // `[ ]` = reste à faire. `[x]`, `[~]`, l'en-tête et le séparateur sont hors sujet.
+      // `[ ]` = reste à faire. `[x]`, `[x]!` (revue à bloquant, §4a), `[~]`, l'en-tête et le
+      // séparateur sont hors sujet.
       if (!/\[\s\]/.test(cellules[8])) continue;
       out.push({ plan, session: session[1], modele: cellules[3], effort: cellules[4] });
     }

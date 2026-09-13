@@ -143,6 +143,11 @@ corriger sur-le-champ (commit correctif + N0 rejoué), et sort alors du `.revue.
 invalide une hypothèse du plan reste une extension (`/nouveau-plan` Étape 0), jamais une correction
 locale.
 
+**`Bloquant : <n>` avec n > 0 et rien corrigé sur-le-champ → repasser le statut de la session de
+`[x]` à `[x]!` dans l'`index.md`** (vocabulaire `WORKFLOW.md` §4a), dans le commit de suivi déjà
+prévu au point 9. Le `.revue.md` n'étant jamais commité, c'est la seule trace du défaut qui
+survivra à la session — et elle dit au tri de clôture qu'il reste quelque chose à arbitrer ici.
+
 ## Fin de plan (toutes les sessions exécutées et validées)
 
 Le travail de code est déjà commité — chaque session a pris le sien. Il ne reste que le rangement.
@@ -156,7 +161,10 @@ Le travail de code est déjà commité — chaque session a pris le sien. Il ne 
     point 17, jamais avant.
 15. **Nettoyer les marqueurs** : `.claude/wave.lock` s'il existe, et `.claude/vague/` (sorties brutes
     et identifiants de session — transitoires).
-16. **Ranger le contexte** : statuts `[x]` complets dans l'`index.md`, lignes purgées de `TASKS.md`,
+16. **Ranger le contexte** : statuts complets dans l'`index.md` — et **aucun `[x]!` ne survit à la
+    clôture** : verser son bloquant dans `TASKS.md` (ci-dessous) est précisément ce qui le repasse
+    à `[x]` (`WORKFLOW.md` §4a). Un `[x]!` encore là en fin de plan veut dire qu'une revue n'a pas
+    été triée. Puis : lignes purgées de `TASKS.md`,
     `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. **Trier les revues** :
     chaque `plans/P<n>/S<k>.revue.md` est versé dans `TASKS.md` — les **bloquants** en tête, marqués
     comme tels, le backlog à la suite, jamais dans `VALIDATION.md`. `Couverture : en cours` : verser

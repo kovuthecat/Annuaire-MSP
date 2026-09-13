@@ -76,6 +76,9 @@ avec la tâche. C'est le seul canal qui remonte au dépôt source — ni `TASKS.
 ## Compactage
 
 Préserver : décisions et leur justification, chemins modifiés, résultats de validation N0/N1,
-tâches du plan restant à faire. Élaguer : exploration, fausses pistes, sorties de commandes,
-contenu déjà sur disque (il se relit). En session `/cadrer`, question et critère de fin survivent
-toujours au compactage.
+tâches du plan restant à faire, et **les repères mécaniques déjà posés** — quelles tâches sont
+commitées (`Plan: P<n>/S<k>/T<m>`), quel `Nature :` a été conclu, quel `Bloquant :` est connu. Un
+résumé garde volontiers « j'ai fait T1 et T2 » en perdant lequel des deux est commité : la suite
+recommite ou saute. Élaguer : exploration, fausses pistes, sorties de commandes, contenu déjà sur
+disque (il se relit). En session `/cadrer`, question et critère de fin survivent toujours au
+compactage.

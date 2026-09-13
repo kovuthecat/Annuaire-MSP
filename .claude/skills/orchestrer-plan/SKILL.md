@@ -204,7 +204,10 @@ l'index, ne rien réécrire.
 Une fois la vague collectée, lister les `plans/P<n>/S<k>.revue.md` déposés par ses sessions
 (`/fin-de-tache`, relecture qualité — fichiers non commités, c'est normal). Pour chacun dont la
 première ligne `Bloquant : <n>` porte n > 0 : **une ligne** dans le bloc de fin de vague et le
-rapport final — `Revue S<k> : <n> bloquant(s) → plans/P<n>/S<k>.revue.md` — rien de plus. Ne
+rapport final — `Revue S<k> : <n> bloquant(s) → plans/P<n>/S<k>.revue.md` — rien de plus, **et son
+statut passe de `[x]` à `[x]!` dans l'`index.md`** (vocabulaire : `WORKFLOW.md` §4a). C'est la
+seule écriture que la revue provoque : le `.revue.md` n'étant jamais commité, sans cette marque le
+défaut ne survit pas à la vague. Ne
 jamais ouvrir les trouvailles (relayer, jamais reformuler) ; **non bloquant** : la vague suivante
 s'enchaîne, l'arbitrage appartient à l'humain, le versement dans `TASKS.md` au tri de clôture
 (`/fin-de-tache` point 16). Un bloquant qui invalide une hypothèse du plan suit le chemin déjà
@@ -268,7 +271,7 @@ Une vague dont la ligne d'ordonnancement de l'index porte le mot **`gate`** arr�
 il rend la main avec l'état et ce qui reste. La vague suivante ne se lance qu'à une relance
 explicite de cette skill.
 
-**Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]`) → l'enchaîner dans le même
+**Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]` ou `[x]!` — §4a) → l'enchaîner dans le même
 tour, retour à l'Étape 2. Plan épuisé (dernière vague collectée) → Étape 6 puis fin.
 
 ## Étape 5c — Reprise automatique (une par session, à froid)

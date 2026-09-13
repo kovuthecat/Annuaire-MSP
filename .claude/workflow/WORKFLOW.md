@@ -190,6 +190,26 @@ Le suivi a échoué chaque fois qu'une même information a dû être écrite à 
 **Qui a le droit de cocher `index.md`** : un seul juge à la fois, décidé par `.claude/wave.lock` —
 mécanisme complet en §4b, ne pas le reformuler ici.
 
+**Trois statuts, pas deux** — *vocabulaire, domicile ici* :
+
+| Statut | Veut dire |
+| --- | --- |
+| `[ ]` | pas lancée, ou lancée sans verdict |
+| `[x]` | `PASS`, revue déposée sans bloquant (`Bloquant : 0`) ou sans diff à relire |
+| `[x]!` | `PASS`, **mais la revue a trouvé au moins un bloquant** — travail commité, défaut connu, non trié |
+
+Le troisième existe parce que le verdict est **auto-déclaré** : c'est la session qui vient d'écrire
+le code qui rend `PASS`. La relecture indépendante (`relecteur-session`) arrive après, et elle est
+non bloquante par construction (§5b) — sans marque distincte, sa seule trace vivante est un fichier
+`.revue.md` non commité, et un `[x]` plein efface la différence entre « relu, rien à signaler » et
+« relu, un défaut réel trouvé ». Le plan ne se clôt pas sur un `[x]!` : le tri de clôture
+(`/fin-de-tache` point 16) verse le bloquant dans `TASKS.md` et **c'est ce versement qui le passe à
+`[x]`**. Un `[x]!` qui reste est un défaut connu que personne n'a arbitré — jamais un oubli
+d'écriture.
+
+`[x]!` ne relance rien, n'arrête aucune vague et ne change aucune dépendance : une session `[x]!`
+satisfait les dépendances des suivantes exactement comme un `[x]`.
+
 ### 4b. Commits & parallélisation
 
 *Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
@@ -266,7 +286,7 @@ Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contex
 (chemins, sorties, fausses pistes) qu'on paie ensuite à chaque tour — et c'est justement en cadrage
 Opus, le contexte le plus cher, qu'on en accumule le plus.
 
-Cinq agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
+Six agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
 
 - `explorateur` → localiser quelque chose qui touche plus d'1 fichier.
 - `verificateur-n0` → lancer build/typecheck/tests (jamais ces commandes en direct dans la
@@ -275,11 +295,17 @@ Cinq agents du plugin, chacun ne rend que sa **conclusion** — jamais les trace
 - `lecteur-doc` → lire une doc externe.
 - `relecteur-session` → relire le diff d'une session close et **déposer** son `.revue.md`
   (`/fin-de-tache`).
+- `verificateur-plan` → confronter un plan fraîchement écrit au dépôt, avant son commit
+  (`/nouveau-plan` Étape 4b).
 
-Les cinq se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
+**Les deux derniers ont la même raison d'être : personne ne relit son propre travail.** Le
+cadreur ne voit pas sa découpe fausse, l'exécutant ne voit pas son PASS vide — dans les deux cas
+le contrôle vaut par le fait qu'il vient d'ailleurs, pas par sa finesse.
+
+Les six se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
 conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
-cinquième est le dernier geste de la session : lancé en arrière-plan, son retour n'atteindrait
-aucun tour et la revue ne serait jamais déposée.
+`relecteur-session` est le dernier geste de la session : lancé en arrière-plan, son retour
+n'atteindrait aucun tour et la revue ne serait jamais déposée.
 
 **`fork`** : légitime quand la tâche a besoin du contexte courant **et** produit du bruit à
 retenir dehors (outils, itérations) — il hérite la conversation et réutilise le cache, seul son
@@ -287,7 +313,7 @@ résultat revient. Jamais pour une session de plan ni une reprise d'échec (il r
 contexte qu'elles existent pour laisser derrière), ni pour une restitution pure sans appel d'outil
 (écrire soi-même coûte moins). Détail : `docs/decisions/2026-08-30-contexte-des-sous-agents.md`.
 
-**Pas de `memory:` sur les cinq agents** : une mémoire d'agent n'est légitime que pour une
+**Pas de `memory:` sur les six agents** : une mémoire d'agent n'est légitime que pour une
 information dont aucun fichier du dépôt n'est déjà la source — commandes (`CLAUDE.md`),
 localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 
@@ -319,7 +345,7 @@ arrière-plan avant de committer se referme, elle aussi, sans rien avoir committ
 **L'effort d'un sous-agent est celui de la conversation qui le lance.** L'outil `Agent` règle le
 modèle, pas l'effort : le sous-agent hérite de l'effort **ambiant** de la session d'orchestration.
 `/tasks` pendant qu'une vague tourne affiche le modèle réel de chaque sous-agent — vérifier plutôt
-que supposer. Les cinq agents du workflow portent leur `model:` en frontmatter ; les agents
+que supposer. Les six agents du workflow portent leur `model:` en frontmatter ; les agents
 intégrés lancés au fil de l'eau (`Explore`, `general-purpose`, `Plan`), eux, suivent
 `CLAUDE_CODE_SUBAGENT_MODEL` du gabarit de settings, faute de quoi ils hériteraient du modèle de la
 conversation — donc d'Opus dans un cadrage.

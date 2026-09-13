@@ -127,7 +127,13 @@ if (!vagueParallele(cwd)) {
   }
 }
 
-const dernierStatus = git(cwd, 'log', '-1', '--format=%H', '--', 'STATUS.md');
+// `git log -- STATUS.md` retrouve le dernier commit ayant touché le fichier même si celui-ci a
+// depuis été SUPPRIMÉ : sans ce test d'existence, un projet qui retire son STATUS.md hérite d'un
+// « retard » qui grandit à chaque commit et que rien ne peut résorber. Un avertissement permanent
+// et inactionnable apprend à ignorer la sortie des hooks — il coûte donc aussi les signaux justes.
+const dernierStatus = existsSync(join(cwd, 'STATUS.md'))
+  ? git(cwd, 'log', '-1', '--format=%H', '--', 'STATUS.md')
+  : null;
 if (dernierStatus) {
   const retard = git(cwd, 'rev-list', '--count', `${dernierStatus}..HEAD`);
   if (retard && Number(retard) >= 3) {

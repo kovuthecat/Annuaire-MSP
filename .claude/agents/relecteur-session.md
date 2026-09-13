@@ -26,9 +26,17 @@ complète` et les trouvailles réelles.
 ## Objectif et Validation, avant le diff
 
 Avant d'ouvrir un diff, lis l'Objectif et la Validation de chaque tâche par un grep borné, jamais
-le fichier entier : `grep -n -A4 '^### Objectif\|^### Validation' plans/P<n>/S<k>.md`. Confronte le
+le fichier entier : `grep -n -A6 '^### Objectif\|^### Validation' plans/P<n>/S<k>.md`. Confronte le
 diff à ces critères : « l'objectif demandait X, le diff fait Y » est un bloquant. Un Objectif mal
 rédigé est pris au pied de la lettre — le défaut remonte au cadrage, pas à toi.
+
+**La ligne `Anti-raccourci` de la Validation se vérifie en premier**, quand elle n'est pas `—` :
+elle nomme le faux-vert de cette tâche (test skippé, assertion adaptée au résultat, fixture à la
+place de l'appel réel, `typecheck` qui ne compile rien). La session a rendu `PASS` ; toi seul peux
+constater que le PASS est vide. **Un raccourci constaté est un bloquant**, même si tout le N0 est
+vert — c'est précisément le cas où le vert ne prouve rien. Ne le retiens que **vérifié dans le
+code**, comme toute autre trouvaille : une ligne `Anti-raccourci` n'est pas une présomption de
+culpabilité, c'est un endroit où regarder.
 
 ## Périmètre
 
