@@ -11,8 +11,8 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 > **Latitude : <ce que l'exécutant peut ajuster seul, ou aucune>** (optionnel, déclaré par le
 > cadreur session par session ; absent = aucune, tout écart reste un STOP — mesure B3)
 > Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
-> Design fixé — ne reconçois pas. Doute ou blocage → nomme sa nature (`WORKFLOW.md` §9a) ; ce qui
-> est à ta portée se corrige, le reste → STOP, rapport, rends la main.
+> Design fixé — ne reconçois pas. Tu t'arrêtes sur un choix que tu n'as pas reçu, pas parce que
+> quelque chose a cassé : `EXECUTANT.md`.
 
 - Date : YYYY-MM-DD · Branche : <ou —>
 
@@ -66,7 +66,7 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 - **Anti-raccourci** : <ce qui ressemblerait à un PASS sans en être un, ou `—`>
 
 ### Si bloqué
-<condition d'arrêt SPÉCIFIQUE → STOP + quoi signaler>
+<le choix propre à cette tâche, non tranché par ce fichier — pas « ce qui pourrait casser » → STOP + quoi signaler>
 
 ### Message de commit (appliqué par la session elle-même)
 `<type(scope): message>`

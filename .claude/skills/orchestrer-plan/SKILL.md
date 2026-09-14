@@ -28,11 +28,12 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
 - **Ne jamais corriger soi-même, ni reprendre la conversation d'une session en échec.** Une session
   qui échoue rend la main ; l'orchestrateur ne touche ni au code ni au rapport de passation. Ce
   qu'il a le droit de lancer après un `FAIL` : la **vérification de prémisse** et la **reprise** de
-  l'Étape 5c, puis l'**enquête** de l'Étape 5d — chacune à froid, dans une session dédiée qui
-  travaille *chez elle*, chacune bornée par le budget de la session (`Tentatives :`). Jamais un
-  `SendMessage` ou un `fork` vers l'agent en échec. Ce qu'il lance après un `PASS` : la **revue de
-  session** qui manque (Étape 5) — le relecteur écrit son fichier, l'orchestrateur n'en lit que
-  deux lignes.
+  l'Étape 5c, puis l'**enquête** de l'Étape 5d — chacune bornée par le budget de la session
+  (`Tentatives :`). Jamais un `fork` vers l'agent en échec — interdit sans condition. `SendMessage`
+  vers l'agent en échec n'est permis que sous les trois conditions du canal court
+  (`remediation.md`, Étape 5c) ; hors de ces conditions, il reste interdit et la reprise est à
+  froid. Ce qu'il lance après un `PASS` : la **revue de session** qui manque (Étape 5) — le
+  relecteur écrit son fichier, l'orchestrateur n'en lit que deux lignes.
 - **Ne jamais rendre la main sur un manque d'information.** Un plan ne s'arrête que sur une
   **décision** qui appartient à l'utilisateur, et elle se pose alors en **question à options**
   (`WORKFLOW.md` §9c, Étape 6). Ce qui manque se cherche : c'est le rôle de l'Étape 5d. Rendre la
@@ -56,7 +57,8 @@ la session d'orchestration — les tours suivants n'y retournent que pour cocher
 Dans cet ordre :
 
 1. **Arbre sale** — demander à `resumeur-git` : un fichier non commité qui intersecte une `Zone
-   modifiée` de la vague → STOP, ne pas écraser du travail non commité. Sinon, référence :
+   modifiée` de la vague → **gate** (`WORKFLOW.md` §9c), rien à demander : ne pas écraser du
+   travail non commité. Sinon, référence :
    `git status --porcelain > .claude/vague/avant-vague.txt`.
 2. **Verrou si la vague est parallèle** — zones disjointes seulement ; au moindre doute, séquentiel.
    Poser `.claude/wave.lock` juste avant le premier lancement (jamais avant : un préflight rouge le
@@ -123,7 +125,8 @@ Agent({
   subagent_type: "claude",
   model: <modèle lu dans l'index>,
   run_in_background: true,
-  prompt: "Lis d'abord .claude/workflow/EXECUTANT.md. Ouvre plans/P<n>/S<k>.md et exécute-le. Reste
+  prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
+Ouvre plans/P<n>/S<k>.md et exécute-le. Reste
 dans l'arbre de travail courant : n'ouvre AUCUN worktree. Déroule /fin-de-tache en fin de session. Tu es orchestrée : si l'outil Agent
 n'est pas disponible dans ton bac à sable, saute la relecture de session (je la lance moi-même).
 Tout appel Agent que tu fais porte run_in_background: false — verificateur-n0 compris — et aucune
@@ -157,10 +160,12 @@ se lance par le repli pastille ci-dessous, **même en Desktop** — le cadreur (
 décidé pour un N1 structurant de cette session précise. Le reste de la vague continue en sous-agent ;
 seule cette session-là part en pastille.
 
-**Repli pastille**, hors Claude Code Desktop (aucun navigateur à transmettre, ni pour un sous-agent
-ni pour cette conversation) ou sur une session marquée `pastille` : une pastille `spawn_task` par
-session, « Démarrer localement » — jamais le worktree proposé par défaut — puis rendre la main : la
-vague ne finit plus dans ce tour. C'est un humain qui lance : titrer la pastille
+**Repli pastille** — **contrainte d'outillage** (`WORKFLOW.md` §9c, pas un point d'arrêt de
+conception ; ce qui la lèverait : un harnais qui démarre une session froide hors Desktop), hors
+Claude Code Desktop (aucun navigateur à transmettre, ni pour un sous-agent ni pour cette
+conversation) ou sur une session marquée `pastille` : une pastille `spawn_task` par session,
+« Démarrer localement » — jamais le worktree proposé par défaut — puis rendre la main : la vague ne
+finit plus dans ce tour. C'est un humain qui lance : titrer la pastille
 `P<n> · S<k> — <titre> · <M>/<E>` et sortir la ligne « À régler AVANT de lancer » de chaque session
 (`WORKFLOW.md` §3) — la pastille hérite des réglages courants, elle ne pose ni le modèle ni l'effort
 du plan.
@@ -180,8 +185,9 @@ sur ce mode d'échec (2026-09-11) : 40 minutes après le `FAIL`, l'agent avait f
 **Un retour marqué `partial` n'est jamais un `PASS`.** Depuis 2.1.246, un sous-agent qui épuise son
 `maxTurns` rend ce qu'il a en le marquant partiel, au lieu d'avoir l'air d'avoir fini — c'est
 exactement le faux vert que le recoupement par les commits existe pour attraper, et il vaut mieux le
-lire directement. Le traiter comme un `FAIL`, motif « tours épuisés », et **ne pas le reprendre par
-`SendMessage`** : continuer l'agent rapatrierait ses fausses pistes, alors que la réparation passe
+lire directement. Le traiter comme un `FAIL`, motif « tours épuisés » : la troisième condition du
+canal court (`WORKFLOW.md` §9c) ne tient pas dans ce cas précis — un agent à bout de tours a
+accumulé des fausses pistes, et continuer par `SendMessage` les rapatrierait. La réparation passe
 par le rapport de passation et un démarrage à froid (`/reprendre-echec`).
 
 **Recoupement obligatoire par les commits avant de conclure `FAIL`** (§4b) —
@@ -247,7 +253,8 @@ Agent({
   description: "P<n>/S<k> revue",
   subagent_type: "relecteur-session",
   run_in_background: false,
-  prompt: "Relis la session S<k> du plan P<n>, mode orchestré, commits présents (git log --grep
+  prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
+Relis la session S<k> du plan P<n>, mode orchestré, commits présents (git log --grep
 \"P<n>/S<k>/\"). Écris plans/P<n>/S<k>.revue.md toi-même, puis rends tes deux lignes."
 })
 ```

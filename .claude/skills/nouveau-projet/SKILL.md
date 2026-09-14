@@ -57,6 +57,8 @@ de passer à la suivante — l'utilisateur doit pouvoir corriger avant que ça s
 
 Synthèse de l'interview en **≤ 15 lignes**, à faire valider explicitement par l'utilisateur **avant
 d'écrire le moindre fichier**. Pas de « je considère que c'est validé » implicite — attendre le oui.
+Jugement produit (`WORKFLOW.md` §9c) : aucune gate ne saurait évaluer une synthèse d'interview à la
+place d'un humain.
 
 ## Phase C — Instanciation mécanique (seulement après validation de la Phase B)
 
@@ -85,7 +87,8 @@ d'écrire le moindre fichier**. Pas de « je considère que c'est validé » imp
    du bruit payé à chaque lecture — ne pas la laisser vide, la retirer).
 7. `git init` (s'il n'a pas eu lieu avant l'amorçage). **Dépôt sous un dossier synchronisé ?**
    (`SynologyDrive`, `OneDrive`, `Dropbox`, `iCloud` dans le chemin) : demander à l'utilisateur
-   d'exclure le dossier `.git` dans son client (gate : attendre le oui), puis
+   d'exclure le dossier `.git` dans son client — une action hors du dépôt, qu'aucune gate ne peut
+   poser à sa place (`WORKFLOW.md` §9c) : attendre le oui —, puis
    `touch .git/info/synchro-exclue`. Puis premier commit, staging explicite,
    message exact : `chore: instanciation projet depuis Templates`. Le commit inclut `.claude/` —
    c'est ce qui rend le workflow disponible à quiconque clone, dans tous les environnements.

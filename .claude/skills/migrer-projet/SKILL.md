@@ -61,7 +61,7 @@ Constater, ne rien corriger encore. Huit points :
 | Import `@…CLAUDE-BASE.md`, `enabledPlugins`, hooks à chemins absolus, skills copiées | **1 — Bascule** | B1 |
 | Du code, mais ni `.claude/settings.json`, ni fichiers de contexte, ni `plans/` | **2 — Adoption** | B2 |
 | Déjà vendoré (`manifest.json` présent) — seulement de la dette de format (point 8) | **3 — Entretien** | `/maj-workflow`, puis B1 point 8 |
-| Repo **vide**, aucun code | *hors périmètre* | STOP → `/nouveau-projet` (interview de cadrage) |
+| Repo **vide**, aucun code | *hors périmètre* | gate (`WORKFLOW.md` §9c) → `/nouveau-projet` (interview de cadrage) |
 
 Les états se mélangent (migration précédente inachevée) : dérouler alors les points concernés des
 deux voies, dans l'ordre de B1 puis B2.
@@ -116,7 +116,8 @@ trancher avec l'utilisateur : c'est souvent là que se trouve la vraie dette.
 Synthèse en **≤ 15 lignes** : la voie retenue et pourquoi, l'état constaté, les fichiers qui seront
 créés ou modifiés, ce qui sera supprimé, ce qui sera absorbé depuis la doc existante. Faire valider
 explicitement par l'utilisateur **avant la première écriture** — une suppression de contenu projet
-ne se rattrape qu'à la main.
+ne se rattrape qu'à la main. Irréversible (`WORKFLOW.md` §9c) : aucune gate ne juge une perte de
+contenu à la place d'un humain.
 
 ## Phase B1 — Bascule *(voie 1, et point 5 pour la voie 3)*
 
@@ -253,8 +254,9 @@ cinquième exige une **nouvelle session**, la configuration n'étant lue qu'au d
    `.claude/agents`, ni `.claude/workflow`. C'est la condition qui rend le workflow disponible en
    session cloud et à quiconque clone : ces environnements ne voient que le dépôt.
 7. **Dépôt sous un dossier synchronisé ?** (`SynologyDrive`, `OneDrive`, `Dropbox`, `iCloud` dans le
-   chemin) : demander à l'utilisateur d'exclure le dossier `.git` dans son client de synchro (gate :
-   attendre le oui), puis `touch .git/info/synchro-exclue` — corruption vue le 2026-09-11
+   chemin) : demander à l'utilisateur d'exclure le dossier `.git` dans son client de synchro — une
+   action hors du dépôt, qu'aucune gate ne peut poser à sa place (`WORKFLOW.md` §9c) : attendre le
+   oui —, puis `touch .git/info/synchro-exclue` — corruption vue le 2026-09-11
    (torrent-uploader), sinon rappelé à chaque session par `sessionstart-contexte.mjs`.
 8. **Coût de contexte** (mesure A1, `/choisir-mecanisme` point 8) : `/context` dans une session
    neuve pour ce projet, MCP scopés au projet, `CLAUDE.md` élagué si `/doctor` le propose.
@@ -266,7 +268,9 @@ Un point rouge = rattachement non fini. Ne jamais conclure sur « ça devrait ma
 - Staging explicite, fichier par fichier (`git add -A` est refusé par hook). Commit :
   `chore(workflow): vendoring du workflow` (voie 1/3) ou `chore(workflow): adoption` (voie 2).
   Le commit **doit inclure** `.claude/skills`, `.claude/agents` et `.claude/workflow`.
-  Si le dépôt n'a pas de `git init`, le signaler et demander — ne pas initialiser d'office.
+  Si le dépôt n'a pas de `git init`, le signaler et demander — ne pas initialiser d'office : hors
+  périmètre du projet (`WORKFLOW.md` §9c), une gate ne peut pas trancher à la place de
+  l'utilisateur.
 - **Rapport final** : la voie déroulée, ce qui a été supprimé, ce qui a été conservé par prudence,
   ce qui a été absorbé depuis la doc existante, les écarts non résolus. Cas particulier tranché
   ici → l'ajouter à l'annexe de `MIGRATION.md` **dans le dépôt source**, pas dans la copie

@@ -24,7 +24,8 @@ un `S<k>.md` ni dans `TASKS.md`.
    y compris quand la tâche n'a produit aucun fichier durable (session de vérification, de mesure,
    d'audit) : c'est alors le livrable lui-même, la conversation qui l'a produit disparaît. **Écarts
    au plan** : rubrique en plus, **uniquement si le bandeau du `S<k>.md` a déclaré une `Latitude`** —
-   sinon la ligne est absente et tout écart reste un STOP (mesure B3).
+   sinon la ligne est absente et l'écart suit la condition d'arrêt d'`EXECUTANT.md`, section « Une
+   session = un fichier » (mesure B3).
 4. **Commit de la tâche** — sauf si `.claude/wave.lock` est présent (§4b). Staging explicite des
    fichiers de la tâche **et du `S<k>.md`**, message prévu dans le `T<n>`, repère de tâche en
    dernière ligne :
@@ -72,8 +73,8 @@ un `S<k>.md` ni dans `TASKS.md`.
     (esthétique, UX, ton), et supprimer les items déjà tranchés — git est l'archive, le fichier ne
     contient que ce qui est encore EN ATTENTE.
 12. **Plafonds** : si le hook signale un dépassement, dérouler `/purge-contexte` — pas plus tard.
-13. **Ne pas pusher** si d'autres sessions du plan restent à exécuter : le push est groupé, en fin
-    de vague ou de plan.
+13. **Gate, pas d'arrêt** (`WORKFLOW.md` §9c) — pas de push tant que d'autres sessions du plan
+    restent à exécuter : rien à demander, le push est groupé, en fin de vague ou de plan.
 
 ## Fin de session — mode VAGUE PARALLÈLE (parallèle : oui)
 
@@ -93,10 +94,10 @@ un `S<k>.md` ni dans `TASKS.md`.
 12. **Commit ou pas, selon le verrou.** Absent → committer ses tâches comme au point 4, `S<k>.md`
     compris, sans toucher aux fichiers partagés. Présent → ne rien committer : l'orchestrateur le
     fera en fin de vague. Dans les deux cas, **jamais de push**.
-13. **Ne pas travailler dans un worktree** (§7, appliqué par `pretooluse-git.mjs`). Un diff commité
-    sur la branche d'un worktree n'est vu par personne. Si la session a déjà commencé dans un
-    worktree, le **signaler** au lieu de clore : le travail doit d'abord revenir dans l'arbre
-    principal.
+13. **Gate, pas d'arrêt** (`WORKFLOW.md` §9c) — pas de travail dans un worktree (§7, appliqué par
+    `pretooluse-git.mjs`). Un diff commité sur la branche d'un worktree n'est vu par personne. Si la
+    session a déjà commencé dans un worktree, elle ne demande rien : elle **signale** au lieu de
+    clore, et le travail doit d'abord revenir dans l'arbre principal.
 
 ## Relecture de session — dernier geste, dans les deux modes
 
@@ -112,10 +113,11 @@ qui attend sa revue avant de committer compte, pour l'orchestrateur, comme jamai
 `/code-review` en `high`+ : à ces niveaux il part dans un agent d'arrière-plan). Lui passer `P<n>`,
 `S<k>`, le mode, et — sous `.claude/wave.lock` uniquement — les chemins de la « Zone modifiée ».
 
-**Pas d'outil `Agent` dans cette session ?** C'est le cas courant d'une session lancée en
-sous-agent par `/orchestrer-plan` (bac à sable sans outil de sous-agent, ou profondeur épuisée).
-Ne pas relire soi-même à la place du relecteur — la revue vaut par le fait qu'un autre que la
-session la fait. Le dire en une ligne dans le rapport et clore : **orchestrée**, l'orchestrateur
+**Pas d'outil `Agent` dans cette session ?** Gate, pas d'arrêt (`WORKFLOW.md` §9c) : rien à demander
+à un humain. C'est le cas courant d'une session lancée en sous-agent par `/orchestrer-plan` (bac à
+sable sans outil de sous-agent, ou profondeur épuisée). Ne pas relire soi-même à la place du
+relecteur — la revue vaut par le fait qu'un autre que la session la fait. Le dire en une ligne dans
+le rapport et clore : **orchestrée**, l'orchestrateur
 lance la revue lui-même après avoir collecté la vague (`/orchestrer-plan` Étape 5) ; **à la
 main**, la relancer depuis une session qui a l'outil, et déposer un fichier d'incident (point 8)
 si l'outil manquait là où il aurait dû être.
@@ -197,10 +199,12 @@ hors Desktop) :
   « Ouvre plans/P<n>/S<k>.md et exécute-le. » — ou, hors Desktop, afficher la commande de lancement
   du bandeau du `S<k>.md` suivant. Jamais dans la même conversation : démarrage froid systématique
   (§5b).
-- **Avec la pastille, la ligne « À régler AVANT de lancer »** (`WORKFLOW.md` §3, domicile) : modèle
-  et effort de la session suivante, lus dans l'`index.md`. Une pastille démarre sur les réglages
-  courants de l'application — sans ce rappel, une session `Sonnet`/`high` part au hasard de ce qui
-  était réglé la veille, et personne ne s'en aperçoit avant le résultat.
+- **Avec la pastille, la ligne « À régler AVANT de lancer »** (`WORKFLOW.md` §3, domicile) —
+  **contrainte d'outillage** (`WORKFLOW.md` §9c), pas un point d'arrêt de conception : modèle et
+  effort de la session suivante, lus dans l'`index.md`. Ce qui la lèverait : un lancement qui pose
+  l'effort lui-même. Une pastille démarre sur les réglages courants de l'application — sans ce
+  rappel, une session `Sonnet`/`high` part au hasard de ce qui était réglé la veille, et personne ne
+  s'en aperçoit avant le résultat.
 - **Si cette session était la dernière `[ ]` de sa vague**, poser en plus une pastille de collecte —
   titre `P<n> — collecter la vague <w>`, prompt « Déroule /orchestrer-plan sur la vague <w> du plan
   P<n> : collecte et vague suivante. »

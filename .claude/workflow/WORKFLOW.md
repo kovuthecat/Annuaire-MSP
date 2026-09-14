@@ -23,6 +23,39 @@ charge qu'au cadrage. Ce fichier reste lisible d'un bout à l'autre sans coûter
 Une fois le plan écrit, chaque exécutant lit **UNIQUEMENT** les fichiers listés dans sa session
 (`S<k>.md`) et ne reconçoit pas — le design est fixé.
 
+### Deux régimes, tous deux normaux
+
+Le principe ci-dessus vaut pour le travail **spécifiable** — celui dont on peut énoncer le
+résultat attendu avant de l'obtenir. Ce n'est pas tout le travail.
+
+| Régime | Quand | Ce qui borne | Livrable |
+| --- | --- | --- | --- |
+| **fixé** | le résultat s'énonce avant de l'obtenir | le périmètre d'écriture fermé | des commits sous gate N0 |
+| **ouvert** | la réponse n'existe qu'à l'exécution | une branche jetable, un budget, N0 à la fin | une **preuve mesurée** |
+
+Le régime ouvert n'est pas une exception tolérée : c'est le bon régime pour un problème de
+recherche, et l'employer tôt coûte moins que cinq plans fermés qui meurent chacun sur une prémisse
+(décision du 2026-09-14). L'aiguillage se fait au cadrage, jamais en session — `/cadrer` sort par
+un protocole de preuve, `/nouveau-plan` Étape 0 détecte la répétition qui le réclame.
+
+### Quand solliciter un humain
+
+**Demander quand il y a un choix, agir quand il y a une gate.**
+
+On sollicite un humain **uniquement** pour ce qui est irréversible, et pour un jugement esthétique
+ou produit (N2). Tout ce qu'une gate sait juger — N0 au premier chef — se fait **sans demander**,
+et se rapporte après : le geste, pourquoi, et ce qu'il a changé.
+
+Le critère est mécanique. Si l'agent sait nommer le remède, que le remède est réversible et que
+son effet est jugé par une gate, demander n'est pas un contrôle, c'est de la latence — un plan a
+payé trois arrêts et trois arbitrages pour faire valider un remède que la session avait déjà écrit
+(2026-09-13). À l'inverse, un arbitrage entre deux conceptions possibles se demande toujours,
+même s'il retarde.
+
+Ce qui remplace l'autorisation préalable, c'est la **lisibilité après coup** : une décision prise
+seule s'écrit, reste réversible, et se rapporte par ses conséquences — ce qui devient possible, ce
+qui casse, ce qu'il faudra maintenir (décision du 2026-08-30, « écrire pour qui décide »).
+
 ## 2. Choix du modèle
 
 | Nature de la tâche | Modèle | Exemples |
@@ -268,8 +301,9 @@ aucune autre machine : ni le poste voisin, ni une session cloud, ni le mobile.
 seul index git — sous-agents concurrents (§5b) : `git commit` prend l'état du dépôt, pas celui de la
 session, donc chacune emporterait
 le travail en cours de l'autre. Pour ces vagues-là **seulement**, poser `.claude/wave.lock` (à mettre
-en `.gitignore` — marqueur local, pas du contenu de projet) : un hook refuse alors commit et push
-(§7), les sessions laissent leur diff dans l'arbre, et **l'orchestrateur committe pour elles en fin
+en `.gitignore` — marqueur local, pas du contenu de projet) : une **gate** (§9c) refuse alors commit
+et push (§7) — elle ne demande rien, elle se contente de refuser —, les sessions laissent leur diff
+dans l'arbre, et **l'orchestrateur committe pour elles en fin
 de vague**, tâche par tâche, guidé par les colonnes `Zone modifiée`. Une vague dont les sessions se
 suivent, quelle que soit la voie, n'a pas besoin du verrou.
 
@@ -305,8 +339,8 @@ cadreur ne voit pas sa découpe fausse, l'exécutant ne voit pas son PASS vide, 
 ne voit pas que sa prémisse est fausse — dans les trois cas le contrôle vaut par le fait qu'il
 vient d'ailleurs, pas par sa finesse.
 
-Les sept se lancent **au premier plan** (jamais `run_in_background: true`) : leur verdict
-conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
+Les sept se lancent **au premier plan** — condition posée dans `EXECUTANT.md`, domicile unique de
+l'invariant de lancement (§5b) : leur verdict conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
 `relecteur-session` est le dernier geste de la session : lancé en arrière-plan, son retour
 n'atteindrait aucun tour et la revue ne serait jamais déposée.
 
@@ -323,6 +357,17 @@ localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 ## 5b. Sessions & voies d'orchestration
 
 *Domicile de cette règle : les autres fichiers renvoient ici, ne la reformulent pas.*
+
+**Domicile de l'invariant de lancement.** Tout bloc `Agent({ … })` de `plugin/**` porte, dans son
+`prompt:`, cette ligne au mot près :
+
+```
+Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
+```
+
+Une paraphrase est une copie qui dérivera — pas de reformulation, même fidèle. Le contrôle de
+publication (`plugin/bin/publier.mjs`) vérifie sa présence dans chaque bloc, jamais son sens : il ne
+sait jamais dire qu'un renvoi est faux, seulement qu'il est absent.
 
 **Jamais deux sessions d'un même plan dans une seule conversation** — chacune démarre à froid, pour
 ne pas traîner le contexte de l'une dans l'autre.
@@ -410,7 +455,7 @@ définition. Une instruction ne contraint rien ; un hook si.
 | `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `git add -A`/`.`/`--all` et `git commit -a` ; refuse commit, push et ouverture de worktree tant que `.claude/wave.lock` existe. |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Formate via prettier si configuré dans le projet, silencieux sinon. |
 | `postmodelswitch-journal.mjs` | PostModelSwitch | Écrit une ligne JSONL par changement de modèle dans `.claude/journal-modeles.jsonl` (date, `de`, `vers`, session). **Ne bloque jamais** : `PreModelSwitch` pourrait refuser un switch, mais mettre de la friction sur une escalade que §2 recommande serait le mauvais arbitrage — on trace, on n'empêche pas. Le journal est le seul retour d'expérience sur la grille §2 : un modèle systématiquement escaladé n'est pas un incident, c'est une ligne de grille fausse (entrée de `/analyser-incidents`). Sous `.claude/`, donc invisible au hook `Stop` — il ne peut ni déclencher un faux « fin de session non consignée », ni en satisfaire un à tort. |
-| `stop-contexte.mjs` | Stop | Refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé. Ne bloque qu'une fois par session, et ne rappelle ensuite que si la liste des manquements a changé. **Sous `.claude/wave.lock`, seuls les plafonds sont signalés** : un diff non commité et une revue absente y sont le fonctionnement normal (§4b), pas un manquement — les signaler à chaque tour ne faisait que polluer l'orchestrateur. |
+| `stop-contexte.mjs` | Stop | **Gate** (§9c) : refuse de rendre la main si du code a été modifié sans qu'aucun fichier de suivi ne le soit, si une session de plan a commité du code sans laisser trace de sa revue (ni `.revue.md` sur disque, ni repère `Revues:` de tri de clôture — §4b), ou si un plafond est dépassé — elle refuse, elle ne demande rien. Ne bloque qu'une fois par session, et ne rappelle ensuite que si la liste des manquements a changé. **Sous `.claude/wave.lock`, seuls les plafonds sont signalés** : un diff non commité et une revue absente y sont le fonctionnement normal (§4b), pas un manquement — les signaler à chaque tour ne faisait que polluer l'orchestrateur. |
 
 ### Plafonds de lignes
 
@@ -425,8 +470,9 @@ Source unique : `.claude/workflow/hooks/plafonds.json`.
 | `PROJECT_MAP.md` | 200 |
 | `CLAUDE.md` | 200 |
 
-Un dépassement n'est pas une suggestion : il déclenche `/purge-contexte` avant de continuer.
-Ces fichiers sont relus à chaque session — leur longueur est un coût récurrent, pas un détail.
+Un dépassement n'est pas une suggestion, c'est une **gate** (§9c) : elle déclenche `/purge-contexte`
+avant de continuer, sans rien demander. Ces fichiers sont relus à chaque session — leur longueur
+est un coût récurrent, pas un détail.
 
 ## 8. Anti-patterns
 
@@ -476,7 +522,8 @@ l'échec, parce que c'est elle — pas le modèle en place — qui décide de ce
 Un échec par **filtre de contenu** (sortie bloquée par la politique du modèle) est une nature à
 part, ni environnement ni exécution : il ne se reprend jamais à mécanique d'écriture identique.
 Table complète : annexe `references/remediation.md` de `/orchestrer-plan` (Étape 5c). **Ce qui suit un `FAIL` — reprise, enquête ou question à
-l'utilisateur — est en §9c** ; la nature ne décide que du premier geste.
+l'utilisateur — est en §9c** ; la nature ne décide pas que du premier geste, elle décide aussi du
+**canal** de la reprise — les trois conditions qui autorisent le canal court sont en §9c, pas ici.
 
 **Deux cas ressemblent à un blocage de périmètre et n'en sont pas.**
 
@@ -558,9 +605,28 @@ sa raison d'être.
 *Domicile de cette règle. `/orchestrer-plan` (5c, 5d, Étape 6) et `/reprendre-echec` l'appliquent,
 ne la reformulent pas.*
 
-**Un plan ne s'arrête que sur un choix.** Pas sur un échec, pas sur un manque d'information, pas
-sur une hypothèse qui tombe : sur une question dont la réponse change ce qu'il faut faire, et que
-seul l'utilisateur peut trancher. Tout le reste se cherche — et se cherche automatiquement.
+**On ne s'arrête que sur un choix — un plan comme la session qui l'exécute.** Pas sur un échec, pas
+sur un manque d'information, pas sur une hypothèse qui tombe : sur une question dont la réponse
+change ce qu'il faut faire, et que seul l'utilisateur peut trancher. Tout le reste se cherche — et
+se cherche automatiquement. C'est le domicile du critère ; `EXECUTANT.md` en porte l'**application**
+aux trois natures d'échec d'une session (§9a), sans le reformuler.
+
+**Un mot par chose.** Le workflow a longtemps écrit `STOP` pour trois règles de polarités
+différentes — c'est ce qui laisse croire que s'arrêter est le défaut :
+
+- **Gate** — une condition qu'une machine juge (hook, N0, contrôle de publication). Elle **refuse**,
+  elle ne demande pas ; ce qui la franchit se rapporte après, jamais avant.
+- **Question** — un choix soumis à un humain : options chiffrées, conséquences observables (forme
+  détaillée plus bas).
+- **Contrainte d'outillage** — l'humain n'est sollicité que parce que rien ne peut poser le geste à
+  sa place (régler modèle et effort, lancer une session hors Desktop — §3, §5b). Ce n'est **pas** un
+  point d'arrêt de conception : le nommer ainsi évite de le « corriger » en élargissant l'autonomie,
+  et il disparaît de lui-même si le harnais gagne la capacité.
+
+**Ce que le contrôle de publication ne couvre pas.** `plugin/bin/publier.mjs` (§5b) vérifie qu'un
+bloc de lancement porte le renvoi vers `EXECUTANT.md`, au mot près — il ne sait pas dire qu'un point
+d'arrêt écrit en prose est du bon côté de ce critère. Cette relecture-là reste humaine, faite une
+fois par point (inventaire du 2026-09-14).
 
 | Ce qui arrive | Ce que ça est vraiment | Ce qui suit |
 | --- | --- | --- |
@@ -577,11 +643,32 @@ une attente pour un geste déterministe. À l'inverse, un orchestrateur qui *dé
 l'utilisateur — étendre un plan, annuler une migration, élargir une permission — dépasse son rôle :
 il lance et collecte, il n'arbitre pas.
 
+**Le canal de reprise, sous trois conditions observables.** Le discriminant n'est pas « l'agent se
+déclare bloqué » — une session remplit ses champs sur ce qu'elle *croit*, c'est pour ça que
+`prémisse` est déjà le seul champ qu'un tiers vérifie. L'orchestrateur reprend par `SendMessage`
+**si et seulement si** les trois conditions suivantes tiennent, **toutes observables de
+l'extérieur, sans ouvrir le contexte de l'agent** :
+
+1. **L'agent est reprenable** — il apparaît dans `ListAgents`. Absent, le reprendre *est* un
+   démarrage à froid, sans le bénéfice.
+2. **N0 est vert sur son périmètre** — constaté par un `verificateur-n0` que l'**orchestrateur**
+   lance lui-même, jamais par la déclaration de la session. C'est la gate qui autorise le canal
+   court.
+3. **Aucune fausse piste accumulée** — `Tentatives : reprise=0`, et `Blocage :` nomme un **geste**
+   (un commit à prendre, un statut à poser, un fichier à écrire), pas une hypothèse à tester.
+
+Une seule condition qui manque → démarrage à froid ; il n'y a pas de cas limite à juger. Ce qui
+reste vrai là où c'était vrai : un agent à bout de tours, une hypothèse fausse, un retour `partial`
+→ démarrage à froid, motif inchangé — continuer l'agent rapatrierait ses fausses pistes.
+
 **Le budget est ce qui rend l'autonomie sûre.** Par session : 2 reprises, 1 enquête. Par plan :
 2 enquêtes. Il vit dans une ligne mécanique du rapport d'échec — `Tentatives : reprise=<n>
 enquete=<n>`, gabarit dans `/reprendre-echec` —, donc il survit à une orchestration interrompue
 puis relancée, ce qu'un compte tenu en contexte ne ferait pas. Budget épuisé → question, sans rien
 relancer. Sans ce plafond, « chercher au lieu de demander » devient l'anti-pattern de §3.
+`SendMessage` consomme une `reprise` du budget comme n'importe quelle reprise ; un `SendMessage`
+qui échoue **ne se retente pas** — la reprise suivante est un démarrage à froid, et plus jamais un
+`SendMessage` sur cette session.
 
 **La forme n'est pas cosmétique.** Un arrêt se pose en **question** : une phrase, 2 à 4 options
 avec leur coût et ce que chacune débloque, une recommandation, et ce qui reste lançable sans

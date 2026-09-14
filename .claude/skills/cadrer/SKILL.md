@@ -137,7 +137,10 @@ d'être archivé sans être rouvert.
 
 - **Aucune modification de code ni de fichier de contexte** — Plan Mode (Shift+Tab) dès le début.
 - **Aucune exploration en direct** dès que ça dépasse un fichier : c'est le travail d'`explorateur`.
-- **Aucun enchaînement de `/nouveau-plan` dans la même conversation.** Le cadrage repart à froid et
-  lit la décision écrite à l'étape 5 — c'est précisément à ça qu'elle sert. Poser une pastille ou
-  afficher la commande, comme `/fin-de-tache` (`WORKFLOW.md` §5b), avec la ligne « À régler AVANT de
-  lancer » (§3) : le frontmatter de `/nouveau-plan` bascule le modèle sur Opus, jamais l'effort.
+- **Aucun enchaînement de `/nouveau-plan` dans la même conversation — contrainte d'outillage**
+  (`WORKFLOW.md` §9c), pas un point d'arrêt de conception : rien ne peut démarrer une session à
+  froid à la place de l'humain ; ce qui la lèverait est un harnais qui le ferait. Le cadrage repart
+  à froid et lit la décision écrite à l'étape 5 — c'est précisément à ça qu'elle sert. Poser une
+  pastille ou afficher la commande, comme `/fin-de-tache` (`WORKFLOW.md` §5b), avec la ligne « À
+  régler AVANT de lancer » (§3) : le frontmatter de `/nouveau-plan` bascule le modèle sur Opus,
+  jamais l'effort.

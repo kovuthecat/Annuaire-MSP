@@ -112,6 +112,7 @@ l'utilisateur, une fois — elle vient en fin de fichier, après « Hypothèse e
 
 Nature : <environnement | exécution | prémisse>
 Tentatives : reprise=0 enquete=0
+Blocage : <le geste précis qui manque, en une ligne>
 
 ## Tâche visée
 <la tâche T<n>, en une ligne — pas le S<k>.md recopié>
@@ -144,7 +145,7 @@ Tentatives : reprise=0 enquete=0
 La section **Déjà écarté** est la raison d'être du rapport. Un verdict d'une ligne fait recommencer
 l'enquête à zéro ; ces lignes-là sont ce qu'on a payé pour apprendre.
 
-Deux lignes **mécaniques**, en tête, exactement ce format — les seules que l'orchestrateur lit
+Trois lignes **mécaniques**, en tête, exactement ce format — les seules que l'orchestrateur lit
 (`grep -m1`), comme il ne lit que `Bloquant :` d'une revue :
 
 - `Nature :` — l'un des trois mots ; absente, l'orchestrateur suppose `exécution`.
@@ -153,6 +154,11 @@ Deux lignes **mécaniques**, en tête, exactement ce format — les seules que l
   qui l'incrémente avant de rendre la main. Absente : l'orchestrateur suppose `reprise=0 enquete=0`.
   C'est cette ligne, et non un compte tenu en mémoire, qui empêche un plan de tourner en rond : une
   orchestration interrompue puis relancée retrouve le budget dans le fichier.
+- `Blocage :` — un **geste** précis qui manque (un commit à prendre, un statut à poser, un fichier à
+  écrire), pas une hypothèse à tester : une hypothèse va dans « Hypothèse en cours », et elle
+  disqualifie le canal court. **Absente ⇒ démarrage à froid** — c'est le défaut sûr, et c'est l'une
+  des trois conditions observables qui autorisent l'orchestrateur à reprendre par `SendMessage`
+  plutôt qu'à froid (`WORKFLOW.md` §9c, domicile des trois conditions).
 
 **La prémisse est le seul champ qu'un tiers vérifie.** Une session en échec écrit ce qu'elle croit ;
 une prémisse fausse arrête un plan entier. C'est pourquoi l'orchestrateur la fait confronter au

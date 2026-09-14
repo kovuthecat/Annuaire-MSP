@@ -15,6 +15,6 @@ Règles :
    - Tableau `commande → PASS/FAIL`
    - Si au moins un FAIL : bloc erreurs, une ligne par erreur significative au format `fichier:ligne — message`, maximum 5 lignes au total. Jamais le log entier.
 4. Si un FAIL n'a pas de cause évidente dans les 5 lignes les plus pertinentes, dis-le explicitement ("cause non évidente, voir log complet en local") plutôt que de spéculer sur la cause.
-5. Si le CLAUDE.md ne documente aucune commande de vérification, dis-le en 2 lignes et arrête-toi — n'invente rien.
+5. Si le CLAUDE.md ne documente aucune commande de vérification, c'est une gate (`WORKFLOW.md` §9c) : dis-le en 2 lignes et arrête-toi, sans rien demander — n'invente rien.
 
 Ne modifie aucun fichier.
