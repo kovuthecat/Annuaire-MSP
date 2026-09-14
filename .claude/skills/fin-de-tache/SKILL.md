@@ -50,7 +50,10 @@ un `S<k>.md` ni dans `TASKS.md`.
 8. **Le workflow a cassé pendant la tâche ?** Hook qui refuse à tort, permission manquante, outil
    absent du bac à sable, verdict ou revue perdus, cache périmé — tout ce qui vient de l'outillage
    et pas du projet → un fichier `docs/workflow/incidents/<date>-<slug>.md` (gabarit et règle :
-   `WORKFLOW.md` §9b), stagé **avec le commit de la tâche** (point 4 ; sous verrou, l'orchestrateur
+   `WORKFLOW.md` §9b). **Ouvrir §9b et recopier son en-tête**, ne pas en improviser un : les six
+   lignes `Projet` / `Workflow` / `Plan` / `Environnement` / `Étape` / `Nature` sont mécaniques —
+   sans elles le collecteur du dépôt source ne sait ni dater, ni classer, ni compter l'incident, et
+   le fichier ne pèse rien dans l'analyse groupée. Stagé **avec le commit de la tâche** (point 4 ; sous verrou, l'orchestrateur
    le committe en fin de vague). Ni `TASKS.md` ni la conversation : seul ce fichier remonte au
    dépôt source, où les incidents de tous les projets sont analysés ensemble.
 8b. **Le workflow lui-même a changé ?** (tâche menée dans le dépôt source, sous `plugin/`) → bumper

@@ -475,8 +475,29 @@ l'échec, parce que c'est elle — pas le modèle en place — qui décide de ce
 
 Un échec par **filtre de contenu** (sortie bloquée par la politique du modèle) est une nature à
 part, ni environnement ni exécution : il ne se reprend jamais à mécanique d'écriture identique.
-Table complète : `/orchestrer-plan` 5c. **Ce qui suit un `FAIL` — reprise, enquête ou question à
+Table complète : annexe `references/remediation.md` de `/orchestrer-plan` (Étape 5c). **Ce qui suit un `FAIL` — reprise, enquête ou question à
 l'utilisateur — est en §9c** ; la nature ne décide que du premier geste.
+
+**Deux cas ressemblent à un blocage de périmètre et n'en sont pas.**
+
+**La ceinture de fichiers dérivés.** Un exécutant étend son périmètre d'écriture sans STOP ni
+`Latitude` déclarée si les trois conditions tiennent : (1) la modification est **forcée** par un
+changement déjà au périmètre — le fichier passe au rouge à cause de lui, pas d'un choix ; (2) le
+nouveau contenu se **dérive mécaniquement** en relançant le code (refix, régénération), pas d'un
+jugement sur le comportement attendu ; (3) elle part dans un **commit séparé**, signalée en une
+ligne du bilan. Le test qui tranche : *savoir quoi écrire dedans demande-t-il de savoir quel est le
+bon comportement ?* Oui → c'est le design qui déborde, STOP. Non → c'est de la comptabilité, écris
+et signale. Le commit séparé est le garde-fou : il rend un élargissement abusif visible en revue au
+lieu de le diluer. Fixtures golden, compteurs codés en dur, métadonnées validées au build sont la
+forme habituelle ; les laisser hors périmètre rend la gate N0 inatteignable par construction
+(constat du 2026-09-13 : trois arrêts et trois arbitrages pour une écriture que personne n'avait à
+décider).
+
+**Un écart trouvé dans l'instrument de mesure est un résultat, pas un `FAIL`.** Quand une gate
+s'appuie sur du code du dépôt (oracle, validateur, script de score), cet instrument n'est jamais
+intouchable : une session qui montre qu'il compte faux rend ce constat **avec sa preuve**, et n'a
+pas échoué. Cinq plans ont optimisé contre un juge qui sous-comptait sans que personne ait le droit
+d'aller le vérifier (décision du 2026-09-14).
 
 Le plafond d'une correction n'est pas négociable : au-delà, c'est l'anti-pattern de §3 (tourner en
 rond sur la même erreur), et c'est précisément ce qu'un modèle au-dessus règle mieux qu'une

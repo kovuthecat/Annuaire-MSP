@@ -46,6 +46,14 @@ l'« Objectif d'ensemble » de `P<n>` restant vrai tel qu'il est écrit ?
 **Plafond** : une **troisième** vague de remédiation sur le même plan n'est plus une extension,
 c'est la prémisse du plan qui est fausse. S'arrêter et dérouler `/cadrer` sur cette prémisse.
 
+**Avant d'écrire un plan neuf, regarder si la zone a déjà tué un plan sur une prémisse** :
+`grep -l 'Nature :.*prémisse' plans/*/*.echec.md`. **Deuxième plan sur la même zone avec cette
+cause → ne pas en écrire un troisième.** La réponse n'existe qu'à l'exécution, et un plan de plus
+gèlera en « tranché » ce qui a tué le précédent — c'est ainsi qu'une zone finit par ne plus contenir
+le geste qu'un humain fait. Dérouler `/cadrer`, qui sortira par un protocole de preuve (décision du
+2026-09-14). `prémisse` est le mode d'échec dominant du workflow : une fois, c'est le système qui
+fonctionne ; c'est la **répétition sur une même zone** qui est le signal.
+
 ## Étape 1 — Investiguer (jamais modifier)
 
 Se mettre en **Plan Mode** pour toute la phase d'investigation — ce mode interdit l'écriture de
@@ -95,35 +103,9 @@ Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 
 **Le statut des tâches vit ICI et nulle part ailleurs** (source unique — cf. `WORKFLOW.md` §4a).
 
-```md
-# Plan P<n> — <titre du plan>   (rédigé par Opus)
-
-## Objectif d'ensemble
-<2-3 lignes : le but global du plan, et ce qui sera vrai à la fin qui ne l'est pas aujourd'hui —
- en clair, pas en termes de code>
-
-## Sessions
-| Session | Tâches | Titre | Modèle | Effort | Env. | Dépend de | Zone modifiée | Statut |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [S1](S1.md) | T1-T3 | … | Haiku | low | — | — | `css/`, `index.html` | [ ] |
-| [S2](S2.md) | T5 | … | Sonnet | high | — | S1 | `js/edit/` | [ ] |
-
-<!-- Statut : [ ] à faire · [x] fait, revue sans bloquant · [x]! fait, revue à bloquant non trié -->
-<!-- Vocabulaire complet : WORKFLOW.md §4a — ne pas inventer d'autre marque ici. -->
-
-
-## Ordonnancement
-- **Vague 1 — parallélisable** : S1 · S3 (zones disjointes, aucune dépendance).
-  *Pourquoi maintenant* : <ce que cette vague débloque pour la suite, une ligne>
-  - **S1** — <en clair : ce que ça change, et à quoi on le verra. 1-2 phrases, sans jargon>
-  - **S3** — <idem>
-- **Vague 2** : S2 (après S1) · S4 (après S3).
-  *Pourquoi maintenant* : <…>
-  - **S2** — <…>
-  - **S4** — <…>
-- **Vague 3 — clôture** : contexte (`STATUS.md`, `TASKS.md`, `VALIDATION.md`) et push. Pas de
-  commits de code à rattraper : chaque session a commité les siens.
-```
+Le squelette de l'index est en annexe : **ouvrir `references/squelette-index.md`** (à côté de cette
+skill) au moment de l'écrire. Les règles de rédaction — ligne « en clair », ordonnancement,
+colonnes — sont ci-dessous.
 
 **La ligne « en clair » est un contrat de lisibilité, pas une redite du titre.** Elle dit ce que la
 session change et **à quoi l'utilisateur le constatera** : un écran, un comportement, un fichier
@@ -182,74 +164,9 @@ L'« Objectif d'ensemble » ne bouge pas. S'il faut le récrire, ce n'était pas
 
 ## Étape 4 — Écrire un `plans/P<n>/S<k>.md` par session
 
-```md
-# P<n> · S<k> — <titre>   (rédigé par Opus)
-
-> **Modèle : <Sonnet/Haiku> · effort : <low|medium|high|xhigh> · Vague : <v> (parallèle : oui/non)**
-> **Environnement : <Desktop (navigateur requis) | indifférent>** (`WORKFLOW.md` §6, N1)
-> **Latitude : <ce que l'exécutant peut ajuster seul, ou aucune>** (optionnel, déclaré par le
-> cadreur session par session ; absent = aucune, tout écart reste un STOP — mesure B3)
-> Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
-> Design fixé — ne reconçois pas. Doute ou blocage → nomme sa nature (`WORKFLOW.md` §9a) ; ce qui
-> est à ta portée se corrige, le reste → STOP, rapport, rends la main.
-
-- Date : YYYY-MM-DD · Branche : <ou —>
-
-## Lire (commun à la session)
-`.claude/workflow/EXECUTANT.md` (toujours en premier), puis :
-<fichiers + portée précise (section / fonction / lignes) — RIEN d'autre>
-
-## Hors périmètre
-<ce qu'il ne faut PAS toucher / faire — vaut pour toute la session>
-
----
-
-## T<n> — <titre>
-
-### Objectif
-<1-2 lignes : le quoi>
-
-### Pourquoi
-<1-2 lignes : ce que cette tâche débloque dans le plan, ou ce qu'elle change pour qui se sert du
- produit. C'est l'intention — ce qui permet à l'exécutant de trancher si une consigne s'avère
- ambiguë en cours de route, et à un humain de comprendre la tâche sans lire le code.>
-
-### Décision clé
-<ce qu'il faut savoir sans relire le repo ; pointer une décision précise, ex. « docs/decisions/2026-07-12-auth.md »>
-
-### Référence
-<optionnel : chemin d'un code à imiter, un script qui fait déjà la chose, une maquette — et ce
- qu'il faut y regarder. « Fais comme là » remplace six lignes d'étapes (mesure B4).>
-
-### Lire / Modifier
-<en plus du commun : lectures spécifiques ; fichiers à modifier/créer — liste exhaustive>
-
-### Étapes
-1. …
-
-### Validation
-- **N0 auto (bloque le commit)** : `<commande>` → <résultat attendu>
-- **Tests** : <créés/mis à jour : fichiers, cas couverts> — ou « — » justifié en 1 ligne
-- **N1 visuel auto** : <écran/parcours à vérifier au navigateur in-app, ou `—`> → `/verif-visuelle`
-- **N2 humain (jugement esthétique/UX)** : <checklist ou `—`> → à consigner dans `VALIDATION.md`
-- **Anti-raccourci** : <ce qui ressemblerait à un PASS sans en être un, ou `—`>
-
-### Si bloqué
-<condition d'arrêt SPÉCIFIQUE → STOP + quoi signaler>
-
-### Message de commit (appliqué par la session elle-même)
-`<type(scope): message>`
-Dernière ligne du commit, obligatoire : `Plan: P<n>/S<k>/T<m>` — c'est le repère qui rend la tâche
-retrouvable ensuite (`git log --grep`), et par lequel l'orchestrateur lit le verdict d'une session
-(§5b).
-
----
-
-<répéter le bloc T<n> pour chaque tâche de la session>
-
-## Fin de session
-Dérouler `/fin-de-tache` (mode selon « parallèle : oui/non » du bandeau).
-```
+Le squelette du fichier est en annexe : **ouvrir `references/squelette-session.md`** (à côté de
+cette skill) au moment d'écrire le premier `S<k>.md`, et le suivre champ par champ. Les règles qui
+décident de ce qu'on y met sont ci-dessous ; l'annexe ne porte que la forme.
 
 **Pas de bloc « Statut » dans le `S<k>.md`** : il vit dans l'`index.md`. Une information de suivi
 écrite à deux endroits finit toujours par diverger.
