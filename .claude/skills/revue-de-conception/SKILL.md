@@ -224,13 +224,12 @@ prochaine revue retrouvera exactement la même chose.
 
 ## Interdits
 
-- **Aucune modification de code** — Plan Mode (Shift+Tab) dès le début.
-
-> Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash` et
-> `PowerShell` (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se
-> réinitialisent au message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une
-> session qui dure, le garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste
-> une règle tenue à la main, pas une impossibilité.
+- **Aucune modification de code** — Plan Mode (Shift+Tab) dès le début. Le frontmatter
+  **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash` et `PowerShell`
+  (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se réinitialisent au
+  message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une session qui dure, le
+  garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste une règle tenue à la
+  main, pas une impossibilité.
 - **Aucune écriture avant la gate d'Étape 3**, et rien hors du rapport, de `PROJECT_BRIEF.md`
   (Objectif / Hors périmètre) et d'une décision écrite. Aucun autre fichier de contexte.
 - **Aucun écart classé sans étalon arrêté** : sans interview, la revue s'arrête au constat.

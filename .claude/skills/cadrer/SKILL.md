@@ -140,7 +140,7 @@ et c'est elle qu'on refera. Le cadrage est une unité de travail : il se clôt p
 seule : quelqu'un qui la lit dans six mois, sans le contexte de la session, doit comprendre ce qui a
 été tranché et ce que ça implique avant d'atteindre la moindre justification technique. Le détail,
 les alternatives et le raisonnement viennent après — c'est ce qui rend le fichier relisable au lieu
-d'être archivé sans être rouvert. … et se ferme par l'état final de la grille : les `OPEN`
+d'être archivé sans être rouvert. Elle se ferme par l'état final de la grille : les `OPEN`
 restantes, typées, avec qui les résout.
 
 ## Interdits

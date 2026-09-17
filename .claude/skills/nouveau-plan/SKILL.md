@@ -75,11 +75,11 @@ reprendre ici. Une `OPEN` de type `décision` → question à l'utilisateur, pas
 2. **Fichiers probables** sans tout ouvrir : `PROJECT_MAP.md`, `ARCHITECTURE.md`, registre `DECISIONS.md` d'abord.
 3. **Rôle** de chaque fichier clé : pourquoi il est pertinent.
 4. **Dépendances directes** utiles.
-4bis. **Existant** — pour toute inconnue technique
-restante (mécanisme non trivial, dépendance envisagée, sous-système custom proposé) : dérouler
-`.claude/skills/cadrer/references/rechercher-existant.md`. Sa conclusion
-(réutiliser, configurer, adapter, développer, isoler) est ce que les tâches implémentent ; un
-« développer » sans ce passage est un écart.
+   - **4bis — Existant** : pour toute inconnue technique restante (mécanisme non trivial,
+     dépendance envisagée, sous-système custom proposé), dérouler
+     `.claude/skills/cadrer/references/rechercher-existant.md`. Sa conclusion
+     (réutiliser, configurer, adapter, développer, isoler) est ce que les tâches implémentent ; un
+     « développer » sans ce passage est un écart.
 5. **1-2 hypothèses racines**, chacune **typée** : `lisible` (une lecture du dépôt la confirme ou la
    réfute — c'est ce que `verificateur-premisse` sait faire) ou `comportementale` (seule une
    exécution tranche : « le juge compte juste », « ce traitement tient en < 1 s »). Une

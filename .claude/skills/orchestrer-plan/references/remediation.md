@@ -58,7 +58,7 @@ Réponse finale en UNE ligne, exactement : PREMISSE: CONFIRMEE|REFUTEE|INDECIDAB
 
 Agent introuvable dans le bac à sable → même repli que pour la revue : `general-purpose`,
 `model: "haiku"`, prompt commençant par « Lis `.claude/agents/verificateur-premisse.md` et tiens ce
-rôle… ». Trois issues :
+rôle… ». Quatre issues :
 
 - **`REFUTEE`** → la session s'est trompée de diagnostic : reprise comme une nature `exécution`
   (un cran au-dessus), **la preuve recopiée dans le prompt de lancement** — elle dit où la cause
