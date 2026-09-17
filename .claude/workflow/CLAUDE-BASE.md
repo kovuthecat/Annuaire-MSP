@@ -25,9 +25,11 @@ Jamais de dépendance ajoutée seul : à trancher dans le plan (« Modifier »),
 
 ## Validation — trois niveaux
 
-- **N0 auto (bloque le commit)** : `build` + `typecheck` + tests du périmètre — à créer si la tâche
-  introduit de la logique testable ; `—` (aucun test) justifié dans le plan. Piège du typecheck qui
-  ne compile aucun fichier : gabarit `CLAUDE.md`.
+- **N0 auto (bloque le commit)** : `build` + `typecheck` + tests du périmètre, par le script
+  `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` en dépôt source) — **au premier plan,
+  comme toute commande**, jamais un agent. À créer si la tâche introduit de la logique testable ;
+  `—` (aucun test) justifié dans le plan. Piège du typecheck qui ne compile aucun fichier : gabarit
+  `CLAUDE.md`.
 - **N1 visuel auto (non bloquant)** : erreurs console, contenu présent, 4xx/5xx, responsive —
   uniquement via le navigateur in-app de Desktop (`/verif-visuelle`) ; ailleurs, la skill sort une
   checklist à dérouler à la main.

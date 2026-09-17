@@ -1,7 +1,7 @@
 {
   "_comment": "Settings d'un projet en mode VENDORÉ : le workflow (skills, agents, hooks, docs) est copié dans le repo sous .claude/, pas installé à l'exécution depuis une marketplace. Conséquence directe : rien à installer, nulle part — app Desktop, extension VS Code, session cloud et mobile voient le workflow parce qu'il est dans le clone. Plus de `extraKnownMarketplaces`, plus de `enabledPlugins`, plus de hook de bootstrap : ces trois lignes n'existaient que pour rapatrier des fichiers qui sont désormais déjà là. Instancié et tenu à jour par .claude/workflow/bin/sync-workflow.mjs (skills /migrer-projet et /maj-workflow).",
   "_comment_hooks": "Le câblage vivait dans hooks.json du plugin ; sans plugin, il revient ici. Les chemins passent par $CLAUDE_PROJECT_DIR — jamais de chemin absolu, qui ne survivrait ni à un autre poste ni à une session cloud. Les scripts, eux, résolvent leurs ressources (CLAUDE-BASE.md, plafonds.json) relativement à leur propre emplacement : ils fonctionnent donc à l'identique vendorés ou non.",
-  "_comment_permissions": "permissions.allow = ce qu'une session de plan fait TOUJOURS — lire, éditer, se mettre à jour, committer son travail —, utile aux sous-agents orchestrés (ils héritent de cet environnement, WORKFLOW.md §5b) et aux hooks du workflow. Son absence a déjà fait échouer une session entière sur un refus d'`Edit` (2026-09-09). Les commandes propres au projet (build, tests) s'ajoutent au fil de l'eau sur refus réellement observé, jamais par précaution. Les hooks du workflow s'appliquent par-dessus : `git add` autorisé ici reste refusé en `-A` par pretooluse-git.mjs.",
+  "_comment_permissions": "permissions.allow = ce qu'une session de plan fait TOUJOURS — lire, éditer, se mettre à jour, committer et pousser son travail (C3 : une session pousse désormais en fin de tour, `git pull --rebase` d'abord), lancer N0 (`n0.mjs`) et lire l'état d'une orchestration (`prochaine-action.mjs`) —, utile aux sous-agents orchestrés (ils héritent de cet environnement, WORKFLOW.md §5b) et aux hooks du workflow. Son absence a déjà fait échouer une session entière sur un refus d'`Edit` (2026-09-09). Les commandes propres au projet (build, tests) s'ajoutent au fil de l'eau sur refus réellement observé, jamais par précaution. Les hooks du workflow s'appliquent par-dessus : `git add` autorisé ici reste refusé en `-A` par pretooluse-git.mjs.",
   "_comment_effort": "DEUX clés, et la seconde gagne. `effortLevel` à la racine est le repli pour tout modèle non listé ; `modelSettings.<modèle>.effortLevel` est consulté EN PREMIER par Claude Code (résolveur : byModel[modèle] sinon default) — et ce, quel que soit le fichier d'où vient chaque clé. Conséquence : un `/effort` lancé une fois écrit `modelSettings` dans les settings UTILISATEUR et battrait ensuite l'`effortLevel` racine d'ici, silencieusement et dans tous les projets. La table ci-dessous est ce qui reprend la main : `modelSettings`, lui, suit la précédence normale (local > projet > utilisateur). Valeurs alignées sur la grille WORKFLOW.md §2-3 — Opus raisonne, Sonnet exécute du jugement, Haiku exécute du mécanique. `/effort` en session court-circuite tout et reste la dérogation explicite, à consigner dans le bandeau du S<k>.md. `max` n'est pas réglable ici : l'énumération persistée s'arrête à `xhigh` (cf. §3).",
   "effortLevel": "medium",
   "modelSettings": {
@@ -94,10 +94,14 @@
       "Bash(git rev-parse:*)",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
+      "Bash(git pull --rebase:*)",
+      "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(node --check:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(node .claude/workflow/bin/n0.mjs:*)",
+      "Bash(node .claude/workflow/bin/prochaine-action.mjs:*)"
     ],
     "deny": [
       "Read(.env*)",

@@ -8,19 +8,27 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 
 > **Modèle : <Sonnet/Haiku> · effort : <low|medium|high|xhigh> · Vague : <v> (parallèle : oui/non)**
 > **Environnement : <Desktop (navigateur requis) | indifférent>** (`WORKFLOW.md` §6, N1)
-> **Latitude : <ce que l'exécutant peut ajuster seul, ou aucune>** (optionnel, déclaré par le
-> cadreur session par session ; absent = aucune, tout écart reste un STOP — mesure B3)
+> **Régime : <fixé | ouvert>** — `fixé` : périmètre d'écriture fermé, livrable = commits sous gate
+> N0 (le défaut). `ouvert` (session `exploration`, C6) : **branche** jetable **nommée ET poussée**
+> ci-dessous (jamais `main`), **budget** écrit (tours ou temps), **ce qui compterait comme réponse
+> positive ET négative** — livrable = mesure + ce qui a été réfuté + code candidat (`WORKFLOW.md`
+> §1, C6).
+> **Latitude : <défaut : moyens libres ; objectif, contrats publics et zone du plan fixes>** — le
+> cadreur ne **restreint** ce défaut qu'en exception, une ligne de raison à l'appui (absent = le
+> défaut ; une restriction sans raison écrite est un écart, `verificateur-plan`).
 > **Correctif localisé : interdit — <raison>** (optionnel, rare : zone sensible, état coûteux à
 > annuler ; absent = autorisé sous les quatre conditions de `WORKFLOW.md` §9a)
 > Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
 > Design fixé — ne reconçois pas. Tu t'arrêtes sur un choix que tu n'as pas reçu, pas parce que
 > quelque chose a cassé : `EXECUTANT.md`.
 
-- Date : YYYY-MM-DD · Branche : <ou —>
+- Date : YYYY-MM-DD · Branche : <ou — ; obligatoire (nommée, poussée) si Régime : ouvert>
 
-## Lire (commun à la session)
+## Lire (commun à la session — point de départ, pas une clôture)
 `.claude/workflow/EXECUTANT.md` (toujours en premier), puis :
-<fichiers + portée précise (section / fonction / lignes) — RIEN d'autre>
+<fichiers + portée précise (section / fonction / lignes) — point de départ de la lecture ; elle
+ reste ouverte au-delà (C5, `WORKFLOW.md` §1) — seule l'écriture reste bornée à « Modifier » / la
+ zone du plan>
 
 ## Hors périmètre
 <ce qu'il ne faut PAS toucher / faire — vaut pour toute la session. **Jamais l'instrument qui note
@@ -63,17 +71,27 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 1. …
 
 ### Validation
-- **N0 auto (bloque le commit)** : `<commande>` → <résultat attendu>
+- **N0 auto (bloque le commit)** : `node .claude/workflow/bin/n0.mjs [--seulement <nom>]`
+  (projet vendoré : `node .claude/workflow/bin/n0.mjs`) → <résultat attendu> — **jamais un
+  sous-agent** (C1) : la commande s'exécute au premier plan, comme toute commande
 - **Tests** : <créés/mis à jour : fichiers, cas couverts> — ou « — » justifié en 1 ligne
 - **N1 visuel auto** : <écran/parcours à vérifier au navigateur in-app, ou `—`> → `/verif-visuelle`
 - **N2 humain (jugement esthétique/UX)** : <checklist ou `—`> → à consigner dans `VALIDATION.md`
 - **Anti-raccourci** : <ce qui ressemblerait à un PASS sans en être un, ou `—`>
 
 ### Si bloqué
-<le choix propre à cette tâche, non tranché par ce fichier — pas « ce qui pourrait casser » → STOP + quoi signaler.
- Jamais « ne corrige pas ici » : un défaut mesuré et petit relève du correctif localisé (`WORKFLOW.md` §9a).
- Un geste humain préalable (quitter une application, installer un outil) se vérifie en premier geste
- de la session — absent → `FAIL` environnement ; il ne justifie aucun arrêt de l'orchestrateur.>
+Quatre critères d'arrêt, liste fermée (`WORKFLOW.md` §1) — le reste se corrige et se rapporte après,
+ce n'est pas un STOP :
+1. un geste **irréversible** ;
+2. un **contrat public / schéma / dépendance** à changer ;
+3. l'**objectif** du plan qui bouge ;
+4. un **jugement N2** (esthétique/UX/produit) restant à rendre.
+
+<préciser ici le choix propre à cette tâche s'il en existe un parmi ces quatre — jamais « ce qui
+ pourrait casser ». Jamais « ne corrige pas ici » : un défaut mesuré et petit relève du correctif
+ localisé (`WORKFLOW.md` §9a). Un geste humain préalable (quitter une application, installer un
+ outil) se vérifie en premier geste de la session — absent → `FAIL` environnement ; il ne justifie
+ aucun arrêt de l'orchestrateur.>
 
 ### Message de commit (appliqué par la session elle-même)
 `<type(scope): message>`

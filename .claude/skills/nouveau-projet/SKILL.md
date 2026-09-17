@@ -92,7 +92,8 @@ place d'un humain.
    > Les squelettes voyagent **dans le repo** depuis le vendoring : ne jamais aller les chercher
    > dans un checkout du dépôt source (chemin qui n'existe que sur la machine du développeur).
 
-4. Ajouter `.claude/wave.lock` au `.gitignore` (marqueur local, jamais versionné).
+4. Ajouter `.claude/wave.lock` et `.claude/n0/` au `.gitignore` (marqueurs/journal locaux, jamais
+   versionnés) — **jamais** `*.revue.md` ni `*.echec.md` : ces deux-là sont commités (C3).
 
 5. Remplir `PROJECT_BRIEF.md` avec les réponses de l'interview (chaque section a une question
    source en Phase A — aucune section ne doit rester à instancier sans réponse).
@@ -116,4 +117,7 @@ place d'un humain.
    et de la maquette.
 4. Remplir les commandes réelles dans `CLAUDE.md` + vérifier que le typecheck n'est pas vide sur un
    projet vide (piège scaffold Vite/TS — cf. `CLAUDE.md` § Commandes).
-5. Renseigner `.claude/launch.json` si le projet a un serveur dev.
+5. Créer `.claude/n0.json` à partir de ces mêmes commandes (`{ "commandes": [{ "nom": "build",
+   "cmd": "…" }, …], "testCible": "…" }`, cf. `n0.mjs`) — jamais deviné avant que `CLAUDE.md` §
+   Commandes soit rempli, donc pas avant l'étape précédente ; committer le fichier.
+6. Renseigner `.claude/launch.json` si le projet a un serveur dev.

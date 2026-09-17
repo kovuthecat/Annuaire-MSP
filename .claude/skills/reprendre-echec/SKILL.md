@@ -39,10 +39,9 @@ arrêter le plan. Même procédure, trois différences :
   | remédiation d'environnement qui élargit les permissions ou exige un humain présent (Étape 1) | `DECISION` | ce n'est pas au workflow d'élargir ce que l'utilisateur a borné |
 
   Le motif dit laquelle. Le `.echec.md` mis à jour reste en place dans tous les cas sauf `PASS`.
-- **Le modèle vient de l'orchestrateur**, choisi d'après la ligne `Nature :` du rapport
-  (`WORKFLOW.md` §9a) : même modèle pour un échec d'environnement, un cran au-dessus (plancher
-  Sonnet) pour un échec d'exécution. Le `model` de ce frontmatter ne s'applique qu'à l'invocation
-  manuelle.
+- **Le modèle et le budget viennent de `prochaine-action.mjs` (C2)** — la table nature → modèle et
+  le calcul des tentatives restantes y sont câblés, pas ici. L'orchestrateur les applique sans les
+  recalculer ; le `model` de ce frontmatter ne s'applique qu'à l'invocation manuelle.
 
 **Une tentative, ici comme en manuel** — ne pas boucler pour éviter de rendre un mauvais verdict.
 Ce qui a changé le 2026-09-13, c'est ce qui suit la tentative : `FAIL` n'est plus un cul-de-sac
@@ -106,11 +105,19 @@ session nomme la nature de l'échec, et n'écrit ce rapport que si l'échec n'es
   la tentative dans « Déjà écarté » ;
 - **prémisse** ou **environnement** hors de portée → rapport tout de suite, sans corriger.
 
+**Budget en hypothèses (C5)** : jusqu'à 3 hypothèses **distinctes** testées en contexte chaud avant
+de conclure à ce rapport, chacune inscrite dans « Déjà écarté » **au fil de l'eau** — au moment où
+elle tombe, pas reconstituée après coup —, arrêt sur hypothèse répétée ou contexte > 70 %. C'est ce
+budget, et non une impression de blocage, qui déclenche l'écriture du rapport.
+
 Il est écrit pour quelqu'un qui n'a rien vu de la session. Il ne raconte pas ce qui s'est passé :
 il donne ce qu'il faut pour reprendre. **Plafond : 40 lignes** — au-delà, c'est un journal, et un
 journal se relit intégralement à chaque tentative. Seule exception : la section `## Issues` d'une
 enquête `OPTIONS` (10 lignes au plus), qui n'est pas écrite pour une tentative suivante mais pour
 l'utilisateur, une fois — elle vient en fin de fichier, après « Hypothèse en cours ».
+
+Une fois écrit, le fichier est **commité et poussé** comme le reste du travail de la session
+(`WORKFLOW.md` §4b, C3) — jamais un fichier local oublié sur un poste.
 
 ```md
 # S<k> — échec du YYYY-MM-DD
@@ -119,7 +126,7 @@ Nature : <environnement | exécution | prémisse>
 Tentatives : reprise=0 enquete=0
 Blocage : <le geste précis qui manque, en une ligne>
 Mesure : <commit> · <commande qui la reproduit>
-Auto : <oui · option <m> | non — écrite par l'enquête `OPTIONS` seulement>
+Auto : <oui | non — écrite par l'enquête `OPTIONS`, ou par la session en échec elle-même (mêmes critères, C5)>
 
 ## Tâche visée
 <la tâche T<n>, en une ligne — pas le S<k>.md recopié>
@@ -172,8 +179,9 @@ Trois lignes **mécaniques**, en tête, exactement ce format — les seules que 
   l'historique** et la commande qui rejoue la mesure. Absente → la prémisse est une affirmation,
   elle sera vérifiée (§9c). Présente → elle est une preuve, la vérification est sautée. Ne jamais
   l'écrire pour une mesure non commitée : l'orchestrateur ne lira pas la conversation.
-- `Auto :` — **écrite par l'enquête `OPTIONS` seulement** (Mode enquête, critère) : `oui` fait
-  appliquer l'option recommandée par une reprise, sans question ; absente vaut `non`.
+- `Auto :` — écrite par l'enquête `OPTIONS` (Mode enquête, critère), **ou par la session en échec
+  elle-même**, mêmes critères (C5) : `oui` fait appliquer l'option recommandée (ou le correctif
+  qu'elle nomme) par une reprise, sans question ; absente vaut `non`.
 
 **La prémisse est le seul champ qu'un tiers vérifie.** Une session en échec écrit ce qu'elle croit ;
 une prémisse fausse arrête un plan entier. C'est pourquoi l'orchestrateur la fait confronter au
@@ -241,7 +249,17 @@ piste invalidée sans une raison explicite de douter de son invalidation. Le dir
 **Aiguillage avant de corriger.** Le diagnostic peut montrer que ce n'est pas la tâche qui a raté,
 mais une hypothèse du plan qui est fausse : vérité de référence erronée, contrat à changer, mesure
 qui contredit l'attendu d'une gate. Un défaut mesuré qu'un correctif localisé lève (`WORKFLOW.md`
-§9a) **n'en est pas un** : corriger à l'Étape 4, sans extension. Ce n'est alors pas une reprise — le périmètre de la tâche
+§9a) **n'en est pas un** : corriger à l'Étape 4, sans extension.
+
+**Amendement avant extension (C5).** Avant de rendre la main vers `/nouveau-plan`, vérifier si la
+prémisse tombée qualifie pour un amendement plutôt qu'une extension : **mesure commitée** de sa
+fausseté, objectif du plan **inchangé**, remède **dans la zone** de la tâche d'origine, aucun
+critère d'arrêt de C5 déjà touché (budget d'hypothèses non épuisé, pas de répétition). Les quatre
+tenues ⇒ ce n'est ni une reprise à l'identique ni une extension : écrire l'amendement dans « Écarts
+au plan » du `S<k>.md` (commit séparé, repère `Amendement :`), puis continuer directement à
+l'Étape 4 — le relecteur juge après, `VERDICT: PASS` normal en sortie.
+
+**Une des quatre conditions manque** : ce n'est alors pas une reprise — le périmètre de la tâche
 d'origine ne suffit pas. Rendre la main vers **`/nouveau-plan`, Étape 0 (mode extension)** (mode
 orchestré : `VERDICT: DECISION`, motif « prémisse fausse → /nouveau-plan extension ») : la
 correction devient une ou deux sessions ajoutées au **même** plan, pas un plan suivant dont
@@ -264,11 +282,11 @@ plus qu'une enquête en lecture seule.
    prompt de lancement la nomme. Une correction qui déborde **sans
    servir le plan** est une nouvelle tâche : la noter dans `TASKS.md`, ne pas la faire ici. Si elle
    déborde **en servant le plan**, c'est l'aiguillage de l'Étape 3 : `/nouveau-plan` en extension.
-2. **N0** : `build` + `typecheck` (+ tests du périmètre) via `verificateur-n0`, lancé **au premier
-   plan** (`WORKFLOW.md` §5) — jamais en arrière-plan en attendant sa notification :
-   c'est son verdict qui décide de committer à l'Étape 5, et une reprise qui rend la main avant de le
-   lire consomme son budget (`Tentatives :`) pour rien. Sans N0 vert, la session
-   est toujours en échec — on ne remonte pas un PASS sur une intuition.
+2. **N0** : `node .claude/workflow/bin/n0.mjs` (`build` + `typecheck` + tests du périmètre) — un
+   script, pas un agent (C1), lancé **au premier plan** comme toute commande : c'est son verdict qui
+   décide de committer à l'Étape 5, et une reprise qui rend la main avant de le lire consomme son
+   budget (`Tentatives :`) pour rien. Sans N0 vert, la session est toujours en échec — on ne remonte
+   pas un PASS sur une intuition.
 3. La tâche touchait l'UI → `/verif-visuelle` pour le N1.
 
 ## Étape 5 — Clore l'échec

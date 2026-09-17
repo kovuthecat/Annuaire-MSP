@@ -76,8 +76,12 @@ Déléguer (`.claude/workflow/WORKFLOW.md` §5) : Opus lit des conclusions, pas 
 | `explorateur` | où vit le périmètre, quels fichiers, quelles dépendances entrantes et sortantes |
 | `analyste-flux` | comment le périmètre fonctionne réellement, quand `explorateur` a dit où |
 | `resumeur-git` | quels fichiers du périmètre ont été le plus retouchés, et par quels types de commits |
-| `verificateur-n0` | l'état de santé (build, typecheck, tests) — **N0 rouge : gate, pas un arrêt de conception** (`WORKFLOW.md` §9c) : ce n'est pas une revue qu'il faut, c'est une réparation — s'arrêter là sans rien demander |
 | `lecteur-doc` | uniquement si le « meilleur moyen » dépend d'une capacité externe à vérifier |
+
+**N0** n'est plus un agent : `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` dans ce dépôt)
+donne l'état de santé (build, typecheck, tests) directement. **N0 rouge : gate, pas un arrêt de
+conception** (`WORKFLOW.md` §9c) : ce n'est pas une revue qu'il faut, c'est une réparation —
+s'arrêter là sans rien demander.
 
 **Le signal le moins cher et le plus fiable est la répétition des correctifs.** Une zone qui a reçu
 cinq `fix:` en trois mois n'est pas malchanceuse : sa conception ne tient pas la charge qu'on lui

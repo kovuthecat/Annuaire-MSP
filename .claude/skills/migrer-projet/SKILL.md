@@ -168,7 +168,10 @@ Ordre imposé : le gain décroît, le risque croît.
    corriger les renvois internes cassés par ce déplacement — et seulement ceux-là.
 8. **Dette de format** — dérouler `/purge-contexte` (§DECISIONS, §STATUS, §VALIDATION) ; reporter
    les statuts des `S<k>.md` en cours dans la colonne Statut de l'`index.md` ; créer
-   `.claude/launch.json` s'il y a un serveur dev ; ajouter `.claude/wave.lock` au `.gitignore`.
+   `.claude/launch.json` s'il y a un serveur dev ; ajouter `.claude/wave.lock` et `.claude/n0/` au
+   `.gitignore` (jamais `*.revue.md` ni `*.echec.md` : commités, C3) ; créer `.claude/n0.json` à
+   partir des commandes relevées au point 6 de la Phase A (`{ "commandes": [{ "nom": "build", "cmd":
+   "…" }, …], "testCible": "…" }`, cf. `n0.mjs`), committé.
 
 Ne pas réécrire le contenu produit (brief, décisions, roadmap) à l'occasion de la migration : on
 classe et on déplace.
@@ -186,7 +189,8 @@ Câblage d'abord (mécanique, sans risque), contenu ensuite (du jugement).
    déjà un renvoyant à `.claude/workflow/AGENTS.md`, le signaler dans le rapport final — à supprimer
    ou à réécrire par l'utilisateur.
 
-3. **`.gitignore`** — y ajouter `.claude/wave.lock` s'il manque (marqueur local, jamais versionné).
+3. **`.gitignore`** — y ajouter `.claude/wave.lock` et `.claude/n0/` s'ils manquent (marqueurs/
+   journal locaux, jamais versionnés) — jamais `*.revue.md` ni `*.echec.md` : commités (C3).
 
 4. **`CLAUDE.md`** — partir de `.claude/workflow/templates/CLAUDE.md` et le remplir avec les
    **vraies commandes relevées en Phase A**, pas des placeholders. Si un `CLAUDE.md` existe déjà,
@@ -198,6 +202,9 @@ Câblage d'abord (mécanique, sans risque), contenu ensuite (du jugement).
    > qui ne bloque plus rien. Contrôle :
    > `<commande typecheck> --listFiles | grep -v node_modules | wc -l` doit être **non nul** ; sinon
    > la commande est `tsc -b --noEmit`.
+
+   Créer ensuite `.claude/n0.json` à partir de ces mêmes commandes (`{ "commandes": [{ "nom":
+   "build", "cmd": "…" }, …], "testCible": "…" }`, cf. `n0.mjs`) — jamais deviné.
 
 5. **Fichiers de contexte** — copier depuis `.claude/workflow/templates/` puis remplir :
 

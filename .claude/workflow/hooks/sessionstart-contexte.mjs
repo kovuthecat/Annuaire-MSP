@@ -11,7 +11,7 @@ import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
   repereSession, repondre, riendafaire, racineDepot,
   recupererAmont, etatAmont, aUnRemote, brancheCourante, brancheParDefaut,
-  familleModele, sessionsOuvertes,
+  familleModele, sessionsOuvertes, derniereVersionPubliee, versionSuperieure,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -144,6 +144,27 @@ if (dernierStatus) {
 for (const d of depassements(cwd)) {
   lignes.push(`**${d.fichier} : ${d.lignes}/${d.plafond} lignes** — archivage dû (/purge-contexte).`);
 }
+
+// Version du workflow vendoré, contre le dernier tag du dépôt public (C4). Jamais dans un
+// sous-agent : fait déjà vérifié, `SessionStart` ne s'y déclenche pas. Dépôt non vendoré (pas de
+// manifeste, comme CE dépôt source) → muet ; le réseau et le cache 24 h sont entièrement portés
+// par `derniereVersionPubliee`, qui rend `null` sans jamais bloquer sur un échec.
+try {
+  const cheminManifeste = join(racineDepot(cwd), '.claude', 'workflow', 'manifest.json');
+  if (existsSync(cheminManifeste)) {
+    const manifeste = JSON.parse(readFileSync(cheminManifeste, 'utf8'));
+    const versionVendoree = manifeste.version;
+    const versionPubliee = derniereVersionPubliee(cwd);
+    if (versionVendoree && versionPubliee && versionSuperieure(versionPubliee, versionVendoree)) {
+      const urgent = manifeste.correctifCritiqueDepuis
+        && versionSuperieure(manifeste.correctifCritiqueDepuis, versionVendoree);
+      lignes.push(
+        `**Workflow vendoré v${versionVendoree}, source v${versionPubliee}** — /maj-workflow ` +
+        (urgent ? '**avant la prochaine vague**.' : 'à la prochaine frontière de plan.')
+      );
+    }
+  }
+} catch { /* manifeste illisible ou JSON invalide : contrôle désactivé, jamais de faux positif */ }
 
 // Dépôt sous un dossier synchronisé (Synology Drive, OneDrive, Dropbox, iCloud) : le client ne
 // synchronise qu'au fichier près, jamais `.git` en bloc — une reprise en cours d'écriture git

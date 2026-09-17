@@ -34,7 +34,13 @@ Un plan sert deux lectures, et rate sa cible s'il n'en sert qu'une :
   registre. Il porte quand même le **pourquoi** de chaque tâche : une consigne sans intention
   s'exécute à la lettre et à côté, et c'est l'intention qui permet de s'arrêter au bon moment.
 
-## Étape 0 — Plan neuf, ou extension d'un plan en cours ?
+## Étape 0 — Premier geste : contrôle de version, puis plan neuf ou extension ?
+
+**Premier geste, avant tout le reste** : contrôle de version du workflow vendoré (C4,
+`docs/decisions/2026-09-17-autonomie-par-defaut-etat-scripte-push-par-session.md`) — dérouler
+`/maj-workflow`. Sans `DÉRIVE` : mise à jour sans question, rapportée ; avec `DÉRIVE` : question
+avant de continuer. Écrire un plan sur un workflow en retard fige dans les squelettes ce que la
+source a déjà corrigé.
 
 Un plan en cours peut produire un résultat qui invalide une hypothèse dont dépendent ses sessions
 restantes : vérité de référence fausse, contrat à changer, mesure qui contredit l'attendu d'une
@@ -52,6 +58,11 @@ l'« Objectif d'ensemble » de `P<n>` restant vrai tel qu'il est écrit ?
 
 **Plafond** : une **troisième** vague de remédiation sur le même plan n'est plus une extension,
 c'est la prémisse du plan qui est fausse. S'arrêter et dérouler `/cadrer` sur cette prémisse.
+
+**L'exploration ouverte arrive plus tôt (C6)** : dès la première prémisse comportementale non
+sondable rencontrée à l'Étape 1 — pas seulement au deuxième plan tué sur la zone —, dérouler
+`/cadrer`, qui sortira par un protocole de preuve, plutôt que de continuer à découper un plan sur
+une inconnue.
 
 **Avant d'écrire un plan neuf, regarder si la zone a déjà tué un plan sur une prémisse** :
 `grep -l 'Nature :.*prémisse' plans/*/*.echec.md`. **Deuxième plan sur la même zone avec cette
@@ -136,19 +147,25 @@ changent (Ideation).
 Un démarrage froid a un prix fixe (prompt système + `CLAUDE.md` + lectures) ; enchaîner dans une
 même session fait re-payer le contexte accumulé à chaque tour. Le découpage arbitre entre les deux.
 
-**Regrouper** plusieurs tâches dans une même session si TOUT est vrai :
+**Regrouper par lectures partagées, d'abord** : plusieurs tâches qui lisent les mêmes fichiers
+paient un seul démarrage à froid pour toutes — c'est le critère premier, pas un parmi d'autres.
+Regrouper plusieurs tâches dans une même session si TOUT est vrai :
 
-- même modèle **et** même effort ;
-- tâches courtes (`low`) **ou** lectures/fichiers largement partagés ;
+- lectures/fichiers largement partagés **ou** tâches courtes (`low`) ;
 - aucune validation humaine requise entre elles ;
 - le lot reste raisonnable (~3-5 tâches courtes, ou 2 moyennes liées).
 
-**Séparer** dès qu'un critère tombe, et notamment : toute tâche `high`/`xhigh` est **seule dans sa
-session** · changement de modèle ou d'effort · validation humaine (N2) entre deux tâches · la séparation
-**débloque une parallélisation**.
+**Séparer** dès qu'un de ces critères tombe, ou qu'une validation humaine (N2) s'intercale entre
+deux tâches, ou que la séparation **débloque une parallélisation**. Un changement de modèle ou
+d'effort, ou une tâche `high`/`xhigh`, ne sont plus des règles absolues de séparation : ce sont des
+**indices** qui pèsent dans le même arbitrage — le coût d'un redémarrage à froid peut l'emporter sur
+eux quand les lectures sont vraiment partagées.
 
-Deux sessions sont **parallélisables** ssi aucune dépendance **et** zones modifiées disjointes
-(fichiers de « Modifier »). La colonne « Zone modifiée » sert à ce contrôle : y mettre les
+**Séquentiel par défaut.** Deux sessions sont **parallélisables** ssi aucune dépendance **et** zones
+modifiées disjointes (fichiers de « Modifier »), mais le parallèle reste une **option déclarée au
+cadrage**, pas le régime normal (`WORKFLOW.md` §4b) : une vague marquée « parallélisable » se
+justifie en une ligne dans son *Pourquoi maintenant* — le **gain d'horloge attendu**, pas « c'est
+possible ». La colonne « Zone modifiée » sert au contrôle de disjonction : y mettre les
 répertoires/fichiers réellement touchés, pas des généralités.
 
 **Une session dont la zone est « aucune » demande un soin particulier.** Vérification, mesure, audit :
@@ -156,6 +173,14 @@ son livrable est une **conclusion**, pas un diff. Écrire alors dans le `S<k>.md
 contenir — le corpus exact, le critère, le résultat attendu — parce que c'est la seule chose qui
 restera. Sans ça, la session rend « ça marche » dans une conversation qui disparaît, et le plan ne
 peut plus la distinguer d'une session jamais lancée (constaté sur MYO P1/S5, 2026-08-24).
+
+**Session de type `exploration` (C6)** : quand l'Étape 0 ou l'Étape 1 a déclenché l'exploration
+ouverte (première prémisse comportementale non sondable, enquête `OPTIONS` sans option
+satisfaisante, deuxième plan tué sur la zone), la découpe ajoute une session de ce type plutôt
+qu'une tâche écrite sur une inconnue. Son bandeau porte `Régime : ouvert` (squelette-session) :
+branche jetable **nommée et poussée** (jamais `main`), budget écrit (tours ou temps), N0 en fin de
+session ; son livrable est une **mesure + ce qui a été réfuté + le code candidat**, pas un diff sous
+gate N0 classique.
 
 Modèle et effort : grille dans `.claude/workflow/WORKFLOW.md` §2-3.
 
@@ -274,7 +299,7 @@ Principes :
 Le plan est écrit, rien n'est encore commité. Lancer l'agent **`verificateur-plan`**, **au premier
 plan** (§5), en lui donnant `P<n>` et, en mode extension, les sessions ajoutées :
 
-> Vérifie `plans/P<n>/` — les quatre contrôles.
+> Vérifie `plans/P<n>/` — les dix contrôles.
 
 Il ne juge pas la conception : il confronte le plan au dépôt (fichiers de « Modifier » qui
 n'existent pas sans étape de création, sessions parallèles dont les fichiers se recoupent,

@@ -1,267 +1,60 @@
 ---
 name: fin-de-tache
-description: Checklist de fin de tâche et de fin de session — statuts, fichiers de contexte, rapport, commit. À dérouler quand une tâche T<n> d'une session S<k> est terminée et validée (N0 OK).
+description: Checklist de fin de tâche et de fin de session — statuts, fichiers de contexte, rapport, commit, push. À dérouler quand une tâche T<n> d'une session S<k> est terminée et validée (N0 OK).
 ---
 
 # Fin de tâche
 
-Lire le bandeau du `S<k>.md` en cours : **parallèle : oui/non** détermine le mode.
+Lire le bandeau du `S<k>.md` : **parallèle : oui/non** détermine le mode. Qui committe/pousse,
+quand, et l'exception `.claude/wave.lock` : `WORKFLOW.md` §4b (domicile). Où vit le statut d'une
+tâche : §4a (domicile) — jamais recopié dans un `S<k>.md` ni dans `TASKS.md`.
 
-Qui committe, quand, et l'exception `.claude/wave.lock` : `WORKFLOW.md` §4b (domicile), ne pas le
-reformuler ici. Où vit le statut d'une tâche : `WORKFLOW.md` §4a (domicile) — jamais recopié dans
-un `S<k>.md` ni dans `TASKS.md`.
+## Après chaque tâche
 
-## Après CHAQUE tâche (les deux modes)
-
-1. **N0** : `build` + `typecheck` (+ tests unitaires si logique pure) passent. Sinon la tâche n'est
-   pas finie. **Juste après** : toute skill du projet nommée `verif-<chose>` (`.claude/skills/`,
-   propre au projet, jamais du workflow vendoré) se déroule ici, avant le N1 — c'est le point
-   d'entrée d'un contrôle mécanique propre au projet (mesure A6).
-2. **N1** : si la tâche touchait l'UI, dérouler `/verif-visuelle`. Un défaut N1 se corrige
-   maintenant, il ne se reporte pas.
-3. **Bilan dans le `S<k>.md`** — section « Bilan de session », complétée au fil des tâches :
-   fichiers modifiés · résumé · N0 lancé · N1 constaté · N2 à faire · prochaine action. **Toujours**,
-   y compris quand la tâche n'a produit aucun fichier durable (session de vérification, de mesure,
-   d'audit) : c'est alors le livrable lui-même, la conversation qui l'a produit disparaît. **Écarts
-   au plan** : rubrique en plus, **uniquement si le bandeau du `S<k>.md` a déclaré une `Latitude`** —
-   sinon la ligne est absente et l'écart suit la condition d'arrêt d'`EXECUTANT.md`, section « Une
-   session = un fichier » (mesure B3). **Correctif localisé** posé (`WORKFLOW.md` §9a) : toujours
-   signalé, en première ligne du bilan — fichiers, cause mesurée, commit.
-4. **Commit de la tâche** — sauf si `.claude/wave.lock` est présent (§4b). Staging explicite des
-   fichiers de la tâche **et du `S<k>.md`**, message prévu dans le `T<n>`, repère de tâche en
-   dernière ligne :
-
-   ```bash
-   git status                       # relire ce qu'on s'apprête à prendre
-   git add <fichiers de la tâche>    # jamais -A, jamais -a : les voisines seraient emportées
-   git commit -m "<type(scope): message du T<n>>" -m "Plan: P<n>/S<k>/T<m>"
-   ```
-
-   Jamais `git push`. **Une tâche sans fichier de code committe quand même son `S<k>.md`** : zéro
-   commit est, pour l'orchestrateur, indistinguable d'une session jamais lancée.
+1. **N0** : `node .claude/workflow/bin/n0.mjs` (ce dépôt : `plugin/bin/n0.mjs`) — sinon la tâche
+   n'est pas finie. **Juste après, avant le N1** : toute skill projet `verif-<chose>`
+   (`.claude/skills/`, jamais du workflow vendoré).
+2. **N1** si la tâche touchait l'UI : `/verif-visuelle`. Un défaut N1 se corrige maintenant, il ne
+   se reporte pas.
+3. **Bilan** dans le `S<k>.md` (« Bilan de session ») : fichiers modifiés · résumé · N0 · N1 · N2 à
+   faire · prochaine action — **toujours**, même sans fichier durable. **Écarts au plan** seulement
+   si le bandeau a déclaré une `Latitude`. **Correctif localisé** posé (`WORKFLOW.md` §9a) : en
+   tête du bilan.
+4. **Commit de la tâche** — sauf `.claude/wave.lock` (§4b). Staging explicite (jamais `-A`, `-a`,
+   `commit -a`), `S<k>.md` inclus, repère `Plan: P<n>/S<k>/T<m>` en dernière ligne. Une tâche sans
+   fichier de code committe quand même son `S<k>.md`.
 5. **Rapport court** dans la conversation : le même contenu que le bilan, en trois lignes.
-6. **Skill projet ?** : une procédure spécifique au projet a été déroulée ≥ 2 fois ou dictée en
-   prompt ? → la proposer comme `.claude/skills/<nom>/` du projet (critères : `/choisir-mecanisme`).
-   On PROPOSE, on ne crée JAMAIS silencieusement ; nom **distinct** de ceux du workflow vendoré.
-   **Un contrôle manuel revenu ≥ 2 fois** (relecture d'un écran, vérification d'un export, contrôle
-   qu'aucune régression n'a eu lieu sur une zone sensible) → proposer explicitement une skill nommée
-   `verif-<chose>` : c'est ce nom précis que le point 1 reconnaît et déroule après le N0.
-7. **Un fichier géré a-t-il été modifié ?** Si la tâche a touché un fichier listé dans
-   `.claude/workflow/manifest.json`, **c'est une erreur à réparer, pas à committer** : porter la
-   modification dans le dépôt source, publier, puis `/maj-workflow` ici.
-8. **Le workflow a cassé pendant la tâche ?** Hook qui refuse à tort, permission manquante, outil
-   absent du bac à sable, verdict ou revue perdus, cache périmé — tout ce qui vient de l'outillage
-   et pas du projet → un fichier `docs/workflow/incidents/<date>-<slug>.md` (gabarit et règle :
-   `WORKFLOW.md` §9b). **Ouvrir §9b et recopier son en-tête**, ne pas en improviser un : les six
-   lignes `Projet` / `Workflow` / `Plan` / `Environnement` / `Étape` / `Nature` sont mécaniques —
-   sans elles le collecteur du dépôt source ne sait ni dater, ni classer, ni compter l'incident, et
-   le fichier ne pèse rien dans l'analyse groupée. Stagé **avec le commit de la tâche** (point 4 ; sous verrou, l'orchestrateur
-   le committe en fin de vague). Ni `TASKS.md` ni la conversation : seul ce fichier remonte au
-   dépôt source, où les incidents de tous les projets sont analysés ensemble.
-8b. **Le workflow lui-même a changé ?** (tâche menée dans le dépôt source, sous `plugin/`) → bumper
-   `version` dans `plugin/.claude-plugin/plugin.json` + une ligne dans `CHANGELOG.md`, **puis**
-   `node plugin/bin/publier.mjs` (le dépôt source n'est pas vendoré — `publier.mjs` n'existe qu'à
-   cet emplacement, jamais sous `.claude/workflow/bin/`). Sans bump, les projets vendorés ne voient
-   jamais la mise à jour ; sans publication, toute machine neuve embarque une version périmée.
+6. **Skill projet ?** Une procédure dictée ou déroulée ≥2 fois → proposer `.claude/skills/<nom>/`
+   (jamais silencieusement). Un contrôle manuel revenu ≥2 fois → proposer `verif-<chose>` (point 1).
+7. **Fichier géré modifié** (`.claude/workflow/manifest.json`) ? → réparer dans le dépôt source,
+   publier, `/maj-workflow` ici — pas un commit local.
+8. **Le workflow a cassé pendant la tâche** ? → `docs/workflow/incidents/<date>-<slug>.md` (gabarit
+   et règle : `WORKFLOW.md` §9b), stagé avec le commit de la tâche.
 
-## Fin de session — mode SOLO (parallèle : non)
+Tâche qui touche `plugin/**` dans ce dépôt source (pas vendoré) → ouvrir `references/fin-de-plan.md`
+section « 8b », avant de committer.
 
-9. **Statut** : passer les tâches à `[x]` dans l'`index.md` du plan (colonne Statut), avec la date —
-   hors vague, la session est seule sur ce fichier, donc elle l'écrit et l'inclut dans son commit.
-10. **Contexte** : mettre à jour `STATUS.md` ; les autres fichiers **seulement si leur contenu
-    change** — un fichier de contexte faux est pire qu'absent.
-11. **N2** : consigner dans `VALIDATION.md` **uniquement** ce qui relève du jugement humain
-    (esthétique, UX, ton), et supprimer les items déjà tranchés — git est l'archive, le fichier ne
-    contient que ce qui est encore EN ATTENTE.
-12. **Plafonds** : si le hook signale un dépassement, dérouler `/purge-contexte` — pas plus tard.
-13. **Gate, pas d'arrêt** (`WORKFLOW.md` §9c) — pas de push tant que d'autres sessions du plan
-    restent à exécuter : rien à demander, le push est groupé, en fin de vague ou de plan.
+## Fin de session
 
-## Fin de session — mode VAGUE PARALLÈLE (parallèle : oui)
+`.claude/wave.lock` présent → ouvrir `references/vague-parallele.md` : c'est le verrou qui décide,
+pas le bandeau `parallèle`.
 
-9. **Fichiers partagés : c'est le verrou qui décide, pas le mot « vague ».** `STATUS.md`, `TASKS.md`
-   et `VALIDATION.md` restent hors de portée dans les deux cas (ils se remplissent à la clôture).
-   Pour l'`index.md` (§4a/§4b) :
+Sinon :
 
-   | `.claude/wave.lock` | `index.md` |
-   | --- | --- |
-   | **présent** (sessions concurrentes) | ne pas y toucher — l'orchestrateur coche en fin de vague |
-   | **absent** (voie séquentielle) | cocher **sa propre ligne**, et elle seule, dans le commit du point 12 |
-10. Les points **N2** restent dans le `S<k>.md` (à côté du bilan du point 3) — reversés dans
-    `VALIDATION.md` en fin de plan.
-11. **Ce que l'orchestrateur lira** : les commits du point 12, et rien d'autre. Ni le `S<k>.md`, ni
-    une confirmation verbale. **Ne rien lancer en arrière-plan** : orchestrée, une session ne
-    connaît que sa propre réponse finale — ce qui finit après elle n'est lu par personne.
-12. **Commit ou pas, selon le verrou.** Absent → committer ses tâches comme au point 4, `S<k>.md`
-    compris, sans toucher aux fichiers partagés. Présent → ne rien committer : l'orchestrateur le
-    fera en fin de vague. Dans les deux cas, **jamais de push**.
-13. **Gate, pas d'arrêt** (`WORKFLOW.md` §9c) — pas de travail dans un worktree (§7, appliqué par
-    `pretooluse-git.mjs`). Un diff commité sur la branche d'un worktree n'est vu par personne. Si la
-    session a déjà commencé dans un worktree, elle ne demande rien : elle **signale** au lieu de
-    clore, et le travail doit d'abord revenir dans l'arbre principal.
+9. **Statut** : `index.md` du plan → `[x]` (ou `[x]!`, revue à bloquant non trié), avec la date,
+   dans le commit du point 10 — cocher **sa propre ligne**, et elle seule, si d'autres sessions de
+   la vague restent à exécuter.
+10. **Contexte** : `STATUS.md` à jour ; les autres fichiers **seulement si leur contenu change**.
+11. **N2** : `VALIDATION.md`, uniquement le jugement humain encore EN ATTENTE — supprimer ce qui
+    est déjà tranché.
+12. **Plafonds** dépassés (hook) → `/purge-contexte` maintenant, pas plus tard.
+13. **Push (C3)** : `git pull --rebase` puis `git push` — arbre propre et poussé avant de rendre la
+    main. N0 rouge à l'interruption, ou arrêt en cours de tâche → branche `wip/P<n>-S<k>` poussée
+    avec le `.echec.md`, jamais `main`. `main` impossible à pousser (cloud) → pousser la branche
+    courante et la **nommer** dans la relance. Exemptions : pas de remote, remote injoignable
+    (signalé, non bloquant), `wave.lock` (couvert ci-dessus).
 
-## Relecture de session — dernier geste, dans les deux modes
+Session suivante du plan prête, ou vague/plan à collecter → **bloc de relance obligatoire**, sans
+exception : ouvrir `references/bloc-de-relance.md`.
 
-**Seulement si la session a produit du code.** Une session dont la « Zone modifiée » est `aucune`
-(mesure, audit, vérification) n'a pas de diff à relire — clore sans revue.
-
-**L'ordre est impératif : clôture d'abord, revue ensuite.** Dérouler toutes les étapes de fin de
-session du mode (statuts, commits, rapport) AVANT de lancer la revue : le travail est alors commité
-et le verdict acquis — plus rien n'attend la revue, elle ne peut plus coûter la session. Une session
-qui attend sa revue avant de committer compte, pour l'orchestrateur, comme jamais lancée.
-
-**Lancer l'agent `relecteur-session`, AU PREMIER PLAN** (jamais `run_in_background: true`, jamais
-`/code-review` en `high`+ : à ces niveaux il part dans un agent d'arrière-plan). Lui passer `P<n>`,
-`S<k>`, le mode, et — sous `.claude/wave.lock` uniquement — les chemins de la « Zone modifiée ».
-
-**Pas d'outil `Agent` dans cette session ?** Gate, pas d'arrêt (`WORKFLOW.md` §9c) : rien à demander
-à un humain. C'est le cas courant d'une session lancée en sous-agent par `/orchestrer-plan` (bac à
-sable sans outil de sous-agent, ou profondeur épuisée). Ne pas relire soi-même à la place du
-relecteur — la revue vaut par le fait qu'un autre que la session la fait. Le dire en une ligne dans
-le rapport et clore : **orchestrée**, l'orchestrateur
-lance la revue lui-même après avoir collecté la vague (`/orchestrer-plan` Étape 5) ; **à la
-main**, la relancer depuis une session qui a l'outil, et déposer un fichier d'incident (point 8)
-si l'outil manquait là où il aurait dû être.
-
-**Le relecteur dépose le fichier en premier geste, avant même de lire le diff** : une `Couverture :
-en cours` dans le fichier signifie tours épuisés, revue partielle — non bloquant, à relayer tel
-quel.
-
-**C'est l'agent qui écrit `plans/P<n>/S<k>.revue.md`, pas toi.** La session ne fait que lire les
-deux lignes qu'il rend et les recopier dans son rapport. Une revue lancée en arrière-plan comme
-dernier geste ne dépose jamais rien : la session rend la main, le harnais la clôt, et le retour
-arrive dans un tour que plus personne ne lit — c'est le mécanisme de
-`docs/decisions/2026-09-04-delegation-au-premier-plan.md`, et il a coûté la totalité des revues d'un
-plan entier avant d'être vu (`2026-09-07-revue-orpheline.md`).
-
-**Le fichier est déposé même sans trouvaille** (`Bloquant : 0`). L'absence de `.revue.md` ne veut
-donc plus dire qu'une chose — **la revue n'a pas tourné** — et c'est à ce titre que le hook `Stop`
-et l'orchestrateur la signalent. Si l'agent rend la main sans avoir pu écrire (périmètre
-indéterminable, diff vide), clore quand même en le signalant d'une ligne : la revue est **non
-bloquante**, sans rang dans la grille N0/N1/N2.
-
-Contenu du fichier (format, seuil bloquant/backlog) : c'est l'affaire de l'agent, ne pas le
-reformuler ici — `.claude/agents/relecteur-session.md`.
-
-Le fichier reste **non commité** : il est consommé au tri de clôture du plan (point 16). La session
-ne corrige rien — elle est close. Exception en mode solo, humain présent : un **bloquant** peut se
-corriger sur-le-champ (commit correctif + N0 rejoué), et sort alors du `.revue.md`. Un défaut qui
-invalide une hypothèse du plan reste une extension (`/nouveau-plan` Étape 0), jamais une correction
-locale.
-
-**`Bloquant : <n>` avec n > 0 et rien corrigé sur-le-champ → repasser le statut de la session de
-`[x]` à `[x]!` dans l'`index.md`** (vocabulaire `WORKFLOW.md` §4a), dans le commit de suivi déjà
-prévu au point 9. Le `.revue.md` n'étant jamais commité, c'est la seule trace du défaut qui
-survivra à la session — et elle dit au tri de clôture qu'il reste quelque chose à arbitrer ici.
-
-## Fin de plan (toutes les sessions exécutées et validées)
-
-Le travail de code est déjà commité — chaque session a pris le sien. Il ne reste que le rangement.
-
-14. **Vérifier qu'il ne reste rien.** `git status` doit être propre hors fichiers de contexte. Ce qui
-    traîne encore appartient à une session qui n'a pas déroulé cette checklist : la retrouver plutôt
-    que de balayer le reste dans un commit fourre-tout. Un `plans/P<n>/S<k>.echec.md` encore présent
-    signale un échec non résolu → ne pas clore le plan (`/reprendre-echec`). Les `S<k>.revue.md`
-    encore là sont normaux : ils attendent le tri du point 16. Un `docs/workflow/incidents/*.md`
-    non commité se committe maintenant (`incident(workflow): <slug>`) — il part avec le push du
-    point 17, jamais avant.
-15. **Nettoyer les marqueurs** : `.claude/wave.lock` s'il existe, et `.claude/vague/` (sorties brutes
-    et identifiants de session — transitoires).
-16. **Ranger le contexte** : statuts complets dans l'`index.md` — et **aucun `[x]!` ne survit à la
-    clôture** : verser son bloquant dans `TASKS.md` (ci-dessous) est précisément ce qui le repasse
-    à `[x]` (`WORKFLOW.md` §4a). Un `[x]!` encore là en fin de plan veut dire qu'une revue n'a pas
-    été triée. Puis : lignes purgées de `TASKS.md`,
-    `STATUS.md` à jour, points N2 des `S<k>.md` reversés dans `VALIDATION.md`. **Trier les revues** :
-    chaque `plans/P<n>/S<k>.revue.md` est versé dans `TASKS.md` — les **bloquants** en tête, marqués
-    comme tels, le backlog à la suite, jamais dans `VALIDATION.md`. `Couverture : en cours` : verser
-    ce qui est là quand même et noter « revue partielle » dans le rapport de clôture — puis supprimé (transitoire,
-    comme `.claude/vague/`). Un `Bloquant : 0` sans backlog ne se verse pas, il se supprime. **Une
-    session qui a produit du code et n'a laissé aucun `.revue.md` n'a pas eu de revue** : le
-    signaler dans le rapport de clôture plutôt que de le lire comme « rien à signaler ». Un commit
-    dédié, portant en dernière ligne le repère des revues **réellement trouvées et triées** :
-    `Revues: P<n>/S<k>, P<n>/S<k>`. Le `.revue.md` n'est jamais commité : ce repère est la seule
-    trace qu'il a existé, et sans lui le hook `Stop` relit la suppression que tu viens de faire
-    comme une revue jamais lancée. Une session sans `.revue.md` n'entre pas dans le repère — elle
-    part dans le rapport de clôture, à sa place.
-17. **Un seul push**, sur `main`, pour l'ensemble du plan — session cloud comprise, jamais sur une
-    branche laissée derrière (`WORKFLOW.md` §4b).
-
-## Enchaînement — session suivante du plan
-
-**D'abord : suis-je orchestrée ?** Si cette session a été lancée par `/orchestrer-plan` (sous-agent,
-§5b) l'enchaînement ne la regarde pas : l'orchestrateur collecte les verdicts et ouvre la vague
-suivante lui-même. Rendre la main, point.
-
-Le reste ne vaut que pour une session **lancée à la main**, ou par une pastille de repli (§5b, repli
-hors Desktop) :
-
-- S'il reste des sessions prêtes dans l'`index.md` (dépendances satisfaites, vague en cours ou
-  suivante) : **bloc de relance** (section suivante, obligatoire) et, en Desktop, une pastille en
-  plus via `spawn_task` — titre `P<n> · S<k> — <titre> · <M>/<E>`, même prompt que le bloc. Jamais
-  dans la même conversation : démarrage froid systématique (§5b).
-- **Avec la pastille, la ligne « À régler AVANT de lancer »** (`WORKFLOW.md` §3, domicile) —
-  **contrainte d'outillage** (`WORKFLOW.md` §9c), pas un point d'arrêt de conception : modèle et
-  effort de la session suivante, lus dans l'`index.md`. Ce qui la lèverait : un lancement qui pose
-  l'effort lui-même. Une pastille démarre sur les réglages courants de l'application — sans ce
-  rappel, une session `Sonnet`/`high` part au hasard de ce qui était réglé la veille, et personne ne
-  s'en aperçoit avant le résultat.
-- **Si cette session était la dernière `[ ]` de sa vague**, c'est la collecte qui se relance — bloc
-  de relance, ligne « Vague à collecter » de la table, et en Desktop une pastille titrée
-  `P<n> — collecter la vague <w>`.
-
-**Ne pas essayer de prévenir l'orchestrateur par message** (`SendMessage` ne résout pas
-l'auto-identification d'une session, et un message reste éphémère). La pastille, elle, attend.
-
-## Bloc de relance — toute fin qui renvoie vers une session neuve
-
-*Domicile de la règle : les autres skills y renvoient, ne la reformulent pas.*
-
-**Sans exception** : dès qu'une session se termine en demandant à l'humain d'ouvrir une
-conversation neuve — session suivante d'un plan, collecte de vague, `/orchestrer-plan` sur un index
-prêt, `/nouveau-plan` après `/cadrer` ou une revue, `/reprendre-echec` à la main, escalade de
-modèle, analyse ou exploration à poursuivre — elle **termine par ce bloc, copiable sans retouche,
-et rien après lui**. « Lance `/nouveau-plan` », « S3 est prête » ou une pastille seule ne sont pas
-une relance : l'humain devrait reconstituer le prompt et deviner quoi faire lire.
-
-````
-```
-Session suivante — modèle <M> · effort <E>
-
-<prompt exact, à coller tel quel — table ci-dessous>
-
-Lis, dans cet ordre, et rien d'autre :
-- <chemin> — <pourquoi ce fichier>
-- <chemin> — <pourquoi ce fichier>
-
-État : <où en est le travail, 2-3 lignes>
-Déjà tenté et écarté : <ce qui a échoué, et pourquoi — ou « aucune »>
-À faire : <objectif de la session suivante, et son critère de fin>
-```
-````
-
-| Cas | Prompt exact | « Lis » contient au moins |
-| --- | --- | --- |
-| Session suivante d'un plan | `Ouvre plans/P<n>/S<k>.md et exécute-le.` | `plans/P<n>/S<k>.md` — sa propre section « Lire » fait le reste |
-| Vague à collecter / plan prêt | `/orchestrer-plan P<n> — vague <w> : collecte et vague suivante.` | `plans/P<n>/index.md` |
-| Plan à rédiger ou étendre | `/nouveau-plan <objectif en une phrase>` (`en extension de P<n>` le cas échéant) | le `docs/decisions/<fichier>.md` ou le rapport qui le motive |
-| Échec à reprendre à la main | `/reprendre-echec plans/P<n>/S<k>.echec.md` | ce `.echec.md` |
-| Cadrage, analyse, escalade | l'objectif, en une phrase impérative | les fichiers produits par cette session |
-
-Le prompt nomme toujours ses chemins en entier, jamais « le plan » ou « la décision d'hier ». Cas
-planifié : le `S<k>.md` est la passation, `État` / `Déjà tenté` / `À faire` tiennent en une ligne
-chacune. Pastille possible (Desktop) : elle vient **en plus**, même prompt, avec la ligne « À régler
-AVANT de lancer » (`WORKFLOW.md` §3).
-
-Trois règles pour qu'il serve à quelque chose :
-
-- **« Déjà tenté et écarté » n'est pas optionnel.** C'est la ligne que ni un résumé ni une
-  compaction ne conservent, et c'est exactement ce dont une session d'escalade a besoin — on
-  escalade parce que le modèle précédent a échoué ; lui transmettre le positif sans le négatif le
-  condamne à repayer les mêmes impasses. Même logique que « Écartés — ne pas reproposer » de
-  `/revue-de-conception`. Rien à écarter → écrire `aucune`, jamais supprimer la ligne.
-- **« et rien d'autre »** applique au cas non planifié la règle que le socle impose au cas planifié :
-  un exécutant ne lit que les fichiers listés. Sans elle, la session neuve relit le contexte par
-  défaut et repaie un préfixe entier (`WORKFLOW.md` §3b).
-- **Bloc de code clos, dans la conversation** — pas seulement une pastille : le bloc doit être
-  copiable en Desktop, VS Code, cloud et mobile. Quand une pastille est possible, elle vient **en
-  plus**, avec la ligne « À régler AVANT de lancer » (`WORKFLOW.md` §3).
+Toutes les sessions du plan exécutées et validées → ouvrir `references/fin-de-plan.md`.

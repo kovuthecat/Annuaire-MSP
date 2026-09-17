@@ -2,7 +2,6 @@
 name: cadrer
 description: Session de réflexion avec Opus en amont d'un plan, jusqu'à un écrit tranchant les options. À dérouler quand le QUOI et le POURQUOI ne sont pas encore tranchés, avant `/nouveau-plan`.
 allowed-tools: Read, Glob, Grep, Agent, WebFetch, WebSearch, Write, Edit
-disallowed-tools: Bash, PowerShell
 ---
 
 # Cadrer un sujet
@@ -13,11 +12,11 @@ implémentation improvisée — et double le contexte le plus cher du workflow.
 
 Ici Opus ne sert qu'à **arbitrer**. Jamais à chercher, lire, lancer ou vérifier (`WORKFLOW.md` §5).
 
-> Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash` et
-> `PowerShell` (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se
-> réinitialisent au message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une
-> session qui dure, le garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste
-> une règle tenue à la main, pas une impossibilité.
+> Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) — pour le seul tour qui
+> invoque la skill : la préautorisation se réinitialise au message suivant (doc Claude Code, Skills,
+> vérifiée le 2026-09-15). Le garde-fou reste le **Plan Mode**, dès le début : il interdit
+> l'écriture dans le dépôt, pas le lancement d'une **sonde jetable** (Étape 2) — c'est la seule
+> exception au « ne rien lancer, ne rien vérifier » (C6).
 
 ## Étape 0 — La session est-elle seulement nécessaire ?
 
@@ -42,6 +41,10 @@ Puis remplir la **grille de préparation** (`references/preparation.md`) : cinq 
 Une réflexion sans question écrite ne se termine pas : elle s'interrompt quand le contexte est plein.
 
 ## Étape 2 — Déléguer tout ce qui n'est pas un arbitrage
+
+**La sonde jetable est autorisée** (C6) : un script du scratch, ou `n0.mjs`, pour lever une inconnue
+que la seule lecture ne tranche pas. Rien ne s'écrit dans le dépôt — l'interdit d'écriture demeure
+(Plan Mode). Ce n'est pas une délégation : c'est la seule exécution qu'Opus peut lancer lui-même ici.
 
 Avant de déléguer, l'aiguillage de `references/protocoles.md` : `NONE` est la réponse normale ; une fiche ouverte rend ses trois lignes dans la décision.
 
@@ -103,10 +106,11 @@ Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle ser
 
 ### Le protocole de preuve — quand la réponse n'existe qu'à l'exécution
 
-**Signal d'entrée**, l'un ou l'autre suffit : la zone a déjà tué un plan sur une prémisse (deuxième
-occurrence) ; ou le critère de succès ne s'énonce pas comme un nombre que le code d'aujourd'hui
-produit déjà de façon stable — si la cible bouge quand on change la définition, il n'y a pas de plan
-à écrire, il y a une mesure à établir d'abord.
+**Signal d'entrée**, l'un des suivants suffit (C6) : une première prémisse comportementale non
+sondable en lecture ; une enquête `OPTIONS` sans option satisfaisante ; la zone a déjà tué un plan
+sur une prémisse (deuxième occurrence) ; ou le critère de succès ne s'énonce pas comme un nombre que
+le code d'aujourd'hui produit déjà de façon stable — si la cible bouge quand on change la
+définition, il n'y a pas de plan à écrire, il y a une mesure à établir d'abord.
 
 Le protocole remplace la décision. Il porte au minimum :
 
@@ -128,8 +132,11 @@ l'empêche de reproduire le cliquet qui a vidé une zone en cinq plans.
 qu'un plan fermé ne peut pas produire ; le **code candidat** sur sa branche. Être vert ne suffit pas
 à le faire entrer : la décision qui suit tranche, après une passe `relecteur-session`.
 
-Une preuve se mène au premier plan, avec un humain qui la lit : `/orchestrer-plan` n'en connaît pas
-l'existence, et un exécutant de plan ne bascule jamais en preuve de lui-même. Décision du 2026-09-14.
+**La preuve est orchestrable** (C6) : session de type `exploration` dans un plan (bandeau `Régime :
+ouvert`, squelette-session), lancée en sous-agent, sur branche jetable poussée avec budget écrit —
+l'humain lit le résultat, pas le processus. Un exécutant de plan ne bascule jamais en preuve de
+lui-même : c'est `/nouveau-plan` qui écrit la session `exploration`, pas une session en cours qui s'y
+improvise.
 
 **Committer et pousser l'écrit avant de rendre la main** — staging explicite du `docs/decisions/` et
 de la ligne de registre, puis `git push` sur `main` (`WORKFLOW.md` §4b), session cloud comprise. Une

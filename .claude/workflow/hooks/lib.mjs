@@ -2,7 +2,7 @@
 // Aucune dépendance externe (pas de jq, pas de npm install).
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -124,6 +124,22 @@ export function fichiersModifies(cwd) {
     .map((f) => f.replace(/^"|"$/g, '').replaceAll('\\', '/'));
 }
 
+/** Fichiers SUIVIS modifiés (staged ou non, modifiés/supprimés/renommés) — exclut les entrées `??`
+ *  (nouveaux fichiers jamais suivis). Un fichier tout juste créé n'a jamais existé côté remote : ce
+ *  n'est pas le manquement que vise la gate de push (C3, `WORKFLOW.md` §4b), seul un fichier déjà
+ *  suivi et modifié sans être commité l'est. */
+export function fichiersSuivisModifies(cwd) {
+  const sortie = gitBrut(cwd, 'status', '--porcelain');
+  if (!sortie) return [];
+  return sortie
+    .split('\n')
+    .map((l) => l.replace(/\r$/, ''))
+    .filter((l) => l.length > 3 && !l.startsWith('??'))
+    .map((l) => l.slice(2).trim())
+    .map((f) => (f.includes(' -> ') ? f.split(' -> ')[1] : f))
+    .map((f) => f.replace(/^"|"$/g, '').replaceAll('\\', '/'));
+}
+
 export function nbLignes(chemin) {
   if (!existsSync(chemin)) return null;
   const contenu = readFileSync(chemin, 'utf8');
@@ -190,9 +206,12 @@ export function repereSession(entree, cwd, suffixe) {
  *  Mais le fichier est transitoire : le tri de clôture le verse dans `TASKS.md` puis le supprime
  *  (`/fin-de-tache` point 16). Une session qui clôt un plan voyait donc ses propres revues — faites,
  *  puis rangées dans les règles — signalées comme manquantes : sur disque, « consommée au tri » et
- *  « jamais lancée » sont le même vide. Et le `.revue.md` n'étant jamais commité, sa disparition ne
- *  laisse aucune trace dans git. C'est donc au tri de la déposer, par le repère `Revues:` de son
- *  commit dédié — une déclaration explicite, plutôt qu'une exemption devinée.
+ *  « jamais lancée » sont le même vide. Désormais `.revue.md` est COMMITÉ (C3) : la preuve qu'une
+ *  revue a existé n'est plus un repère `Revues:` déclaré à la main au tri, mais git lui-même —
+ *  `git log --diff-filter=A -- plans/P<n>/S<k>.revue.md` retrouve le commit qui l'a ajoutée, que le
+ *  fichier soit encore présent ou déjà supprimé par le tri. `--diff-filter=A` ne matche que la
+ *  création : une suppression ultérieure ne referait jamais apparaître le faux positif que le
+ *  repère `Revues:` existait pour éviter.
  *
  *  Fail-open partout : repère illisible, `git` en échec, aucun repère `Plan:` → tableau vide. Ce
  *  contrôle signale un manque, il n'invente jamais une session. */
@@ -213,24 +232,15 @@ export function revuesManquantes(cwd, depuis) {
   const refs = new Set();
   for (const m of messages.matchAll(/Plan:\s*(P\d+)\/(S[A-Za-z0-9_-]+)\//g)) refs.add(`${m[1]}/${m[2]}`);
 
-  // Repères `Revues: P<n>/S<k>[, …]` du commit de tri : ces revues ont existé, elles ont été versées
-  // dans `TASKS.md` puis supprimées. Lu ligne à ligne, plusieurs refs par ligne, plusieurs lignes.
-  const triees = new Set();
-  for (const ligne of messages.split('\n')) {
-    const declaration = /^\s*Revues?\s*:(.*)$/.exec(ligne);
-    if (!declaration) continue;
-    for (const m of declaration[1].matchAll(/(P\d+)\/(S[A-Za-z0-9_-]+)/g)) triees.add(`${m[1]}/${m[2]}`);
-  }
-
   const manquantes = [];
   for (const ref of refs) {
     const [plan, session] = ref.split('/');
     const dossier = join(racineDepot(cwd), 'plans', plan);
-    if (existsSync(join(dossier, `${session}.revue.md`))) continue;
     // Un `.echec.md` dispense de revue : la session n'a pas livré, elle a passé la main.
     if (existsSync(join(dossier, `${session}.echec.md`))) continue;
-    // Revue déjà triée à la clôture : le fichier a existé, il a été consommé (point 16).
-    if (triees.has(ref)) continue;
+    const cheminRevue = `plans/${plan}/${session}.revue.md`;
+    const ajoutee = git(cwd, 'log', '--diff-filter=A', '--format=%H', '--', cheminRevue);
+    if (ajoutee) continue;
     manquantes.push(ref);
   }
   return manquantes;
@@ -296,4 +306,77 @@ export function repondre(objet) {
 
 export function riendafaire() {
   process.exit(0);
+}
+
+/** Compare deux versions `x.y.z` NUMÉRIQUEMENT — `true` si `a` est strictement postérieure à `b`.
+ *
+ *  Jamais une comparaison lexicale (`"0.9.0" > "0.38.1"` en ordre de chaînes, puisque `'9' > '3'`) :
+ *  c'est exactement le piège qui ferait manquer un retard réel sur un projet resté en 0.9.x pendant
+ *  qu'une 0.38.x est publiée. Segments manquants traités comme `0` (`1.2` face à `1.2.0`). */
+export function versionSuperieure(a, b) {
+  const pa = String(a ?? '').split('.').map(Number);
+  const pb = String(b ?? '').split('.').map(Number);
+  const n = Math.max(pa.length, pb.length);
+  for (let i = 0; i < n; i++) {
+    const na = Number.isFinite(pa[i]) ? pa[i] : 0;
+    const nb = Number.isFinite(pb[i]) ? pb[i] : 0;
+    if (na !== nb) return na > nb;
+  }
+  return false;
+}
+
+/** Dernière version taguée du dépôt public source du workflow (C4), lue depuis le manifeste
+ *  vendoré du projet (`.claude/workflow/manifest.json`, champ `source` : un slug
+ *  `propriétaire/dépôt`, l'URL interrogée étant `https://github.com/<slug>`).
+ *
+ *  Cache 24 h dans `.git/workflow-version.json` (`{ version, lu }`) : un `git ls-remote` sur un
+ *  dépôt public coûte un aller-retour réseau à CHAQUE SessionStart sans lui. Plafond de 3 s sur
+ *  l'appel réseau — un réseau lent ou injoignable ne doit jamais coûter le hook au-delà de ce délai.
+ *  Échec (hors ligne, dépôt introuvable, délai dépassé, pas de manifeste) → `null`, cache JAMAIS
+ *  écrit : un état transitoire ne doit pas geler `null` pendant 24 h la prochaine fois que le
+ *  réseau revient. */
+export function derniereVersionPubliee(cwd) {
+  const racine = racineDepot(cwd);
+  const cheminCache = join(racine, '.git', 'workflow-version.json');
+  const maintenant = Date.now();
+  const TTL_MS = 24 * 60 * 60 * 1000;
+
+  if (existsSync(cheminCache)) {
+    try {
+      const { version, lu } = JSON.parse(readFileSync(cheminCache, 'utf8'));
+      if (typeof lu === 'number' && maintenant - lu < TTL_MS) return version ?? null;
+    } catch { /* cache illisible : on retente le réseau ci-dessous, jamais d'exception */ }
+  }
+
+  const cheminManifeste = join(racine, '.claude', 'workflow', 'manifest.json');
+  if (!existsSync(cheminManifeste)) return null;
+  let source;
+  try {
+    source = JSON.parse(readFileSync(cheminManifeste, 'utf8')).source;
+  } catch {
+    return null;
+  }
+  if (!source) return null;
+
+  let sortie;
+  try {
+    sortie = execFileSync(
+      'git', ['ls-remote', '--tags', '--sort=-v:refname', `https://github.com/${source}`],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true, timeout: 3000 },
+    );
+  } catch {
+    return null; // hors ligne, dépôt introuvable, délai dépassé : jamais écrire le cache sur un échec
+  }
+
+  const premiere = (sortie || '').split('\n').find((l) => l.trim());
+  const ref = premiere ? (premiere.split('\t')[1] || '') : '';
+  const version = /refs\/tags\/v?([\d.]+)/.exec(ref)?.[1] ?? null;
+  if (!version) return null;
+
+  try {
+    mkdirSync(dirname(cheminCache), { recursive: true });
+    writeFileSync(cheminCache, JSON.stringify({ version, lu: maintenant }));
+  } catch { /* écriture cache best-effort : un échec n'empêche pas de rendre la version déjà lue */ }
+
+  return version;
 }
