@@ -14,12 +14,13 @@ suivante. Une session à la fois, dans l'ordre de l'index, **jamais en parallèl
 partagé et la vague est déjà close. Rapport `S<k>.echec.md` absent (session tuée avant de
 l'écrire) : lancer quand même, `/reprendre-echec` couvre ce cas.
 
-**Trois greps, rien d'autre** (`WORKFLOW.md` §9a et §9c, domiciles) :
+**Quatre greps, rien d'autre** (`WORKFLOW.md` §9a et §9c, domiciles) :
 
 ```
 grep -m1 '^Nature :'     plans/P<n>/S<k>.echec.md    # absent → exécution
 grep -m1 '^Tentatives :' plans/P<n>/S<k>.echec.md    # absent → reprise=0 enquete=0
 grep -m1 '^Blocage :'    plans/P<n>/S<k>.echec.md    # absent → démarrage à froid
+grep -m1 '^Mesure :'     plans/P<n>/S<k>.echec.md    # présent → prémisse déjà prouvée, pas de vérification
 ```
 
 **Budget** (§9c) : par session **2 reprises et 1 enquête** ; par plan **2 enquêtes** au total,
@@ -29,9 +30,10 @@ comptées dans cette conversation. Épuisé → `DECISION`, sans rien relancer.
 
 | `Nature :` | Ce que l'orchestrateur lance | Modèle |
 | --- | --- | --- |
-| `prémisse` | **`verificateur-premisse` d'abord** — l'affirmation n'a été vérifiée par personne, et elle arrête un plan entier | Haiku, lecture seule |
+| `prémisse` sans `Mesure :` | **`verificateur-premisse` d'abord** — l'affirmation n'a été vérifiée par personne, et elle arrête un plan entier | Haiku, lecture seule |
+| `prémisse` **avec** `Mesure :` | rien à vérifier : la mesure est la preuve. Vérifier seulement que le commit cité existe (`git cat-file -e <commit>`) ; oui → même suite qu'une prémisse `REFUTEE` ; non → traiter comme sans `Mesure :` | — |
 | `environnement` | reprise en sous-agent : c'est l'héritage de l'environnement de cette conversation (permissions, outils) qui débloque | **même modèle** que l'index |
-| `exécution` (ou absente) | reprise | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus) ; **session Opus → pas de reprise, l'enquête directement** (Étape 5d) |
+| `exécution` (ou absente) | reprise | **un cran au-dessus**, plancher Sonnet (Haiku→Sonnet, Sonnet→Opus) ; **session Opus → pas de reprise, l'enquête directement** (Étape 5d) — **sauf** si `Blocage :` nomme un geste : reprise au **même modèle**, le geste est connu, une enquête ne l'apprendrait pas (Interface-OE P10/S6, 2026-09-16) |
 | réponse finale qui **annonce une attente** (« en attente de… », « waiting on… ») sans ligne `VERDICT:`, enfants tous `completed` | reprise en sous-agent | **même modèle** : c'est la frontière de tour qui a coupé, pas le modèle — monter d'un cran paie de l'Opus pour recommiter du travail déjà vert (2026-09-13, deux fois) |
 | session **tuée par le filtre de contenu** (`Output blocked by content filtering`, HTTP 400, visible dans la notification du harnais — la session n'a pas pu écrire de `.echec.md`) | rien | `DECISION`, motif « sortie filtrée : changer la mécanique d'écriture, pas le modèle » |
 
@@ -67,13 +69,15 @@ rôle… ». Trois issues :
   (Étape 6) déjà connues.
 - **`INDECIDABLE`** → `DECISION`, motif « prémisse invérifiable par lecture : <l'affirmation> » —
   ni enquête ni reprise, c'est exactement ce qu'un humain tranche.
+- **`INDECIDABLE · comportementale`** → question, avec la mention « à sonder » dans les options.
 
 ### Le test des trois conditions (canal court)
 
 Avant de lancer quoi que ce soit, tester si le canal court s'applique — les trois conditions sont
 un domicile unique, `WORKFLOW.md` §9c, appliquées ici sans être recopiées :
 
-1. **`ListAgents`** — la session en échec y apparaît (reprenable).
+1. **Identifiant d'agent** — celui rendu par l'appel `Agent` de la session, gardé à l'Étape 4 (pas
+   `ListAgents`, qui ne liste plus un sous-agent ayant répondu). Identifiant perdu → à froid.
 2. **Lancer un `verificateur-n0`**, au premier plan, sur le périmètre de la session — vert.
 3. **Les deux greps déjà faits** : `Tentatives : reprise=0`, et `Blocage :` nomme un geste (pas une
    hypothèse — une hypothèse va dans « Hypothèse en cours » du rapport et disqualifie le canal
@@ -86,7 +90,7 @@ Les trois tiennent → **canal court**, bloc `SendMessage` ci-dessous. Une seule
 
 ```
 SendMessage({
-  to: <l'agent de la session S<k>, depuis ListAgents>,
+  to: <identifiant d'agent de la session S<k>, rendu à son lancement>,
   message: "Reprends : <le geste de `Blocage :`, tel quel>. Réponse finale en UNE ligne, exactement :
 VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
@@ -110,6 +114,10 @@ Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> d
 P<n>). Mode orchestré. Reste dans l'arbre de travail courant : n'ouvre AUCUN worktree.
 <si prémisse réfutée : « La prémisse du rapport a été vérifiée et RÉFUTÉE : <preuve, telle quelle>.
 Traite la session comme une nature exécution et cherche la cause ailleurs. »>
+<si `Auto : oui · option <m>` : « Applique l'option <m> de la section ## Issues du rapport, puis rejoue la tâche. »>
+Tout appel Agent que tu fais porte run_in_background: false — verificateur-n0 compris — et aucune
+commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle n'est lu par
+personne, et « j'attends une tâche de fond » n'est pas un retour.
 Incrémente la ligne `Tentatives :` du rapport avant de rendre la main, sauf si tu le supprimes.
 Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
@@ -125,7 +133,7 @@ par les commits avant de conclure `FAIL`. Quatre issues :
 
 | Verdict | Ce que fait l'orchestrateur |
 | --- | --- |
-| **`PASS`** | la reprise a commité, supprimé le `.echec.md` et coché `[x]` : vérifier la coche, lancer la revue de session si son `.revue.md` manque (Étape 5 — une reprise est un sous-agent, elle n'a souvent pas pu la lancer), puis reprendre le plan où il s'était arrêté : les sessions **jamais lancées** de la même vague d'abord (vague séquentielle arrêtée au `FAIL`, retour Étape 3), sinon la vague suivante (Étape 5, cas « Sinon » — la gate d'une vague `gate` s'applique toujours) |
+| **`PASS`** | la reprise a commité, supprimé le `.echec.md` et coché `[x]` : vérifier la coche, lancer la revue de session si son `.revue.md` manque (Étape 5 — une reprise est un sous-agent, elle n'a souvent pas pu la lancer), puis reprendre le plan où il s'était arrêté : les sessions **jamais lancées** de la même vague d'abord (vague séquentielle arrêtée au `FAIL`, retour Étape 3), sinon la vague suivante (Étape 5, cas « Sinon » — une vague `validation-humaine` arrête toujours) |
 | **`ENQUETE`** | l'hypothèse est épuisée : **Étape 5d**, si le budget le permet ; sinon `DECISION` |
 | **`FAIL`** | correction tentée, N0 toujours rouge : **Étape 5d**, si le budget le permet ; sinon `DECISION` |
 | **`DECISION`** | arrêt du plan, motif relayé tel quel, sans l'interpréter — question posée à l'Étape 6 |
@@ -156,7 +164,9 @@ Agent({
 Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
 P<n>). Mode enquête : LECTURE SEULE — ne corrige rien, ne committe rien, ne lance pas N0.
 Reste dans l'arbre de travail courant : n'ouvre AUCUN worktree. Une passe.
-Écris le rapport mis à jour avant de répondre, `Tentatives :` comprise.
+Tout appel Agent que tu fais porte run_in_background: false, aucune commande détachée : ta réponse
+finale CLÔT ton tour, ce qui finit après elle n'est lu par personne.
+Écris le rapport mis à jour avant de répondre, `Tentatives :` et `Auto :` comprises.
 Réponse finale en UNE ligne, exactement : ENQUETE: PISTE|OPTIONS · MOTIF: <une phrase> · RAPPORT: <chemin>"
 })
 ```
@@ -164,9 +174,16 @@ Réponse finale en UNE ligne, exactement : ENQUETE: PISTE|OPTIONS · MOTIF: <une
 - **`PISTE`** → **une** reprise de plus (Étape 5c, `reprise=2`), même modèle que la reprise
   précédente — l'enquête a fourni ce qui manquait, pas un problème de modèle. Son verdict est
   terminal : `PASS` → le plan reprend ; autre chose → `DECISION`, le budget est épuisé.
-- **`OPTIONS`** → `DECISION`. La question est déjà écrite : la section `## Issues` du rapport.
+- **`OPTIONS`** → d'abord `grep -m1 '^Auto :' plans/P<n>/S<k>.echec.md`.
+  - `Auto : oui · option <m>` et budget `reprise` < 2 → **reprise**, même modèle que la session,
+    prompt de la reprise à froid avec sa ligne `Auto :` remplie. Son verdict est terminal : `PASS` → le plan reprend ; autre
+    chose → `DECISION`. Une recommandation réversible et jugée par une gate n'est pas un choix : la
+    poser en question a coûté deux arrêts pour deux réponses évidentes (Interface-OE P10/S6).
+  - Sinon (`Auto : non`, ligne absente, budget épuisé) → `DECISION`. La question est déjà écrite :
+    la section `## Issues` du rapport.
 
-**La seule lecture de fichier autorisée à cette skill**, et elle est bornée :
+**La seule lecture de fichier autorisée à cette skill** au-delà des greps de ligne mécanique
+(`Auto :` compris), et elle est bornée :
 
 ```
 sed -n '/^## Issues/,/^## /p' plans/P<n>/S<k>.echec.md

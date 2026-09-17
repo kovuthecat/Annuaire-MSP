@@ -147,8 +147,10 @@ for (const d of depassements(cwd)) {
 
 // Dépôt sous un dossier synchronisé (Synology Drive, OneDrive, Dropbox, iCloud) : le client ne
 // synchronise qu'au fichier près, jamais `.git` en bloc — une reprise en cours d'écriture git
-// corrompt l'objet (torrent-uploader, 2026-09-11). Le témoin dit que l'exclusion manuelle a été
-// posée dans le client ; sans lui, rappel à chaque session plutôt qu'une découverte tardive.
+// corrompt l'objet (torrent-uploader, 2026-09-11). Et une exclusion ne suffit pas : Synology Drive
+// (comme OneDrive à la demande) filtre tout accès sous son arborescence, contenu exclu compris —
+// Vite n'y démarre jamais (torrent-uploader, 2026-09-16/17). Le remède est de déplacer le dépôt ;
+// le témoin dit qu'on a choisi de rester en connaissance de cause. Sans lui, rappel à chaque session.
 try {
   const racine = racineDepot(cwd);
   if (/SynologyDrive|OneDrive|Dropbox|iCloud/i.test(racine)) {
@@ -156,9 +158,10 @@ try {
     const gitEstUnDossier = existsSync(cheminGit) && statSync(cheminGit).isDirectory();
     if (gitEstUnDossier && !existsSync(join(cheminGit, 'info', 'synchro-exclue'))) {
       lignes.push(
-        '**Dépôt sous un dossier synchronisé** : vérifier que le dossier `.git` est exclu de la ' +
-        "synchro (une règle client n'exclut que des fichiers), puis poser le témoin " +
-        '`.git/info/synchro-exclue` — corruption vue le 2026-09-11 (torrent-uploader).'
+        '**Dépôt sous un dossier synchronisé** : le déplacer hors de l\'arborescence du client ' +
+        "(une exclusion ne retire pas le filtre du client : `.git` corrompu le 2026-09-11, Vite " +
+        'bloqué le 2026-09-16, torrent-uploader). Rester là en connaissance de cause → poser le ' +
+        'témoin `.git/info/synchro-exclue`.'
       );
     }
   }

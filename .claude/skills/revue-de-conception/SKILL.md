@@ -2,6 +2,7 @@
 name: revue-de-conception
 description: Revue a posteriori d'un projet ou d'une zone — constat de l'écart entre l'intention écrite et le code réel, puis interview de recalage avec l'utilisateur pour arrêter l'objectif, avant d'en tirer les écarts. À dérouler quand les correctifs et les ajouts se sont empilés, à un jalon, ou avant d'ouvrir un gros chantier sur une zone ancienne. Ne modifie pas de code.
 allowed-tools: Read, Glob, Grep, Agent, WebFetch, WebSearch, Write, Edit
+disallowed-tools: Bash, PowerShell
 model: opus
 ---
 
@@ -73,6 +74,7 @@ Déléguer (`.claude/workflow/WORKFLOW.md` §5) : Opus lit des conclusions, pas 
 | Agent | Ce qu'on lui demande |
 | --- | --- |
 | `explorateur` | où vit le périmètre, quels fichiers, quelles dépendances entrantes et sortantes |
+| `analyste-flux` | comment le périmètre fonctionne réellement, quand `explorateur` a dit où |
 | `resumeur-git` | quels fichiers du périmètre ont été le plus retouchés, et par quels types de commits |
 | `verificateur-n0` | l'état de santé (build, typecheck, tests) — **N0 rouge : gate, pas un arrêt de conception** (`WORKFLOW.md` §9c) : ce n'est pas une revue qu'il faut, c'est une réparation — s'arrêter là sans rien demander |
 | `lecteur-doc` | uniquement si le « meilleur moyen » dépend d'une capacité externe à vérifier |
@@ -222,8 +224,13 @@ prochaine revue retrouvera exactement la même chose.
 
 ## Interdits
 
-- **Aucune modification de code** — Plan Mode (Shift+Tab) dès le début. Le frontmatter retire
-  `Bash` : « lancer » et « corriger » ne sont pas une promesse mais une impossibilité.
+- **Aucune modification de code** — Plan Mode (Shift+Tab) dès le début.
+
+> Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash` et
+> `PowerShell` (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se
+> réinitialisent au message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une
+> session qui dure, le garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste
+> une règle tenue à la main, pas une impossibilité.
 - **Aucune écriture avant la gate d'Étape 3**, et rien hors du rapport, de `PROJECT_BRIEF.md`
   (Objectif / Hors périmètre) et d'une décision écrite. Aucun autre fichier de contexte.
 - **Aucun écart classé sans étalon arrêté** : sans interview, la revue s'arrête au constat.
@@ -233,5 +240,5 @@ prochaine revue retrouvera exactement la même chose.
 - **Aucune exploration en direct** dès que ça dépasse un fichier : c'est le travail d'`explorateur`.
 - **Aucun écart sans coût observable** — sinon c'est du goût, et le goût ne se met pas au backlog.
 - **Aucun enchaînement de `/cadrer` ou `/nouveau-plan` dans la même conversation** : la suite repart
-  à froid depuis le rapport, c'est à ça qu'il sert. Poser une pastille ou afficher la commande,
-  précédée de la ligne « À régler AVANT de lancer » (`.claude/workflow/WORKFLOW.md` §3).
+  à froid depuis le rapport, c'est à ça qu'il sert. Terminer par le **bloc de relance** de
+  `/fin-de-tache` (domicile : prompt exact, fichiers à lire), pastille en plus en Desktop.

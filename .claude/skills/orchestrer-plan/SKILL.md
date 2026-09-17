@@ -1,6 +1,6 @@
 ---
 name: orchestrer-plan
-description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, une décision qui appartient à l'utilisateur ou une gate déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
+description: Déroule un plan entier, vague après vague, sans rendre la main entre elles, jusqu'à épuisement, une décision qui appartient à l'utilisateur ou une validation humaine déclarée. À dérouler quand `plans/P<n>/index.md` est prêt.
 model: haiku
 ---
 
@@ -46,7 +46,8 @@ dynamique qui recalculerait un lot prêt à partir des dépendances.
 
 Ouvrir `plans/P<n>/index.md` et en extraire, pour **toutes** les vagues : sessions, modèle, effort,
 colonne `Env.`, dépendances, zone modifiée, et la ligne d'ordonnancement de chaque vague (dépendances
-entre vagues, mots `gate` et `reprise-manuelle` éventuels). Extraire aussi, dans l'Ordonnancement, le
+entre vagues, mots `validation-humaine` et `reprise-manuelle` éventuels — l'ancien mot `gate` s'ignore,
+signalé une fois dans l'annonce : « mot `gate` retiré, vague enchaînée »). Extraire aussi, dans l'Ordonnancement, le
 ***Pourquoi maintenant*** de chaque vague et la ligne **« en clair »** de chaque session : c'est la
 matière de l'annonce (Étape 3), et la seule explication que l'utilisateur recevra — l'orchestrateur
 n'ouvre jamais un `S<k>.md` pour la compléter. C'est la seule lecture de l'index en entier de toute
@@ -88,7 +89,7 @@ imposé, une strophe par session :
    Si une session échoue : <je diagnostique, je reprends une fois, j'enquête si la reprise cale —
      je ne te sollicite que s'il y a un choix à faire, et sous forme de question |
      reprise manuelle — je m'arrête et je te rends la main>
-   Fin de vague : <gate — je m'arrête même si tout passe | j'enchaîne sur la vague <w+1>>
+   Fin de vague : <validation humaine — je m'arrête pour ton jugement : <ligne N2> | j'enchaîne sur la vague <w+1>>
 
    S<k> · <titre>
       En clair : <ligne « en clair » de l'index, relayée mot pour mot>
@@ -172,7 +173,9 @@ du plan.
 
 ## Étape 4 — Collecter le verdict de chaque session
 
-**Sous-agent** : lire la ligne `VERDICT: … · MOTIF: … · RAPPORT: …`, rien d'autre.
+**Sous-agent** : lire la ligne `VERDICT: … · MOTIF: … · RAPPORT: …`, rien d'autre — et garder
+l'identifiant d'agent rendu au lancement : c'est lui que vise le canal court (5c), `ListAgents` ne
+liste plus un sous-agent qui a répondu.
 
 **Une réponse sans ligne `VERDICT:` et sans commit n'est pas forcément finie.** C'est le cas d'une
 session qui a lancé une tâche de fond (un `Agent` en `run_in_background`, une conversion longue)
@@ -286,12 +289,14 @@ Le rapport final (Étape 6) distingue alors les sessions **bloquées** par l'éc
 directement ou transitivement, via la colonne Dépend de) des sessions **encore indépendantes** —
 pour que l'utilisateur choisisse entre réparer d'abord ou relancer le reste.
 
-### Gate humaine
+### Validation humaine
 
-Une vague dont la ligne d'ordonnancement de l'index porte le mot **`gate`** arrête l'orchestrateur
-**après** l'avoir collectée — reprises (5c) et enquêtes (5d) comprises —, même si tout est `PASS` :
-il rend la main avec l'état et ce qui reste. La vague suivante ne se lance qu'à une relance
-explicite de cette skill.
+Une vague dont la ligne d'ordonnancement de l'index porte le mot **`validation-humaine`** arrête
+l'orchestrateur **après** l'avoir collectée — reprises (5c) et enquêtes (5d) comprises —, même si
+tout est `PASS` : ce `PASS` attend un jugement (critère : `/nouveau-plan` Étape 3). Il rend la main
+avec ce qu'il y a à juger, la question en dernière position, et le bloc de relance de la vague
+suivante (`/fin-de-tache`). **Rien d'autre n'arrête un plan qui passe** : ni une mesure verte, ni
+l'ancien mot `gate`.
 
 **Sinon** : dépendances de la vague suivante satisfaites (toutes `[x]` ou `[x]!` — §4a) → l'enchaîner dans le même
 tour, retour à l'Étape 2. Plan épuisé (dernière vague collectée) → Étape 6 puis fin.
@@ -355,8 +360,8 @@ est une question, en **dernière position**, format imposé :
 | budget épuisé, prémisse `INDECIDABLE`, filtre de contenu | pas de liste toute faite : poser la question avec les deux issues réelles — relancer autrement (dire quoi) ou arrêter là — et le dire franchement plutôt que d'inventer une troisième option |
 
 **Une seule question par arrêt.** Le plan s'arrête à la première session non remédiée : il n'y en a
-donc jamais deux. Et pas de question sur une gate (`gate`) ni sur un plan épuisé — ce ne sont pas
-des arrêts à trancher, l'utilisateur relance quand il veut.
+donc jamais deux. Et pas de question d'arbitrage sur un plan épuisé — l'utilisateur relance quand il
+veut ; sur une `validation-humaine`, la question porte sur le jugement attendu, pas sur la relance.
 
 **Push groupé sur `main` une fois le plan fini ou arrêté** — jamais depuis une session, jamais si
 une vague reste `EN ATTENTE`, et jamais sur une branche laissée derrière, session cloud comprise
@@ -364,7 +369,7 @@ une vague reste `EN ATTENTE`, et jamais sur une branche laissée derrière, sess
 quand elle s'arrête sur une question — ce qui a été fait avant l'arrêt, rapports d'échec et
 enquêtes compris, doit être visible d'où repartira la suite.
 
-**Ce qui reste à lancer à la main** — sessions restantes après une gate, un arrêt ou un repli
-pastille : une ligne « À régler AVANT de lancer » par session prête (`WORKFLOW.md` §3), modèle et
-effort pris dans l'index. Une relance de cette skill ne dispense pas du rappel : son frontmatter
+**Ce qui reste à lancer à la main** — sessions restantes après une validation humaine, un arrêt ou un repli pastille : un
+**bloc de relance** par session prête (`/fin-de-tache`, domicile — prompt exact, fichiers à lire),
+modèle et effort pris dans l'index ; placé avant la question s'il y en a une, qui reste en dernier. Une relance de cette skill ne dispense pas du rappel : son frontmatter
 fixe son propre modèle, pas l'effort de la conversation qui l'accueille.

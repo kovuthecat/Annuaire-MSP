@@ -10,6 +10,8 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 > **Environnement : <Desktop (navigateur requis) | indifférent>** (`WORKFLOW.md` §6, N1)
 > **Latitude : <ce que l'exécutant peut ajuster seul, ou aucune>** (optionnel, déclaré par le
 > cadreur session par session ; absent = aucune, tout écart reste un STOP — mesure B3)
+> **Correctif localisé : interdit — <raison>** (optionnel, rare : zone sensible, état coûteux à
+> annuler ; absent = autorisé sous les quatre conditions de `WORKFLOW.md` §9a)
 > Exécutant : UNIQUEMENT les tâches ci-dessous, dans l'ordre ; fichiers sous « Lire » / « Modifier ».
 > Design fixé — ne reconçois pas. Tu t'arrêtes sur un choix que tu n'as pas reçu, pas parce que
 > quelque chose a cassé : `EXECUTANT.md`.
@@ -24,7 +26,9 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 <ce qu'il ne faut PAS toucher / faire — vaut pour toute la session. **Jamais l'instrument qui note
  la session** : si une gate s'appuie sur un oracle, un validateur ou un script de score du dépôt, il
  reste inspectable et contestable. Geler la cible est juste ; geler le thermomètre a produit cinq
- plans d'optimisation contre un juge qui sous-comptait (décision du 2026-09-14).>
+ plans d'optimisation contre un juge qui sous-comptait (décision du 2026-09-14). Un interdit
+ d'écriture ici ne couvre pas le correctif localisé (`WORKFLOW.md` §9a) : une session de mesure qui
+ trouve un défaut mesuré et petit le corrige plutôt que d'échouer.>
 
 ---
 
@@ -66,7 +70,10 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 - **Anti-raccourci** : <ce qui ressemblerait à un PASS sans en être un, ou `—`>
 
 ### Si bloqué
-<le choix propre à cette tâche, non tranché par ce fichier — pas « ce qui pourrait casser » → STOP + quoi signaler>
+<le choix propre à cette tâche, non tranché par ce fichier — pas « ce qui pourrait casser » → STOP + quoi signaler.
+ Jamais « ne corrige pas ici » : un défaut mesuré et petit relève du correctif localisé (`WORKFLOW.md` §9a).
+ Un geste humain préalable (quitter une application, installer un outil) se vérifie en premier geste
+ de la session — absent → `FAIL` environnement ; il ne justifie aucun arrêt de l'orchestrateur.>
 
 ### Message de commit (appliqué par la session elle-même)
 `<type(scope): message>`

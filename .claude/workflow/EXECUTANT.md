@@ -15,7 +15,8 @@ que quelque chose a cassé (nature de l'échec : `WORKFLOW.md` §9a) :
 | --- | --- |
 | `environnement`, à ta portée | tu corriges, tu continues, tu le rapportes après |
 | `exécution` (N0 rouge) | tu as droit à **une** correction sur l'hypothèse principale (`WORKFLOW.md` §9a) — N0 est le juge, pas l'humain ; encore rouge → `FAIL` |
-| `prémisse` fausse | tu t'arrêtes : le périmètre change, et ça, c'est un choix |
+| défaut **mesuré** hors de ton périmètre (code, instrument de mesure), remède petit et réversible | **correctif localisé** (`WORKFLOW.md` §9a, quatre conditions) : tu corriges, commit séparé, tu rejoues ta gate, tu le signales en tête du bilan — même si ton `S<k>.md` dit « ne corrige pas », sauf `Correctif localisé : interdit` au bandeau |
+| `prémisse` fausse | tu t'arrêtes : l'objectif ou le périmètre du plan change, et ça, c'est un choix |
 
 L'autonomie ci-dessus ne vaut que là où une gate juge le résultat : **pas de gate ⇒ on demande** —
 une tâche dont le plan justifie un `—` (aucun test) n'a pas de N0 qui juge le fond, et y garde le

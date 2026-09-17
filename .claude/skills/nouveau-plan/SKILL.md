@@ -7,14 +7,21 @@ model: opus
 # Découper un plan en sessions
 
 Le frontmatter bascule sur Opus pour ce tour. **Ça ne couvre que l'investigation** (Étape 1,
-avant le Plan Mode) : une fois le plan approuvé par l'utilisateur, l'écriture (Phase suivante)
-reprend dans un nouveau tour, sur le modèle actif de la session — sans gravité, c'est mécanique.
+avant le Plan Mode) : une fois le plan approuvé par l'utilisateur (après l'Étape 1bis si elle
+s'applique), l'écriture (Phase suivante) reprend dans un nouveau tour, sur le modèle actif de la
+session — sans gravité, c'est mécanique.
 Sortie = un dossier `plans/P<n>/`. Les squelettes vivent ici (et non dans `WORKFLOW.md`) : ils ne
 coûtent des tokens qu'au découpage.
 
 **Le QUOI et le POURQUOI doivent déjà être tranchés.** Si le scope est flou ou l'approche non
 décidée, ce n'est pas ce plan qu'il faut écrire : dérouler `/cadrer` d'abord, dans une session
 séparée, et repartir de la décision écrite qu'elle produit.
+
+Ce qui est tranché, c'est la **direction structurante** — objectif, frontière, choix approuvés par
+l'utilisateur : elle ne se rediscute pas ici. Les **détails techniques encore ouverts** — quel
+composant, quelle bibliothèque, quel ordre de migration — se comparent (Étape 1, point 4bis). Une
+comparaison qui contredit une décision structurante n'y touche pas : elle écrit la preuve et suit
+`/cadrer` (décision du 2026-09-14 : seule une preuve dégèle un tranché).
 
 ## Pour qui on écrit — deux lecteurs, deux registres
 
@@ -59,17 +66,70 @@ fonctionne ; c'est la **répétition sur une même zone** qui est le signal.
 Se mettre en **Plan Mode** pour toute la phase d'investigation — ce mode interdit l'écriture de
 fichiers, donc la consigne « jamais modifier » devient structurelle plutôt que déclarative.
 
+**D'abord relire la grille de la décision d'entrée**
+(`.claude/skills/cadrer/references/preparation.md`) : ce qui est `READY` avec une
+preuve encore valide **ne se réinvestigue pas** ; seules les `OPEN` et les preuves périmées sont à
+reprendre ici. Une `OPEN` de type `décision` → question à l'utilisateur, pas de plan.
+
 1. **Flux** : chemin complet du problème/feature, où il commence et se termine.
 2. **Fichiers probables** sans tout ouvrir : `PROJECT_MAP.md`, `ARCHITECTURE.md`, registre `DECISIONS.md` d'abord.
 3. **Rôle** de chaque fichier clé : pourquoi il est pertinent.
 4. **Dépendances directes** utiles.
-5. **1-2 hypothèses racines** (bug : ce qui peut mal tourner ; feature : choix archi critiques).
+4bis. **Existant** — pour toute inconnue technique
+restante (mécanisme non trivial, dépendance envisagée, sous-système custom proposé) : dérouler
+`.claude/skills/cadrer/references/rechercher-existant.md`. Sa conclusion
+(réutiliser, configurer, adapter, développer, isoler) est ce que les tâches implémentent ; un
+« développer » sans ce passage est un écart.
+5. **1-2 hypothèses racines**, chacune **typée** : `lisible` (une lecture du dépôt la confirme ou la
+   réfute — c'est ce que `verificateur-premisse` sait faire) ou `comportementale` (seule une
+   exécution tranche : « le juge compte juste », « ce traitement tient en < 1 s »). Une
+   comportementale ne se gèle jamais en « tranché ». Trois sorties : **sonder** — une commande ou un
+   script jetable via `verificateur-n0`, résultat écrit dans le `S<k>.md` ou la décision, **avant**
+   d'écrire le plan ; **déclarer** — ligne `Risques du plan :` sous l'objectif d'ensemble de l'index,
+   avec ce qui la réfuterait ; **isoler** — issue `isoler` du protocole d'existant, l'hypothèse
+   derrière une couture nommée pour que le reste se découpe. Un plan écrit sur une comportementale
+   ni sondée, ni déclarée, ni isolée est un écart au cadrage.
 6. **Verdict** : plan rédigeable maintenant, ou ambiguïté à lever avec l'utilisateur d'abord ?
 
 **Déléguer** dès que les points 2-3 demandent de balayer le repo ou l'historique : exploration de
-fichiers → agent `explorateur` ; résumé de diff/historique git → agent `resumeur-git`. Chacun ne
-rend que sa conclusion, l'exploration ne pollue pas le contexte Opus (qui est le plus cher). Garder
-pour soi les points 1, 5 et 6 — c'est le raisonnement, pas la recherche.
+fichiers → agent `explorateur` ; **compréhension d'un flux** (point 1) → agent `analyste-flux`, qui
+sépare faits, inférences et inconnues — une inconnue qu'il nomme est une hypothèse à typer au point
+5, pas un fait ; résumé de diff/historique git → agent `resumeur-git`. Chacun ne rend que sa
+conclusion, l'exploration ne pollue pas le contexte Opus (qui est le plus cher). Garder pour soi les
+points 1, 5 et 6 — c'est le raisonnement, pas la recherche.
+
+## Étape 1bis — Critiquer avant de faire approuver (conditionnel)
+
+Le verdict de l'Étape 1 classe le plan : **borné** — un changement bien délimité sur du code
+existant (un flag, un endpoint, un correctif d'un fichier) — ou **architectural** — nouveau
+sous-système, ou changement qui restructure l'assemblage ou modifie une interface dont d'autres
+dépendent. Une complexité découverte en route **monte** le classement, rien ne le redescend ; dans
+le doute, architectural.
+
+Le critique tourne sur tout plan **architectural**, et sur un plan **borné** seulement s'il touche
+un déclencheur : contrat partagé modifié · migration ou schéma de données · concurrence ·
+autorisation · performance annoncée · mode extension après un échec `prémisse` · demande explicite.
+Sinon, passer à l'approbation — `verificateur-plan` (4b) suffit.
+
+```
+Agent({
+  description: "P<n> critique",
+  subagent_type: "critique-plan",
+  run_in_background: false,
+  prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
+Décision applicable : <chemin docs/decisions/…>.
+Synthèse du cadrage (Étape 1) : <flux · hypothèses typées · découpage envisagé · critères de réussite — recopiés, 40 lignes au plus>.
+Réponse : CRITIQUE: PASS | CRITIQUE: <n> constat(s) numérotés, puis « Choix non résolus : »."
+})
+```
+
+Routage, par le cadreur : `PASS` → approbation. `DÉFAUT` corrigeable sans toucher une décision →
+corriger la synthèse, **revérifier la seule correction** (relancer avec le constat et la
+correction, rien d'autre). `À VÉRIFIER` ou fait manquant → recherche (`analyste-flux`,
+`lecteur-doc`), sonde, ou protocole de preuve — jamais une question à l'utilisateur pour un fait
+accessible. « Choix non résolus » non vide → **question** (`WORKFLOW.md` §9c), avec cette liste
+comme options. Une passe ; pas de relance sur un reformulage — seulement si buts ou périmètre
+changent (Ideation).
 
 ## Étape 2 — Découper en sessions (règle de coût)
 
@@ -84,7 +144,7 @@ même session fait re-payer le contexte accumulé à chaque tour. Le découpage 
 - le lot reste raisonnable (~3-5 tâches courtes, ou 2 moyennes liées).
 
 **Séparer** dès qu'un critère tombe, et notamment : toute tâche `high`/`xhigh` est **seule dans sa
-session** · changement de modèle ou d'effort · gate humaine entre deux tâches · la séparation
+session** · changement de modèle ou d'effort · validation humaine (N2) entre deux tâches · la séparation
 **débloque une parallélisation**.
 
 Deux sessions sont **parallélisables** ssi aucune dépendance **et** zones modifiées disjointes
@@ -118,16 +178,25 @@ Même exigence pour le *Pourquoi maintenant* d'une vague : il justifie l'**ordre
 « sans ça, S4 travaillerait sur une structure de données qui va changer » plutôt que « prérequis ».
 
 **Trois mots-clés déclarent une exception à l'exécution normale**, deux sur la ligne d'une **vague**,
-un sur la ligne « en clair » d'une **session** : `gate` (la vague arrête l'orchestrateur une fois
-collectée, même si tout est `PASS`) et `reprise-manuelle` (un `FAIL` de cette vague n'a droit ni à
-la reprise ni à l'enquête automatiques) portent sur la vague entière ; **`pastille`**, lui, porte sur une session
+un sur la ligne « en clair » d'une **session** : `validation-humaine` (la vague arrête
+l'orchestrateur une fois collectée, même si tout est `PASS`) et `reprise-manuelle` (un `FAIL` de cette
+vague n'a droit ni à la reprise ni à l'enquête automatiques) portent sur la vague entière ; **`pastille`**, lui, porte sur une session
 précise — elle se lance par le repli pastille (premier plan, navigateur complet), **même en
 Desktop** : c'est le cadreur qui le décide ici, au cadrage, quand le N1 de cette session est
 structurant (nouvel écran, refonte de mise en page) et mérite un déroulé surveillé plutôt qu'un
 sous-agent (`/orchestrer-plan` Étape 3, `/verif-visuelle`).
 
+**`validation-humaine` a un seul critère : le `PASS` lui-même demande ton jugement** — une ligne
+`N2 humain` non vide dans une session de la vague, dont la réponse décide s'il faut lancer la
+suivante. Ce ne sont **pas** des raisons : une mesure au critère mécanique (son `FAIL` arrête déjà
+le plan), une vague « qui protège la suivante » (idem), une ressource rare déjà budgétée au plan, un
+geste humain préalable (il se vérifie en premier geste de la session, `references/squelette-session.md`
+« Si bloqué »). Un arrêt sur `PASS` sans jugement à rendre ne t'apporte rien que la relance ; il coûte
+une interruption (décision du 2026-09-17). L'ancien mot `gate` sur une ligne de vague ne s'écrit
+plus : `/orchestrer-plan` l'ignore.
+
 **Vagues orchestrées (optionnel)** — toute vague s'exécute via `/orchestrer-plan`, qui déroule les
-sessions les unes après les autres jusqu'à épuisement, une gate, ou une **question** à l'utilisateur.
+sessions les unes après les autres jusqu'à épuisement, une `validation-humaine`, ou une **question** à l'utilisateur.
 Un `FAIL` déclenche par défaut le cycle de remédiation à froid (`/orchestrer-plan` 5c et 5d,
 budget : 2 reprises et 1 enquête par session, `WORKFLOW.md` §9c) ; le mot **`reprise-manuelle`** sur
 la ligne d'ordonnancement d'une vague le désactive — à déclarer au cadrage quand un échec dans
@@ -216,8 +285,8 @@ c'est le rédacteur qui répond. Une découpe fausse ne se voit pas de l'intéri
 la troisième vague de remédiation (Étape 0), quand elle a déjà coûté deux plans.
 
 Chaque écart rendu se corrige **ici**, avant l'Étape 6, ou se justifie en une ligne dans le
-`S<k>.md` concerné s'il est volontaire (un fichier créé par une session antérieure de la même
-vague, par exemple). `RAS` → continuer sans rien écrire : la vérification ne laisse pas de trace,
+`S<k>.md` concerné s'il est volontaire (un fichier créé par une session d'une
+vague antérieure, par exemple). `RAS` → continuer sans rien écrire : la vérification ne laisse pas de trace,
 c'est le plan corrigé qui en est la trace.
 
 ## Étape 5 — Reporter dans `TASKS.md`

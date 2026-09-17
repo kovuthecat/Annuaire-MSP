@@ -15,7 +15,7 @@
 // pas précéder des commits qui n'existent pas encore. Les signaler là était le fonctionnement
 // normal relu comme un manquement, à chaque tour de l'orchestrateur. Seuls les plafonds restent.
 
-import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import {
   lireEntree, repertoireProjet, estUnDepot, fichiersModifies,
   depassements, estFichierDeSuivi, lirePlafonds, repondre, riendafaire,
@@ -91,11 +91,24 @@ let dejaSignale = null;
 try {
   if (existsSync(marqueur)) dejaSignale = readFileSync(marqueur, 'utf8');
 } catch { /* marqueur illisible : on le réécrit ci-dessous */ }
+// Écrit le marqueur ; renvoie si ça a réussi. Un répertoire orphelin au même chemin (crash, conflit)
+// ferait échouer `writeFileSync` À CHAQUE appel si on ne l'efface pas : `dejaSignale` resterait
+// `null` pour toujours et le hook bloquerait la même session à l'identique, indéfiniment
+// (cf. plans/P5/S3.echec.md) — on efface l'obstacle et on retente une fois avant d'abandonner.
 const memoriser = () => {
   try {
     mkdirSync(marqueurs, { recursive: true });
     writeFileSync(marqueur, empreinte);
-  } catch { /* best-effort : sans marqueur, on bloquera au plus une fois de plus */ }
+    return true;
+  } catch {
+    try {
+      rmSync(marqueur, { recursive: true, force: true });
+      writeFileSync(marqueur, empreinte);
+      return true;
+    } catch {
+      return false; // toujours inscriptible : voir le garde-fou juste avant le blocage plein, plus bas
+    }
+  }
 };
 
 // Vague parallèle en cours : seuls les plafonds parviennent ici, et ils appartiennent à la fin de
@@ -120,7 +133,16 @@ if (dejaSignale !== null) {
     systemMessage: `⚠ Contexte encore non conforme (rappel non bloquant) :\n- ${problemes.join('\n- ')}`,
   });
 }
-memoriser();
+// Marqueur toujours inscriptible malgré la réparation ci-dessus (droits, disque en lecture seule…) :
+// aucun état ne peut être persisté, donc rien ne bornerait un blocage plein qui se répéterait à
+// l'identique. On dégrade alors CET appel en rappel non bloquant plutôt que de retenter le blocage
+// plein — seul un marqueur qui s'écrit avec succès autorise le blocage plein ci-dessous.
+if (!memoriser()) {
+  repondre({
+    systemMessage:
+      `⚠ Contexte non conforme (marqueur de session non inscriptible — rappel non bloquant) :\n- ${problemes.join('\n- ')}`,
+  });
+}
 
 repondre({
   decision: 'block',

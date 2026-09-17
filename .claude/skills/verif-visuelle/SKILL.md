@@ -32,7 +32,10 @@ signale-le, rends la main.
 
 **En sous-agent orchestré, `navigate` vers `localhost` peut être refusé** (« navigation to … was
 denied or failed » — constaté deux fois le 2026-09-10/11, cause non documentée) alors que
-`preview_start` ouvre l'onglet sans problème. **Un seul essai, puis gate** (`WORKFLOW.md` §9c, rien
+`preview_start` ouvre l'onglet sans problème. **Avant de conclure au refus**, vérifier que le
+serveur écoute : `preview_logs` montre son bandeau « ready », `read_network_requests` ne montre pas
+`net::ERR_CONNECTION_REFUSED`. Sinon ce n'est pas le navigateur, c'est le serveur (environnement,
+§9a — torrent-uploader 2026-09-17 : Vite bloqué par un dossier synchronisé). **Un seul essai, puis gate** (`WORKFLOW.md` §9c, rien
 à demander) : refusé → basculer en mode B et
 écrire dans le bilan de session (`/fin-de-tache` point 3) la ligne « N1 à dérouler au premier plan :
 <écran> ». Une session orchestrée qui conclut `PASS` avec cette ligne l'ajoute aussi à son `MOTIF`

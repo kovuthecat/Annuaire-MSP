@@ -254,10 +254,11 @@ cinquième exige une **nouvelle session**, la configuration n'étant lue qu'au d
    `.claude/agents`, ni `.claude/workflow`. C'est la condition qui rend le workflow disponible en
    session cloud et à quiconque clone : ces environnements ne voient que le dépôt.
 7. **Dépôt sous un dossier synchronisé ?** (`SynologyDrive`, `OneDrive`, `Dropbox`, `iCloud` dans le
-   chemin) : demander à l'utilisateur d'exclure le dossier `.git` dans son client de synchro — une
-   action hors du dépôt, qu'aucune gate ne peut poser à sa place (`WORKFLOW.md` §9c) : attendre le
-   oui —, puis `touch .git/info/synchro-exclue` — corruption vue le 2026-09-11
-   (torrent-uploader), sinon rappelé à chaque session par `sessionstart-contexte.mjs`.
+   chemin) : demander à l'utilisateur de **déplacer le dépôt hors de l'arborescence du client** —
+   une exclusion ne suffit pas, le client filtre aussi le contenu exclu (`.git` corrompu le
+   2026-09-11, Vite bloqué le 2026-09-16, torrent-uploader). Action hors du dépôt, qu'aucune gate ne
+   peut poser à sa place (`WORKFLOW.md` §9c) : attendre le oui. S'il choisit de rester :
+   `touch .git/info/synchro-exclue` — sinon rappelé à chaque session par `sessionstart-contexte.mjs`.
 8. **Coût de contexte** (mesure A1, `/choisir-mecanisme` point 8) : `/context` dans une session
    neuve pour ce projet, MCP scopés au projet, `CLAUDE.md` élagué si `/doctor` le propose.
 

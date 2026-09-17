@@ -25,7 +25,8 @@ un `S<k>.md` ni dans `TASKS.md`.
    d'audit) : c'est alors le livrable lui-même, la conversation qui l'a produit disparaît. **Écarts
    au plan** : rubrique en plus, **uniquement si le bandeau du `S<k>.md` a déclaré une `Latitude`** —
    sinon la ligne est absente et l'écart suit la condition d'arrêt d'`EXECUTANT.md`, section « Une
-   session = un fichier » (mesure B3).
+   session = un fichier » (mesure B3). **Correctif localisé** posé (`WORKFLOW.md` §9a) : toujours
+   signalé, en première ligne du bilan — fichiers, cause mesurée, commit.
 4. **Commit de la tâche** — sauf si `.claude/wave.lock` est présent (§4b). Staging explicite des
    fichiers de la tâche **et du `S<k>.md`**, message prévu dans le `T<n>`, repère de tâche en
    dernière ligne :
@@ -195,45 +196,61 @@ Le reste ne vaut que pour une session **lancée à la main**, ou par une pastill
 hors Desktop) :
 
 - S'il reste des sessions prêtes dans l'`index.md` (dépendances satisfaites, vague en cours ou
-  suivante) : poser une pastille via `spawn_task` — titre `P<n> · S<k> — <titre> · <M>/<E>`, prompt
-  « Ouvre plans/P<n>/S<k>.md et exécute-le. » — ou, hors Desktop, afficher la commande de lancement
-  du bandeau du `S<k>.md` suivant. Jamais dans la même conversation : démarrage froid systématique
-  (§5b).
+  suivante) : **bloc de relance** (section suivante, obligatoire) et, en Desktop, une pastille en
+  plus via `spawn_task` — titre `P<n> · S<k> — <titre> · <M>/<E>`, même prompt que le bloc. Jamais
+  dans la même conversation : démarrage froid systématique (§5b).
 - **Avec la pastille, la ligne « À régler AVANT de lancer »** (`WORKFLOW.md` §3, domicile) —
   **contrainte d'outillage** (`WORKFLOW.md` §9c), pas un point d'arrêt de conception : modèle et
   effort de la session suivante, lus dans l'`index.md`. Ce qui la lèverait : un lancement qui pose
   l'effort lui-même. Une pastille démarre sur les réglages courants de l'application — sans ce
   rappel, une session `Sonnet`/`high` part au hasard de ce qui était réglé la veille, et personne ne
   s'en aperçoit avant le résultat.
-- **Si cette session était la dernière `[ ]` de sa vague**, poser en plus une pastille de collecte —
-  titre `P<n> — collecter la vague <w>`, prompt « Déroule /orchestrer-plan sur la vague <w> du plan
-  P<n> : collecte et vague suivante. »
+- **Si cette session était la dernière `[ ]` de sa vague**, c'est la collecte qui se relance — bloc
+  de relance, ligne « Vague à collecter » de la table, et en Desktop une pastille titrée
+  `P<n> — collecter la vague <w>`.
 
 **Ne pas essayer de prévenir l'orchestrateur par message** (`SendMessage` ne résout pas
 l'auto-identification d'une session, et un message reste éphémère). La pastille, elle, attend.
 
-## Passation — quand il n'y a pas de `S<k>.md`
+## Bloc de relance — toute fin qui renvoie vers une session neuve
 
-Ce qui précède s'appuie sur un fichier déjà écrit : la pastille dit « Ouvre `plans/P<n>/S<k>.md` et
-exécute-le », parce que **le `S<k>.md` est la passation**. Rien à recopier.
+*Domicile de la règle : les autres skills y renvoient, ne la reformulent pas.*
 
-Mais une session qui se termine **sans** `S<k>.md` — cadrage, analyse, exploration, escalade de
-modèle — n'a rien à passer, et le démarrage à froid qu'impose §5b lui fait tout perdre. Dans ce
-cas, et seulement dans ce cas, **terminer par ce bloc, copiable sans retouche, et rien après lui** :
+**Sans exception** : dès qu'une session se termine en demandant à l'humain d'ouvrir une
+conversation neuve — session suivante d'un plan, collecte de vague, `/orchestrer-plan` sur un index
+prêt, `/nouveau-plan` après `/cadrer` ou une revue, `/reprendre-echec` à la main, escalade de
+modèle, analyse ou exploration à poursuivre — elle **termine par ce bloc, copiable sans retouche,
+et rien après lui**. « Lance `/nouveau-plan` », « S3 est prête » ou une pastille seule ne sont pas
+une relance : l'humain devrait reconstituer le prompt et deviner quoi faire lire.
 
 ````
 ```
 Session suivante — modèle <M> · effort <E>
+
+<prompt exact, à coller tel quel — table ci-dessous>
 
 Lis, dans cet ordre, et rien d'autre :
 - <chemin> — <pourquoi ce fichier>
 - <chemin> — <pourquoi ce fichier>
 
 État : <où en est le travail, 2-3 lignes>
-Déjà tenté et écarté : <ce qui a échoué, et pourquoi>
+Déjà tenté et écarté : <ce qui a échoué, et pourquoi — ou « aucune »>
 À faire : <objectif de la session suivante, et son critère de fin>
 ```
 ````
+
+| Cas | Prompt exact | « Lis » contient au moins |
+| --- | --- | --- |
+| Session suivante d'un plan | `Ouvre plans/P<n>/S<k>.md et exécute-le.` | `plans/P<n>/S<k>.md` — sa propre section « Lire » fait le reste |
+| Vague à collecter / plan prêt | `/orchestrer-plan P<n> — vague <w> : collecte et vague suivante.` | `plans/P<n>/index.md` |
+| Plan à rédiger ou étendre | `/nouveau-plan <objectif en une phrase>` (`en extension de P<n>` le cas échéant) | le `docs/decisions/<fichier>.md` ou le rapport qui le motive |
+| Échec à reprendre à la main | `/reprendre-echec plans/P<n>/S<k>.echec.md` | ce `.echec.md` |
+| Cadrage, analyse, escalade | l'objectif, en une phrase impérative | les fichiers produits par cette session |
+
+Le prompt nomme toujours ses chemins en entier, jamais « le plan » ou « la décision d'hier ». Cas
+planifié : le `S<k>.md` est la passation, `État` / `Déjà tenté` / `À faire` tiennent en une ligne
+chacune. Pastille possible (Desktop) : elle vient **en plus**, même prompt, avec la ligne « À régler
+AVANT de lancer » (`WORKFLOW.md` §3).
 
 Trois règles pour qu'il serve à quelque chose :
 

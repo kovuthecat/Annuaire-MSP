@@ -1,6 +1,6 @@
 ---
 name: resumeur-git
-description: Summarizes git state, diffs and history. Use when a plan or review needs to know what changed without reading raw diffs. Read-only: never stages, commits or pushes.
+description: "Summarizes git state, diffs and history. Use when a plan or review needs to know what changed without reading raw diffs. Read-only: never stages, commits or pushes."
 tools: Bash, PowerShell, Read
 model: haiku
 maxTurns: 10

@@ -320,9 +320,10 @@ Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contex
 (chemins, sorties, fausses pistes) qu'on paie ensuite à chaque tour — et c'est justement en cadrage
 Opus, le contexte le plus cher, qu'on en accumule le plus.
 
-Sept agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
+Neuf agents du plugin, chacun ne rend que sa **conclusion** — jamais les traces brutes :
 
 - `explorateur` → localiser quelque chose qui touche plus d'1 fichier.
+- `analyste-flux` → lire **comment** un flux fonctionne, quand localiser ne suffit pas.
 - `verificateur-n0` → lancer build/typecheck/tests (jamais ces commandes en direct dans la
   conversation principale).
 - `resumeur-git` → résumer un diff ou un historique.
@@ -333,13 +334,16 @@ Sept agents du plugin, chacun ne rend que sa **conclusion** — jamais les trace
   (`/nouveau-plan` Étape 4b).
 - `verificateur-premisse` → confronter au dépôt l'affirmation par laquelle une session en échec
   déclare le plan faux, **avant** qu'elle n'arrête le plan (`/orchestrer-plan` 5c, §9c).
+- `critique-plan` → confronter un plan à ses risques de conception **avant** son approbation
+  (`/nouveau-plan` Étape 1bis) ; ne juge ni le périmètre produit ni le style.
 
-**Les trois derniers ont la même raison d'être : personne ne relit son propre travail.** Le
-cadreur ne voit pas sa découpe fausse, l'exécutant ne voit pas son PASS vide, la session en échec
-ne voit pas que sa prémisse est fausse — dans les trois cas le contrôle vaut par le fait qu'il
-vient d'ailleurs, pas par sa finesse.
+**Les quatre derniers ont la même raison d'être : personne ne relit son propre travail.** Le
+cadreur ne voit pas sa découpe fausse, ni la faille de conception dans le plan qu'il vient
+d'écrire, l'exécutant ne voit pas son PASS vide, la session en échec ne voit pas que sa prémisse
+est fausse — dans les quatre cas le contrôle vaut par le fait qu'il vient d'ailleurs, pas par sa
+finesse.
 
-Les sept se lancent **au premier plan** — condition posée dans `EXECUTANT.md`, domicile unique de
+Les neuf se lancent **au premier plan** — condition posée dans `EXECUTANT.md`, domicile unique de
 l'invariant de lancement (§5b) : leur verdict conditionne la suite de la même tâche — une session ne rend la main qu'après l'avoir lu. Le
 `relecteur-session` est le dernier geste de la session : lancé en arrière-plan, son retour
 n'atteindrait aucun tour et la revue ne serait jamais déposée.
@@ -350,7 +354,7 @@ résultat revient. Jamais pour une session de plan ni une reprise d'échec (il r
 contexte qu'elles existent pour laisser derrière), ni pour une restitution pure sans appel d'outil
 (écrire soi-même coûte moins). Détail : `docs/decisions/2026-08-30-contexte-des-sous-agents.md`.
 
-**Pas de `memory:` sur les sept agents** : une mémoire d'agent n'est légitime que pour une
+**Pas de `memory:` sur les neuf agents** : une mémoire d'agent n'est légitime que pour une
 information dont aucun fichier du dépôt n'est déjà la source — commandes (`CLAUDE.md`),
 localisation (`PROJECT_MAP.md`) et état git n'en sont pas.
 
@@ -393,7 +397,7 @@ arrière-plan avant de committer se referme, elle aussi, sans rien avoir committ
 **L'effort d'un sous-agent est celui de la conversation qui le lance.** L'outil `Agent` règle le
 modèle, pas l'effort : le sous-agent hérite de l'effort **ambiant** de la session d'orchestration.
 `/tasks` pendant qu'une vague tourne affiche le modèle réel de chaque sous-agent — vérifier plutôt
-que supposer. Les sept agents du workflow portent leur `model:` en frontmatter ; les agents
+que supposer. Les neuf agents du workflow portent leur `model:` en frontmatter ; les agents
 intégrés lancés au fil de l'eau (`Explore`, `general-purpose`, `Plan`), eux, suivent
 `CLAUDE_CODE_SUBAGENT_MODEL` du gabarit de settings, faute de quoi ils hériteraient du modèle de la
 conversation — donc d'Opus dans un cadrage.
@@ -546,6 +550,26 @@ intouchable : une session qui montre qu'il compte faux rend ce constat **avec sa
 pas échoué. Cinq plans ont optimisé contre un juge qui sous-comptait sans que personne ait le droit
 d'aller le vérifier (décision du 2026-09-14).
 
+**Le correctif localisé se pose dans la session qui le trouve.** Une session qui a mesuré la cause
+de ce qui la bloque et sait le remède le pose elle-même — **y compris hors de son périmètre
+d'écriture, et y compris si son `S<k>.md` dit « ne corrige pas ici »** — si les quatre conditions
+tiennent :
+
+1. **cause mesurée** — une sortie, une trace, un relevé la montrent ; une hypothèse ne suffit pas ;
+2. **remède petit** — un ou deux fichiers, une trentaine de lignes de code hors tests ;
+3. **réversible** — ni migration, ni données écrites, ni dépendance, ni contrat public modifié ;
+4. **jugé** — la gate de la session et N0 le tranchent, avec un test du défaut quand il est testable.
+
+Commit séparé, repère `Plan:` habituel et une ligne `Correctif localisé : <fichiers>` dans le
+message ; signalé en tête du bilan. La revue de session est le garde-fou. Une condition manque → la
+table ci-dessus s'applique. Ce n'est pas une prémisse fausse : l'objectif du plan ne change pas, un
+défaut l'empêchait d'être atteint. Seul le bandeau du `S<k>.md` peut l'éteindre, raison écrite
+(`Correctif localisé : interdit — <raison>`, zone sensible ou état coûteux à annuler) — un « Hors
+périmètre » générique ne suffit pas. *Pourquoi* : Interface-OE P10/S6 (2026-09-16), cause mesurée
+deux fois, remède de quelques lignes puis d'une ligne ; il a coûté trois exécutions Opus, deux
+enquêtes, deux extensions de plan, deux sessions et deux questions dont la réponse était la
+recommandation (`docs/decisions/2026-09-17-gates-sans-arret-et-correctif-localise.md`).
+
 Le plafond d'une correction n'est pas négociable : au-delà, c'est l'anti-pattern de §3 (tourner en
 rond sur la même erreur), et c'est précisément ce qu'un modèle au-dessus règle mieux qu'une
 troisième tentative. Le rapport `plans/P<n>/S<k>.echec.md` porte la nature en ligne mécanique
@@ -632,8 +656,12 @@ fois par point (inventaire du 2026-09-14).
 | --- | --- | --- |
 | N0 rouge après une correction | une hypothèse fausse | **enquête** (lecture seule, une passe) |
 | « aucune autre piste en une passe » | un manque d'information | **enquête** |
-| « une hypothèse du plan est fausse » | une **affirmation non vérifiée**, écrite par la session qui vient d'échouer | **vérification** (`verificateur-premisse`) — puis reprise si elle est réfutée, question si elle tient |
+| « une hypothèse du plan est fausse » | une **affirmation non vérifiée**, écrite par la session qui vient d'échouer | **vérification** (`verificateur-premisse`) — puis reprise si elle est réfutée, question si elle tient ; `INDECIDABLE · comportementale` → question, option « sonder » (`/nouveau-plan` Étape 1, point 5) |
+| « une hypothèse du plan est fausse » **et une mesure commitée le prouve** (`Mesure :`) | une **preuve** — de niveau supérieur à la lecture | pas de vérification : **question** ou extension, comme une prémisse réfutée |
 | remédiation d'environnement à portée dans l'arbre | rien du tout | **appliquer et continuer** (§9a) |
+| cause mesurée, remède petit et réversible, hors périmètre | rien du tout | **correctif localisé** (§9a), rapporté après |
+| enquête `OPTIONS` dont l'option recommandée est `Auto : oui` | un remède connu, pas un choix | **reprise** qui l'applique (`/orchestrer-plan` 5d) |
+| vague collectée, tout `PASS` | rien du tout | **vague suivante** — seule `validation-humaine` arrête (critère N2) |
 | une migration jouée à annuler, une permission à élargir, une prémisse confirmée, un budget épuisé | un choix | **question** |
 
 *Pourquoi.* La latence humaine est le coût dominant d'une orchestration ; et un humain qui reçoit
@@ -649,8 +677,10 @@ déclare bloqué » — une session remplit ses champs sur ce qu'elle *croit*, c
 **si et seulement si** les trois conditions suivantes tiennent, **toutes observables de
 l'extérieur, sans ouvrir le contexte de l'agent** :
 
-1. **L'agent est reprenable** — il apparaît dans `ListAgents`. Absent, le reprendre *est* un
-   démarrage à froid, sans le bénéfice.
+1. **L'agent est reprenable** — l'orchestrateur détient l'identifiant rendu par l'appel `Agent` qui
+   l'a lancé. Pas `ListAgents` : un sous-agent qui a rendu sa réponse n'y figure plus (incident
+   Interface-OE du 2026-09-16), la condition y était toujours fausse. Le `SendMessage` qui échoue
+   est le test : démarrage à froid, sans retenter.
 2. **N0 est vert sur son périmètre** — constaté par un `verificateur-n0` que l'**orchestrateur**
    lance lui-même, jamais par la déclaration de la session. C'est la gate qui autorise le canal
    court.

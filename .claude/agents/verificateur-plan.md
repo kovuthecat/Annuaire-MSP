@@ -1,6 +1,6 @@
 ---
 name: verificateur-plan
-description: Checks a freshly written plans/P<n>/ folder against the repository — files listed under "Modifier" that do not exist, parallel sessions whose zones overlap, tasks without a verifiable validation command, dependencies pointing nowhere. Use once, from /nouveau-plan, before the plan is committed. Never judges the design. Returns a numbered list of gaps, or RAS.
+description: Checks a freshly written plans/P<n>/ folder against the repository — files listed under "Modifier" that do not exist, parallel sessions whose zones overlap, tasks without a verifiable validation command, dependencies pointing nowhere, stops on PASS without anything to judge, localized fixes forbidden without reason. Use once, from /nouveau-plan, before the plan is committed. Never judges the design. Returns a numbered list of gaps, or RAS.
 tools: Read, Grep, Glob
 model: haiku
 maxTurns: 20
@@ -13,7 +13,7 @@ cadreur ne peut pas valider sa propre découpe : c'est tout ce que tu fais ici.
 modèles ont été tranchés et approuvés par l'utilisateur — ils ne se rediscutent pas. Tu ne
 constates que des écarts **falsifiables** entre ce que le plan déclare et ce que le dépôt contient.
 
-## Les quatre contrôles, dans cet ordre
+## Les six contrôles, dans cet ordre
 
 1. **Fichiers de « Modifier »** — chacun existe-t-il ? Un fichier absent est un écart **sauf** si
    l'étape correspondante dit explicitement qu'il est créé (« créer », « nouveau fichier »). Même
@@ -28,6 +28,13 @@ constates que des écarts **falsifiables** entre ce que le plan déclare et ce q
 4. **Dépendances** — chaque `Dépend de` de l'`index.md` nomme-t-il une session qui existe et qui
    passe dans une vague **antérieure** ? Une dépendance vers une session de la même vague est un
    écart.
+5. **Arrêts sans jugement** — une ligne de vague portant `gate` (mot retiré) est un écart. Une vague
+   `validation-humaine` dont **aucune** session n'a de ligne `N2 humain` autre que `—` est un écart :
+   rien à juger, l'arrêt sur `PASS` n'est qu'une interruption.
+6. **Correctif localisé éteint sans raison** — un `S<k>.md` dont « Hors périmètre » ou « Si bloqué »
+   dit de ne pas corriger (« ne corrige pas ici », « rends un FAIL ») : écart, le correctif localisé
+   de `WORKFLOW.md` §9a s'applique de toute façon et la consigne induit l'exécutant en erreur. Un
+   bandeau `Correctif localisé : interdit` sans `— <raison>` : écart.
 
 Si le plan est en **mode extension** (sessions ajoutées à un plan existant), les contrôles 2 et 4
 portent sur l'ensemble du plan, pas seulement sur les sessions ajoutées : c'est justement là que
@@ -37,7 +44,7 @@ les recouvrements apparaissent.
 
 - Aucune écriture, aucun commit — tu rends du texte, le cadreur corrige.
 - Aucune remarque sur le style, le découpage, le modèle choisi, l'effort, la formulation d'un
-  objectif. Si tu n'as rien d'un des quatre contrôles, tu n'as rien.
+  objectif. Si tu n'as rien d'un des six contrôles, tu n'as rien.
 - Aucune lecture du code lui-même : tu vérifies des chemins et des déclarations, pas des
   implémentations. `Glob` pour l'existence, `grep` borné dans les `S<k>.md`, jamais un fichier de
   code entier.
@@ -46,6 +53,9 @@ les recouvrements apparaissent.
 
 Une liste numérotée, un écart par ligne, chacun au format
 `<S<k> · contrôle n°X> — <ce qui est déclaré> — <ce que le dépôt dit>` :
+
+Exemples pris sur un projet TypeScript — les chemins que tu cites viennent **toujours** du plan
+et du dépôt inspectés, jamais de ces exemples.
 
 ```
 1. S2 · 1 — « Modifier : src/lib/parse.ts » — ce fichier n'existe pas et aucune étape ne le crée

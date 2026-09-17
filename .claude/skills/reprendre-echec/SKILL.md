@@ -80,6 +80,11 @@ ENQUETE: PISTE|OPTIONS · MOTIF: <une phrase> · RAPPORT: <chemin>
   `## Issues` de **2 à 4 options**, chacune avec son coût et ce qu'elle débloque, et une
   recommandation. C'est cette section qui devient la question posée à l'utilisateur
   (`/orchestrer-plan` Étape 6) — l'écrire pour quelqu'un qui n'a rien vu de la session.
+  **Et une ligne mécanique en tête du rapport**, sous `Mesure :` : `Auto : oui · option <m>` si
+  l'option recommandée est un correctif localisé (`WORKFLOW.md` §9a, les quatre conditions) ou un
+  geste dans l'objectif inchangé du plan, réversible et jugé par la gate de la session ;
+  `Auto : non` dès qu'elle étend l'objectif, touche l'irréversible, élargit une permission, ou
+  qu'un jugement N2 départage les options. L'orchestrateur applique `oui` sans te demander (5d).
 
 Ne jamais rendre `PISTE` sur une piste déjà présente dans « Déjà écarté » : ce serait faire
 repayer le chemin que cette section existe pour épargner. Si tout ce qui vient est déjà écarté,
@@ -113,6 +118,8 @@ l'utilisateur, une fois — elle vient en fin de fichier, après « Hypothèse e
 Nature : <environnement | exécution | prémisse>
 Tentatives : reprise=0 enquete=0
 Blocage : <le geste précis qui manque, en une ligne>
+Mesure : <commit> · <commande qui la reproduit>
+Auto : <oui · option <m> | non — écrite par l'enquête `OPTIONS` seulement>
 
 ## Tâche visée
 <la tâche T<n>, en une ligne — pas le S<k>.md recopié>
@@ -126,7 +133,8 @@ Blocage : <le geste précis qui manque, en une ligne>
 <exécution : ce qui n'a pas été essayé et pourquoi c'est la piste suivante ;
  prémisse : l'hypothèse du plan qui tombe, écrite de façon **falsifiable** — un fait qu'une
  lecture du dépôt confirme ou réfute (« le PDF a 32 titres, pas 37 », « parse.ts ne renvoie
- jamais null »), jamais un jugement (« l'approche ne marche pas ») ; et ce qu'un cadrage
+ jamais null »), **à la forme affirmative** — jamais « X lève une exception — faux », qui se
+ vérifie à l'envers —, jamais un jugement (« l'approche ne marche pas ») ; et ce qu'un cadrage
  devrait trancher>
 
 ## État laissé derrière
@@ -159,6 +167,13 @@ Trois lignes **mécaniques**, en tête, exactement ce format — les seules que 
   disqualifie le canal court. **Absente ⇒ démarrage à froid** — c'est le défaut sûr, et c'est l'une
   des trois conditions observables qui autorisent l'orchestrateur à reprendre par `SendMessage`
   plutôt qu'à froid (`WORKFLOW.md` §9c, domicile des trois conditions).
+- `Mesure :` — **optionnelle**, seulement pour une `Nature : prémisse` dont la session a mesuré la
+  fausseté et commité la mesure (script, fixture, résultat) : un commit **présent dans
+  l'historique** et la commande qui rejoue la mesure. Absente → la prémisse est une affirmation,
+  elle sera vérifiée (§9c). Présente → elle est une preuve, la vérification est sautée. Ne jamais
+  l'écrire pour une mesure non commitée : l'orchestrateur ne lira pas la conversation.
+- `Auto :` — **écrite par l'enquête `OPTIONS` seulement** (Mode enquête, critère) : `oui` fait
+  appliquer l'option recommandée par une reprise, sans question ; absente vaut `non`.
 
 **La prémisse est le seul champ qu'un tiers vérifie.** Une session en échec écrit ce qu'elle croit ;
 une prémisse fausse arrête un plan entier. C'est pourquoi l'orchestrateur la fait confronter au
@@ -187,6 +202,7 @@ de soin : c'est le cas où l'état laissé derrière est le moins connu.
   ailleurs que là où la session l'a cherchée. En invocation **manuelle**, à l'inverse, la prémisse
   n'a été vérifiée par personne : la confronter au dépôt (déléguer à `explorateur`) avant de
   conclure quoi que ce soit, et n'aiguiller vers `/nouveau-plan` Étape 0 que si elle tient.
+  `Mesure :` présente → partir de la mesure, pas de l'hypothèse.
 - `environnement` → vérifier que la remédiation nommée est acquise ici (permission héritée, outil
   présent, humain là) **avant** l'Étape 2. Si elle ne l'est pas :
   - **à portée dans l'arbre du projet** — dossier manquant, dépendance non installée, arbre en
@@ -224,7 +240,8 @@ piste invalidée sans une raison explicite de douter de son invalidation. Le dir
 
 **Aiguillage avant de corriger.** Le diagnostic peut montrer que ce n'est pas la tâche qui a raté,
 mais une hypothèse du plan qui est fausse : vérité de référence erronée, contrat à changer, mesure
-qui contredit l'attendu d'une gate. Ce n'est alors pas une reprise — le périmètre de la tâche
+qui contredit l'attendu d'une gate. Un défaut mesuré qu'un correctif localisé lève (`WORKFLOW.md`
+§9a) **n'en est pas un** : corriger à l'Étape 4, sans extension. Ce n'est alors pas une reprise — le périmètre de la tâche
 d'origine ne suffit pas. Rendre la main vers **`/nouveau-plan`, Étape 0 (mode extension)** (mode
 orchestré : `VERDICT: DECISION`, motif « prémisse fausse → /nouveau-plan extension ») : la
 correction devient une ou deux sessions ajoutées au **même** plan, pas un plan suivant dont
@@ -242,7 +259,9 @@ plus qu'une enquête en lecture seule.
 
 ## Étape 4 — Corriger, puis prouver
 
-1. Corriger — périmètre de la tâche d'origine, rien de plus. Une correction qui déborde **sans
+1. Corriger — périmètre de la tâche d'origine, **plus le correctif localisé** (`WORKFLOW.md` §9a :
+   cause mesurée, remède petit, réversible, jugé ; commit séparé) et l'option `Auto : oui` quand le
+   prompt de lancement la nomme. Une correction qui déborde **sans
    servir le plan** est une nouvelle tâche : la noter dans `TASKS.md`, ne pas la faire ici. Si elle
    déborde **en servant le plan**, c'est l'aiguillage de l'Étape 3 : `/nouveau-plan` en extension.
 2. **N0** : `build` + `typecheck` (+ tests du périmètre) via `verificateur-n0`, lancé **au premier

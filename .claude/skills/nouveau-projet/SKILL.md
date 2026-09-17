@@ -1,6 +1,6 @@
 ---
 name: nouveau-projet
-description: Démarrer un projet : interview de cadrage guidée puis instanciation des fichiers de contexte, settings et git. À dérouler avec Opus dans le futur repo vide, avant toute autre chose.
+description: "Démarrer un projet : interview de cadrage guidée puis instanciation des fichiers de contexte, settings et git. À dérouler avec Opus dans le futur repo vide, avant toute autre chose."
 ---
 
 # Nouveau projet — interview de cadrage
@@ -39,11 +39,16 @@ de passer à la suivante — l'utilisateur doit pouvoir corriger avant que ça s
 6. **Vision & idées futures** — au-delà du MVP, la direction générale si tout se passe bien ; idées
    de v2 notées mais jamais promises.
 7. **Plateformes cibles** — desktop / mobile / PWA (conditionne les contraintes UI).
-8. **Données** — entités principales, volumétrie, besoin multi-appareil ? Oriente le choix de
-   persistance : local-first Dexie vs Supabase, selon les habitudes des projets existants de l'utilisateur.
-9. **Stack** — défaut Vite+React+TS sauf raison contraire ; toute déviation justifiée en 1 ligne.
-   Couvre aussi backend, base de données (cohérente avec Q8), authentification, hébergement.
-10. **Contraintes** — offline, accessibilité, ton visuel, perf.
+8. **Contraintes** — offline, accessibilité, ton visuel, perf.
+9. **Données** — entités principales, volumétrie, besoin multi-appareil ?
+10. **Stack** — candidats **au regard des contraintes de la question 8** ; la stack familière
+    (Vite+React+TS, Dexie ou Supabase selon les projets existants) reste le candidat privilégié pour
+    son coût de maintenance connu, **à condition de satisfaire le besoin** — dire en une ligne ce
+    qu'elle couvre et ce qui manque. Couvre aussi backend, base (cohérente avec la question 9),
+    authentification, hébergement. Fondations ouvertes (aucune stack imposée) → dérouler
+    `.claude/skills/cadrer/references/rechercher-existant.md` sur les briques
+    décisives (persistance, hébergement, base de départ) ; stack imposée par l'utilisateur → la
+    respecter, et chercher les briques utiles **dans ce cadre**.
 11. **Risques connus** — ce qui pourrait faire échouer ou compliquer le projet (technique, temps,
     dépendance externe), au moins 1.
 12. **Stratégie de test — question OBLIGATOIRE, jamais optionnelle** — quel runner (vitest en
@@ -54,6 +59,10 @@ de passer à la suivante — l'utilisateur doit pouvoir corriger avant que ça s
 14. **Nom du projet + emplacement du repo.**
 
 ## Phase B — Restitution (gate)
+
+Remplir d'abord la grille (`.claude/skills/cadrer/references/preparation.md`) ; la
+synthèse porte les dimensions `OPEN` avec qui les résout. Une `OPEN` de type `décision` est une
+question de la synthèse, pas une approbation de plus.
 
 Synthèse de l'interview en **≤ 15 lignes**, à faire valider explicitement par l'utilisateur **avant
 d'écrire le moindre fichier**. Pas de « je considère que c'est validé » implicite — attendre le oui.
@@ -71,6 +80,10 @@ place d'un humain.
    > Ce fichier câble les 4 hooks en `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/`. Il ne porte
    > **ni** `enabledPlugins`, **ni** `extraKnownMarketplaces` : le workflow est dans le repo, il
    > n'y a rien à rapatrier au démarrage. Les deux ensemble le chargeraient deux fois.
+   >
+   > **Adapter `permissions.allow` à la stack retenue** (question 10) : le gabarit est écrit pour
+   > JavaScript (npm, Vitest) ; sur un autre langage, remplacer ces entrées par les commandes
+   > réelles du projet — jamais les laisser telles quelles (incident Chords, 2026-09-09).
 
 3. Copier depuis `.claude/workflow/templates/` : `PROJECT_BRIEF.md`, `ARCHITECTURE.md`,
    `DECISIONS.md`, `PROJECT_MAP.md`, `STATUS.md`, `TASKS.md`, `VALIDATION.md`, `CLAUDE.md`
@@ -87,9 +100,11 @@ place d'un humain.
    du bruit payé à chaque lecture — ne pas la laisser vide, la retirer).
 7. `git init` (s'il n'a pas eu lieu avant l'amorçage). **Dépôt sous un dossier synchronisé ?**
    (`SynologyDrive`, `OneDrive`, `Dropbox`, `iCloud` dans le chemin) : demander à l'utilisateur
-   d'exclure le dossier `.git` dans son client — une action hors du dépôt, qu'aucune gate ne peut
-   poser à sa place (`WORKFLOW.md` §9c) : attendre le oui —, puis
-   `touch .git/info/synchro-exclue`. Puis premier commit, staging explicite,
+   de **déplacer le dépôt hors de l'arborescence du client** — une exclusion de synchro ne suffit
+   pas, le client filtre aussi le contenu exclu (`.git` corrompu, Vite qui ne démarre jamais :
+   torrent-uploader, 2026-09-11 et 09-16). Action hors du dépôt, qu'aucune gate ne peut poser à sa
+   place (`WORKFLOW.md` §9c) : attendre le oui, reprendre au nouvel emplacement. S'il choisit de
+   rester : `touch .git/info/synchro-exclue`. Puis premier commit, staging explicite,
    message exact : `chore: instanciation projet depuis Templates`. Le commit inclut `.claude/` —
    c'est ce qui rend le workflow disponible à quiconque clone, dans tous les environnements.
 
