@@ -9,7 +9,7 @@
     "claude-sonnet-5": { "effortLevel": "medium" },
     "claude-haiku-4-5": { "effortLevel": "low" }
   },
-  "_comment_env": "CLAUDE_CODE_SUBAGENT_MODEL = modèle par défaut des sous-agents. Les cinq agents du workflow déclarent déjà `model:` en frontmatter (haiku ×4, sonnet ×1) et ne sont PAS concernés : cette ligne ne couvre que les agents intégrés lancés au fil de l'eau (Explore, general-purpose, Plan), qui héritaient sinon du modèle de la conversation — donc d'Opus dans une session de cadrage. `sonnet` et non `haiku` : un agent d'exploration non cadré est par définition la situation où le scope est flou. Couvre au passage le repli de /orchestrer-plan sur `general-purpose` quand `relecteur-session` est introuvable, qui doit tourner au niveau du relecteur.",
+  "_comment_env": "CLAUDE_CODE_SUBAGENT_MODEL = modèle par défaut des sous-agents. Les huit agents de délégation du workflow déclarent déjà `model:` en frontmatter (haiku ×5, sonnet ×2, opus ×1) et ne sont PAS concernés : cette ligne ne couvre que les agents intégrés lancés au fil de l'eau (Explore, general-purpose, Plan), qui héritaient sinon du modèle de la conversation — donc d'Opus dans une session de cadrage. `sonnet` et non `haiku` : un agent d'exploration non cadré est par définition la situation où le scope est flou. Couvre au passage le repli de /orchestrer-plan sur `general-purpose` quand `relecteur-session` est introuvable, qui doit tourner au niveau du relecteur. Les quatre agents de session (`session-<effort>`) portent un `effort:` et pas de `model:` : cette variable ne les concerne pas davantage que les agents de délégation, qui la déclarent déjà eux-mêmes.",
   "env": {
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },

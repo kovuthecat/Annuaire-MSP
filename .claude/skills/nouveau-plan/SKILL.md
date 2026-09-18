@@ -228,12 +228,13 @@ la ligne d'ordonnancement d'une vague le désactive — à déclarer au cadrage 
 cette vague doit passer par un humain d'emblée (état coûteux à annuler, zone sensible). Voies et
 colonne `Env.` : domicile `WORKFLOW.md` §5b, ne pas le reformuler ici. Résumé pour le découpage :
 
-Colonne **Env.** : toujours `—` (sous-agent — seule voie depuis v0.30.0, §5b) ; une session dont
-l'effort dépasse `medium` reste couverte, le sous-agent héritant de l'effort **ambiant** de la
-conversation d'orchestration (une orchestration lancée en `high` couvre `high`) — écrire alors dans
-l'index l'effort d'orchestration attendu, pour que le rappel « À régler AVANT de lancer » de
-`/orchestrer-plan` porte la bonne valeur. *Legacy : dans un plan antérieur à P3, `Desktop` se lit
-comme `—` ; dans un plan antérieur à v0.30.0, `headless` se lit comme `—` (sous-agent).*
+Colonne **Env.** : toujours `—` (sous-agent — seule voie depuis v0.30.0, §5b). L'effort écrit sur une
+ligne est celui auquel la session tournera : `/orchestrer-plan` la lance sur l'agent `session-<effort
+de la ligne>`, qui porte son propre frontmatter (§3) — plus de couverture par l'effort ambiant de la
+conversation d'orchestration, plus d'effort d'orchestration à écrire dans l'index. `max` n'est pas une
+valeur d'index (§3) : il n'existe pas d'agent `session-max`. *Legacy : dans un plan antérieur à P3,
+`Desktop` se lit comme `—` ; dans un plan antérieur à v0.30.0, `headless` se lit comme `—`
+(sous-agent).*
 
 L'index ne contient **rien d'autre** : aucun détail d'exécution (étapes, commandes, fichiers à la
 ligne près) — il pointe vers les sessions. Les lignes « en clair » et les *Pourquoi maintenant* sont

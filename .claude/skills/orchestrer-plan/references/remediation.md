@@ -4,6 +4,16 @@ Annexe de `/orchestrer-plan` — un bloc par geste que le modèle doit écrire, 
 actions (`SKILL.md`). Budget, table nature → modèle, dépendances, vérification du commit d'une
 mesure : rendus par `prochaine-action.mjs` (C2), rien de tout ça ne se recalcule ici.
 
+**Modèle → effort**, pour composer `subagent_type: "session-<effort>"` d'une reprise ou d'une
+enquête à partir du seul `modele` que l'action rend (`WORKFLOW.md` §3) — une seule copie, les deux
+blocs y renvoient plutôt que de la recopier :
+
+| Modèle de l'action | Effort de session |
+| --- | --- |
+| Opus | `high` |
+| Sonnet | `medium` |
+| Haiku | `low` |
+
 ## `verifier-premisse`
 
 Affirmation reprise depuis la section « Ce qu'il faudrait pour que ça passe » du rapport, **elle
@@ -51,7 +61,7 @@ Consomme une reprise du budget comme à froid ; en échec, **ne se retente pas**
 ```
 Agent({
   description: "P<n>/S<k> reprise",
-  subagent_type: "claude",
+  subagent_type: "session-<effort du modèle de l'action, table en tête d’annexe>",
   model: <modele de l'action>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
@@ -70,6 +80,9 @@ Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION �
 })
 ```
 
+Repli à trois crans si `subagent_type` ne résout pas — même forme et même annonce au cran 3 qu'à
+l'Étape 1 de `SKILL.md` (T5) : `session-<effort>` → `workflow:session-<effort>` → `claude` (annoncé).
+
 `fork` interdit sans condition. Ne jamais recopier le `.echec.md`/`.revue.md` au-delà de la ligne citée. Collecte : mêmes règles que l'Étape 1 de `SKILL.md`
 (`partial` = `FAIL`, recoupement par les commits). `PASS` → rappeler le script ; `ENQUETE`/`FAIL` →
 `enqueter` si le budget le permet (le script tranche) ; `DECISION` → `question`, motif relayé tel quel.
@@ -81,7 +94,7 @@ Lecture seule (ne corrige rien, ne committe rien, ne lance pas N0), `modele` dé
 ```
 Agent({
   description: "P<n>/S<k> enquête",
-  subagent_type: "claude",
+  subagent_type: "session-<effort du modèle de l'action, table en tête d’annexe>",
   model: <modele de l'action>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
@@ -94,6 +107,10 @@ finale CLÔT ton tour, ce qui finit après elle n'est lu par personne.
 Réponse finale en UNE ligne, exactement : ENQUETE: PISTE|OPTIONS · MOTIF: <une phrase> · RAPPORT: <chemin>"
 })
 ```
+
+Repli à trois crans si `subagent_type` ne résout pas — identique à celui de `reprendre — à froid`
+ci-dessus (lui-même celui de l'Étape 1 de `SKILL.md`, T5) : `session-<effort>` →
+`workflow:session-<effort>` → `claude` (annoncé).
 
 - **`PISTE`** → rappeler le script : il rend `reprendre` si le budget le permet, sinon `question`.
 - **`OPTIONS`** → le script lit déjà `Auto :` pour décider `reprendre`/`question` ; s'il rend `question`, les options viennent de la section `## Issues` du

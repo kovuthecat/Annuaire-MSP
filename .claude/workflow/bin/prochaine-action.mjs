@@ -107,7 +107,7 @@ function lireIndex(dossierPlan) {
       taches: cellules[1],
       titre: cellules[2],
       modele: cellules[3],
-      effort: cellules[4],
+      effort: cellules[4].replace(/[`*]/g, '').trim().toLowerCase(),
       env: cellules[5],
       dependDe: cellules[6],
       zone: cellules[7],
@@ -226,12 +226,35 @@ function lireRevue(chemin) {
 
 const UN_CRAN_AU_DESSUS = { Haiku: 'Sonnet', Sonnet: 'Opus' };
 
+// Effort lançable depuis un index (T2, P7/S2) — `max` en est exclu à dessein : WORKFLOW.md §3 le
+// réserve à `/effort max` en session, jamais à une colonne d'index (décision 2026-09-18).
+const EFFORTS_LANCABLES = ['low', 'medium', 'high', 'xhigh'];
+
 function questionBudget(session, nature = 'reprise') {
   const mot = nature === 'enquete' ? "d'enquête" : 'de reprises';
   return {
     action: 'question',
     motif: `budget ${mot} épuisé sur ${session.session}`,
     options: { source: 'budget-epuise', session: session.session },
+  };
+}
+
+/** Une session à lancer porte un effort non lançable — refuser en nommant §3 plutôt que propager
+ * un `subagent_type` inexistant (T2, P7/S2). */
+function questionEffortInvalide(session) {
+  if (session.effort === 'max') {
+    return {
+      action: 'question',
+      motif:
+        `${session.session} porte l'effort "max" : non réglable depuis un index ` +
+        `(WORKFLOW.md §3, \`/effort max\` en session seulement)`,
+      options: { source: 'effort-invalide', session: session.session, effort: session.effort },
+    };
+  }
+  return {
+    action: 'question',
+    motif: `${session.session} porte un effort inconnu ("${session.effort}") — valeurs acceptées : ${EFFORTS_LANCABLES.join(', ')}`,
+    options: { source: 'effort-invalide', session: session.session, effort: session.effort },
   };
 }
 
@@ -296,7 +319,6 @@ function prochaineAction(sortie) {
     return { action: 'pousser' };
   }
 
-  const refsPlan = [...refsCommitees()].filter((r) => r.startsWith(`${sortie.plan}/`));
   const enqueteTotalPlan = sortie.sessions
     .filter((s) => s.etat === 'echec')
     .reduce((acc, s) => acc + (s.echec?.tentatives.enquete ?? 0), 0);
@@ -325,22 +347,37 @@ function prochaineAction(sortie) {
 
     const toutesFaites = membres.every((s) => s.etat === 'faite'); // vrai par défaut si vague sans membre (clôture)
     if (!toutesFaites) {
-      if (refsPlan.length === 0) return { action: 'regler-effort', plan: sortie.plan };
-      const aLancer = membres
-        .filter((s) => s.etat === 'a-lancer')
-        .map((s) => ({ session: s.session, modele: s.modele, effort: s.effort }));
-      return { action: 'lancer', vague: vague.numero, parallele: vague.parallelisable, sessions: aLancer };
+      const aLancer = membres.filter((s) => s.etat === 'a-lancer');
+      const effortInvalide = aLancer.find((s) => !EFFORTS_LANCABLES.includes(s.effort));
+      if (effortInvalide) return questionEffortInvalide(effortInvalide);
+      return {
+        action: 'lancer',
+        vague: vague.numero,
+        parallele: vague.parallelisable,
+        sessions: aLancer.map((s) => ({ session: s.session, modele: s.modele, effort: s.effort })),
+      };
     }
 
     // Vague entièrement faite : revue (plans stampés `Workflow :` seulement — un plan antérieur à
     // C4/C3 n'a jamais produit de .revue.md, lui en exiger un serait un état deviné), puis
     // validation-humaine.
     if (sortie.workflow) {
+      // Une session `low` n'est jamais relue (C7, relecteur-session.md « Sessions à sauter ») —
+      // exclue ici, au seul endroit qui décide quoi relire (T3, P7/S2), plutôt que de compter sur
+      // la prose du relecteur pour l'appliquer.
       const sansRevue = membres.filter(
-        (s) => s.zone && s.zone.replace(/`/g, '').trim().toLowerCase() !== 'aucune' && !s.revue,
+        (s) =>
+          s.effort !== 'low' &&
+          s.zone &&
+          s.zone.replace(/`/g, '').trim().toLowerCase() !== 'aucune' &&
+          !s.revue,
       );
       if (sansRevue.length > 0) {
-        return { action: 'relire', vague: vague.numero, sessions: sansRevue.map((s) => s.session) };
+        return {
+          action: 'relire',
+          vague: vague.numero,
+          sessions: sansRevue.map((s) => ({ session: s.session, effort: s.effort })),
+        };
       }
     }
 
@@ -390,9 +427,6 @@ function formaterTexte(action) {
     .map(([cle, valeur]) => `${cle}: ${typeof valeur === 'object' ? JSON.stringify(valeur) : valeur}`);
   let ligne;
   switch (action.action) {
-    case 'regler-effort':
-      ligne = `regler-effort — ${action.plan}`;
-      break;
     case 'lancer':
       ligne = `lancer — vague ${action.vague} (${action.parallele ? 'parallèle' : 'séquentiel'}) : ${
         action.sessions.map((s) => s.session).join(', ') || '—'
@@ -408,7 +442,7 @@ function formaterTexte(action) {
       ligne = `enqueter — ${action.session} (${action.modele})`;
       break;
     case 'relire':
-      ligne = `relire — vague ${action.vague} : ${action.sessions.join(', ')}`;
+      ligne = `relire — vague ${action.vague} : ${action.sessions.map((s) => s.session).join(', ')}`;
       break;
     case 'pousser':
       ligne = 'pousser';

@@ -5,7 +5,9 @@ description: Déroule un plan entier, vague après vague, sans rendre la main en
 
 # Orchestrer un plan
 
-Sonnet, jamais Haiku (`WORKFLOW.md` §3 — sonde A non concluante : pas d'agents `session-<effort>`).
+Sonnet, jamais Haiku (`WORKFLOW.md` §3) pour l'orchestrateur lui-même — contrainte inchangée. Chaque
+session tourne, elle, à l'effort de sa ligne d'index : `subagent_type: "session-<effort>"` le porte en
+frontmatter (Étape 1), sans geste humain à régler avant de lancer.
 Deux gestes en boucle : **lancer des sessions**, **collecter des verdicts**. L'état se calcule par un
 script (C2, `prochaine-action.mjs`) depuis les fichiers commités — budget, nature → modèle,
 dépendances, recoupement par les commits en sortent : l'action rendue s'exécute, ne se recalcule pas.
@@ -33,7 +35,6 @@ vendorée (C4), le régler avant de lancer.
 
 | Action rendue | Geste |
 | --- | --- |
-| `regler-effort` | une fois, avant la première vague : « Sonde A non concluante — pas d'agents `session-<effort>` ; règle l'effort de cette conversation avant que je lance (`WORKFLOW.md` §3) », puis rappeler le script. |
 | `lancer` | Étape 1. |
 | `verifier-premisse` | `references/remediation.md` — bloc `verificateur-premisse` ; affirmation prise dans `<chemin>`, section « Ce qu'il faudrait pour que ça passe », jamais le rapport entier. |
 | `reprendre` | `references/remediation.md` — canal court si ses trois conditions tiennent, sinon reprise à froid ; `modele`/`option` déjà décidés par le script. |
@@ -58,7 +59,9 @@ annoncer sans elle, le signaler une fois, ne jamais l'inventer ni ouvrir le `S<k
 (2) **verrou si `parallele`** — zones disjointes seulement, au moindre doute séquentiel ; poser
 `.claude/wave.lock` juste avant le premier lancement, jamais avant. (3) **agents du plugin absents du
 bac à sable** — seuls les agents génériques listés : le dire sur « À régler AVANT de lancer », revues
-annoncées absentes pour la vague.
+annoncées absentes pour la vague, **et** pour chaque effort effectivement demandé par la vague à
+lancer, vérifier que `session-<effort>` (ou `workflow:session-<effort>`) résout ; sinon annoncer déjà
+là le repli en `claude` (cran 3, Étape 1) plutôt que de le découvrir au premier lancement.
 
 **Annoncer, puis lancer** — jamais l'inverse, jamais en ouvrant un `S<k>.md` :
 
@@ -94,7 +97,7 @@ premier `FAIL`. `isolation: "worktree"` et `subagent_type: "fork"` interdits ; n
 ```
 Agent({
   description: "P<n>/S<k>",
-  subagent_type: "claude",
+  subagent_type: "session-<effort lu dans l'index>",
   model: <modèle lu dans l'index>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
@@ -111,6 +114,10 @@ renvoie son chemin.
 Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
 ```
+
+`Agent type 'session-<effort>' not found` : repli `subagent_type: "workflow:session-<effort>"` (plugin installé en marketplace) ; encore introuvable → repli
+`subagent_type: "claude"` **et l'annoncer**, une ligne au bandeau de vague et dans le rapport final : « Vague <w> à l'effort ambiant de la conversation, pas
+celui de l'index — `session-<effort>` introuvable ». Trois crans, jamais un blocage.
 
 **Collecter** : lire `VERDICT: … · MOTIF: … · RAPPORT: …`, rien d'autre, en gardant l'identifiant d'agent (canal court, `references/remediation.md`). Sans
 `VERDICT:` ni commit : `ListAgents` avant de conclure `FAIL` (un enfant qui tourne encore rend
@@ -133,7 +140,8 @@ Agent({
   subagent_type: "relecteur-session",
   run_in_background: false,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
-Relis la session S<k> du plan P<n>, mode orchestré, commits présents (git log --grep
+Relis la session S<k> du plan P<n>, effort <effort de S<k>, tel que rendu par `relire`>, mode
+orchestré, commits présents (git log --grep
 \"P<n>/S<k>/\"). Écris plans/P<n>/S<k>.revue.md toi-même, puis rends tes deux lignes."
 })
 ```

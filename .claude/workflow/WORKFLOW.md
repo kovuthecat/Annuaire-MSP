@@ -50,7 +50,7 @@ Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + 
 
 `xhigh` permanent est le poste de dépense le plus silencieux du workflow.
 
-**Effort d'orchestration.** L'effort en frontmatter d'agent n'est pas vérifiable depuis l'UI (sonde A, NON SONDABLE — `docs/analyses/2026-09-17-sondes-p6.md`) : pas d'agents `session-<effort>`, l'effort d'une vague s'annonce **une fois** à l'ouverture (§5b). L'orchestrateur tourne sur **Sonnet**, jamais Haiku ; bascule conditionnée à une éval comparée.
+**Effort d'orchestration.** `effort` en frontmatter d'**agent nommé** est documenté et honoré — il prime l'effort de session, pas la variable d'environnement (`model-config` § *Set the effort level*, `sub-agents` § *Frontmatter reference*) ; `critique-plan` s'en sert. Une session de plan se lance désormais sur l'agent `session-<effort>` composé depuis la colonne Effort de l'index (`plugin/agents/session-low.md` … `session-xhigh.md`) : c'est son frontmatter qui porte l'effort, jamais l'outil `Agent`, qui règle toujours le modèle. Précédence : frontmatter de l'agent nommé, sinon niveau de session ; **seule** la variable d'environnement `CLAUDE_CODE_EFFORT_LEVEL` bat le frontmatter (`model-config` § *Set the effort level*) — c'est la seule façon de rendre le mécanisme inopérant sans erreur. `max` ne se règle pas depuis un index : il n'existe pas d'agent `session-max`, et le moteur refuse la valeur en renvoyant ici. L'orchestrateur tourne sur **Sonnet**, jamais Haiku ; bascule conditionnée à une éval comparée, jamais exécutée à ce jour (P6/T19 abandonnée, bac à sable absent).
 
 ## 3b. Coût et cache
 
@@ -121,7 +121,7 @@ Plan: P<n>/S<k>/T<m>
 
 ## 5. Déléguer au lieu de faire
 
-Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contexte de traces payées à chaque tour. Huit agents, chacun ne rend que sa **conclusion** :
+Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contexte de traces payées à chaque tour. Huit agents **de délégation**, chacun ne rend que sa **conclusion** :
 
 - `explorateur` → localiser (>1 fichier). `analyste-flux` → lire **comment** un flux fonctionne. `resumeur-git` → résumer diff/historique. `lecteur-doc` → lire une doc externe.
 - `relecteur-session` → relire une session close — ou une **vague entière**, `low` exemptées (C7) — **déposer et committer** `.revue.md` (`/fin-de-tache`).
@@ -129,9 +129,13 @@ Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contex
 - `verificateur-premisse` → confronter au dépôt l'affirmation d'une session en échec, **avant** qu'elle n'arrête le plan (`/orchestrer-plan` 5c, §9c).
 - `critique-plan` → confronter un plan à ses risques **avant** approbation (`/nouveau-plan` 1bis) ; ne juge ni périmètre produit ni style.
 
+Une seconde famille cohabite dans `plugin/agents/` sans en faire partie : les quatre agents
+`session-<effort>` ne rendent aucune conclusion à un parent, ils *sont* la session — rôle et
+mécanisme en §3, pas ici.
+
 **N0 n'est plus un agent, c'est un script (C1)** : `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` dans ce dépôt) — **au premier plan, comme toute commande**, sans sous-agent ni frontière de tour.
 
-**Les quatre derniers** : personne ne relit son propre travail (découpe fausse, faille de plan, PASS vide, prémisse fausse). Les huit se lancent **au premier plan** (invariant : `EXECUTANT.md`, domicile §5b) — leur verdict conditionne la suite. `relecteur-session` : dernier geste, jamais en arrière-plan (la revue ne serait jamais déposée).
+**Les quatre derniers** : personne ne relit son propre travail (découpe fausse, faille de plan, PASS vide, prémisse fausse). Les huit agents de délégation se lancent **au premier plan** (invariant : `EXECUTANT.md`, domicile §5b) — leur verdict conditionne la suite. `relecteur-session` : dernier geste, jamais en arrière-plan (la revue ne serait jamais déposée).
 
 **`fork`** : contexte courant nécessaire **et** bruit à retenir dehors — jamais pour une session de plan ni une reprise (`docs/decisions/2026-08-30-contexte-des-sous-agents.md`). Pas de `memory:` sur les huit : légitime seulement sans source de dépôt déjà existante.
 
@@ -152,7 +156,7 @@ Une paraphrase dérivera. `publier.mjs` vérifie sa présence, jamais son sens.
 
 **Voie normale : sous-agent**, en arrière-plan, quel que soit l'environnement — hérite navigateur in-app et environnement complet de l'orchestration (permissions, MCP), verdict = ses commits (§4b) ; la session d'orchestration reste ouverte. **Cet arrière-plan est celui de la session entière, pas de ses délégations internes** : une fois lancée, ses appels aux trois agents de délégation et son `n0.mjs` restent au **premier plan** (`docs/decisions/2026-09-04-delegation-au-premier-plan.md`).
 
-**L'effort d'un sous-agent est celui de la conversation qui le lance** (`Agent` règle le modèle, pas l'effort). Régler la conversation à l'effort le plus haut de la vague **avant** `/orchestrer-plan` (§3) couvre `high` sans sortir de la voie normale — l'orchestrateur tourne sur **Sonnet** (§3), coût quasi nul à isoler. Voie headless retirée : une seule voie, le sous-agent (`docs/decisions/2026-09-12-une-seule-voie-d-orchestration-et-hooks-testes.md`).
+**L'effort d'un sous-agent vient de son frontmatter, sinon de la conversation qui le lance** (l'outil `Agent` règle le modèle, pas l'effort). Une session de plan se lance en `subagent_type: "session-<effort lu dans l'index>"` : c'est le frontmatter de cet agent nommé qui pose l'effort, en trois temps — frontmatter de l'agent de session, sinon niveau de conversation ; et si l'agent ne résout pas (valeur d'index absente de la famille `session-<effort>`), le repli est annoncé par `/orchestrer-plan`, pas recopié ici. Voie headless retirée : une seule voie, le sous-agent (`docs/decisions/2026-09-12-une-seule-voie-d-orchestration-et-hooks-testes.md`).
 
 **Repli hors Desktop** (VSCode, terminal, cloud) : chaînage manuel, une pastille `spawn_task` par session terminée — la vague ne finit plus dans le même tour, un repli, pas le fonctionnement normal.
 

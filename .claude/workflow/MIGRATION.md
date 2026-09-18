@@ -16,6 +16,13 @@ chargement des skills que la bascule vendorée a précisément éliminés. Il a 
 Les trois skills sont vendorées dans `.claude/skills/` : elles fonctionnent depuis un simple clone,
 sans rien installer.
 
+## Vers 0.40.0
+
+Une mise à jour ordinaire pour tout projet vendoré : les quatre agents `session-<effort>` arrivent
+par `sync-workflow.mjs`, et chaque session tourne désormais à son effort écrit. **Réserve** : un
+projet qui exporte `CLAUDE_CODE_EFFORT_LEVEL` dans son environnement gardera la variable
+prioritaire sur le frontmatter des agents — le mécanisme y restera sans effet, sans erreur.
+
 ## Vers 0.39.0
 
 **À dire en tête, avant tout le reste** : un projet vendoré en ≤ 0.38.1 exécute encore l'ancien
