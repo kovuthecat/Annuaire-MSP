@@ -103,6 +103,10 @@ retrouvable ensuite (`git log --grep`), et par lequel l'orchestrateur lit le ver
 
 <répéter le bloc T<n> pour chaque tâche de la session>
 
+## Bilan de session
+<un seul bloc, créé à la première tâche, réécrit — pas empilé — aux tâches suivantes : fichiers
+ modifiés · résumé · N0 · N1 · N2 à faire · prochaine action (`/fin-de-tache` point 3)>
+
 ## Fin de session
 Dérouler `/fin-de-tache` (mode selon « parallèle : oui/non » du bandeau).
 ```

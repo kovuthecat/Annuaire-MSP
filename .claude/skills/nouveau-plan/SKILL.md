@@ -40,7 +40,8 @@ Un plan sert deux lectures, et rate sa cible s'il n'en sert qu'une :
 `docs/decisions/2026-09-17-autonomie-par-defaut-etat-scripte-push-par-session.md`) — dérouler
 `/maj-workflow`. Sans `DÉRIVE` : mise à jour sans question, rapportée ; avec `DÉRIVE` : question
 avant de continuer. Écrire un plan sur un workflow en retard fige dans les squelettes ce que la
-source a déjà corrigé.
+source a déjà corrigé. Dépôt source du workflow (pas de `.claude/workflow/manifest.json`, `plugin/`
+présent) → `claude plugin update workflow@templates` à la place de `/maj-workflow`.
 
 Un plan en cours peut produire un résultat qui invalide une hypothèse dont dépendent ses sessions
 restantes : vérité de référence fausse, contrat à changer, mesure qui contredit l'attendu d'une
@@ -95,8 +96,8 @@ reprendre ici. Une `OPEN` de type `décision` → question à l'utilisateur, pas
    réfute — c'est ce que `verificateur-premisse` sait faire) ou `comportementale` (seule une
    exécution tranche : « le juge compte juste », « ce traitement tient en < 1 s »). Une
    comportementale ne se gèle jamais en « tranché ». Trois sorties : **sonder** — une commande ou un
-   script jetable via `verificateur-n0`, résultat écrit dans le `S<k>.md` ou la décision, **avant**
-   d'écrire le plan ; **déclarer** — ligne `Risques du plan :` sous l'objectif d'ensemble de l'index,
+   script jetable exécuté au premier plan (`n0.mjs --seulement <nom>` s'il s'agit d'une commande
+   N0), résultat écrit dans le `S<k>.md` ou la décision, **avant** d'écrire le plan ; **déclarer** — ligne `Risques du plan :` sous l'objectif d'ensemble de l'index,
    avec ce qui la réfuterait ; **isoler** — issue `isoler` du protocole d'existant, l'hypothèse
    derrière une couture nommée pour que le reste se découpe. Un plan écrit sur une comportementale
    ni sondée, ni déclarée, ni isolée est un écart au cadrage.
@@ -133,6 +134,14 @@ Synthèse du cadrage (Étape 1) : <flux · hypothèses typées · découpage env
 Réponse : CRITIQUE: PASS | CRITIQUE: <n> constat(s) numérotés, puis « Choix non résolus : »."
 })
 ```
+
+`Agent type 'critique-plan' not found` : repli `subagent_type: "workflow:critique-plan"` (plugin
+installé en marketplace) ; encore introuvable → repli `subagent_type: "general-purpose"`,
+`model: "opus"`, prompt « Lis `.claude/agents/critique-plan.md` (ou `plugin/agents/…` en dépôt
+source) et tiens ce rôle : <reprendre le prompt ci-dessus> ». Trois crans, jamais un blocage. Même
+repli pour `verificateur-plan` (Étape 4b) : nom nu → `workflow:verificateur-plan` →
+`general-purpose` tenant le rôle décrit dans `.claude/agents/verificateur-plan.md` (ou
+`plugin/agents/…` en dépôt source).
 
 Routage, par le cadreur : `PASS` → approbation. `DÉFAUT` corrigeable sans toucher une décision →
 corriger la synthèse, **revérifier la seule correction** (relancer avec le constat et la
@@ -256,6 +265,12 @@ Trois éditions ponctuelles, rien de plus :
    statut manquant.
 
 L'« Objectif d'ensemble » ne bouge pas. S'il faut le récrire, ce n'était pas une extension (Étape 0).
+
+**La colonne « Message de commit » se remplit après l'Étape 4, pas ici** : son contenu (un message
+par tâche) n'existe qu'une fois chaque `S<k>.md` écrit. Une fois l'Étape 4 terminée, revenir sur
+l'index et reporter, pour chaque session d'une vague parallèle, le « Message de commit » de chacune
+de ses tâches tel qu'écrit dans son `S<k>.md` — `references/squelette-index.md` (colonne « Message
+de commit ») précise la forme.
 
 ## Étape 4 — Écrire un `plans/P<n>/S<k>.md` par session
 

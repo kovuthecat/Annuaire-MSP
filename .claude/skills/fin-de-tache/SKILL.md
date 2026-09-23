@@ -14,12 +14,14 @@ tâche : §4a (domicile) — jamais recopié dans un `S<k>.md` ni dans `TASKS.md
 1. **N0** : `node .claude/workflow/bin/n0.mjs` (ce dépôt : `plugin/bin/n0.mjs`) — sinon la tâche
    n'est pas finie. **Juste après, avant le N1** : toute skill projet `verif-<chose>`
    (`.claude/skills/`, jamais du workflow vendoré).
-2. **N1** si la tâche touchait l'UI : `/verif-visuelle`. Un défaut N1 se corrige maintenant, il ne
-   se reporte pas.
-3. **Bilan** dans le `S<k>.md` (« Bilan de session ») : fichiers modifiés · résumé · N0 · N1 · N2 à
-   faire · prochaine action — **toujours**, même sans fichier durable. **Écarts au plan** seulement
-   si le bandeau a déclaré une `Latitude`. **Correctif localisé** posé (`WORKFLOW.md` §9a) : en
-   tête du bilan.
+2. **N1** si la tâche touchait l'UI : `/verif-visuelle`. Avec navigateur in-app, un défaut N1 se
+   corrige maintenant, il ne se reporte pas. Sans (mode checklist de `/verif-visuelle`), il se
+   consigne `N1 S<k> : à faire — <écran>` au bilan et au verdict final, et ne bloque pas la tâche.
+3. **Bilan** : un seul bloc `## Bilan de session` en fin de `S<k>.md`, créé à la première tâche,
+   **réécrit** (pas empilé) aux suivantes — fichiers modifiés · résumé · N0 · N1 · N2 à faire ·
+   prochaine action — **toujours**, même sans fichier durable. **Écarts au plan** seulement si le
+   bandeau a déclaré une `Latitude`. **Correctif localisé** posé (`WORKFLOW.md` §9a) : en tête du
+   bilan.
 4. **Commit de la tâche** — sauf `.claude/wave.lock` (§4b). Staging explicite (jamais `-A`, `-a`,
    `commit -a`), `S<k>.md` inclus, repère `Plan: P<n>/S<k>/T<m>` en dernière ligne. Une tâche sans
    fichier de code committe quand même son `S<k>.md`.

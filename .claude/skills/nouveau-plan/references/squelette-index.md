@@ -23,11 +23,13 @@ Workflow : v<x>
 <!-- Statut : [ ] à faire · [x] fait, revue sans bloquant · [x]! fait, revue à bloquant non trié -->
 <!-- Vocabulaire complet : WORKFLOW.md §4a — ne pas inventer d'autre marque ici. -->
 <!-- Colonne « Message de commit » : remplie uniquement pour les sessions d'une vague parallèle
-     (C7) — le message de commit par tâche qu'une session sous `.claude/wave.lock` ne peut pas
-     committer elle-même y vit, l'orchestrateur le recopie en fin de vague verrouillée
-     (WORKFLOW.md §4b). Une sous-liste sous la session, dans l'Ordonnancement, est une forme
-     équivalente si elle est plus lisible ici — à condition que le tableau ci-dessus garde ses neuf
-     premières colonnes dans cet ordre (`prochaine-action.mjs` les lit par position). -->
+     (C7), et seulement après l'Étape 4 (SKILL.md) — un retour sur l'index une fois chaque S<k>.md
+     écrit, un message par tâche repris tel quel de son S<k>.md — le message de commit par tâche
+     qu'une session sous `.claude/wave.lock` ne peut pas committer elle-même y vit, l'orchestrateur
+     le recopie en fin de vague verrouillée (WORKFLOW.md §4b). Une sous-liste sous la session, dans
+     l'Ordonnancement, est une forme équivalente si elle est plus lisible ici — à condition que le
+     tableau ci-dessus garde ses neuf premières colonnes dans cet ordre (`prochaine-action.mjs` les
+     lit par position). -->
 
 
 ## Ordonnancement

@@ -22,7 +22,8 @@ que quelque chose a cassé (nature de l'échec : `WORKFLOW.md` §9a) :
 
 **Budget en hypothèses** : jusqu'à 3 hypothèses **distinctes**, chacune inscrite dans « Déjà écarté »
 avant la suivante ; arrêt sur hypothèse répétée, ou contexte > 70 %. Tu peux écrire `Auto : oui`
-toi-même sur ton propre `.echec.md`, aux mêmes critères qu'une enquête.
+toi-même sur ton propre `.echec.md`, aux mêmes critères qu'une enquête : `Auto : oui · option <m>`
+seulement si le rapport porte une `## Issues` numérotée contenant `<m>` ; sinon `Auto : non`.
 
 Si tu déclares une **prémisse** du plan fausse (hors amendement), écris-la **falsifiable** — un fait
 qu'une lecture du dépôt confirme ou réfute, jamais un jugement : elle sera vérifiée avant d'arrêter
@@ -35,6 +36,7 @@ le plan (`WORKFLOW.md` §9c). Critère général et cas non couverts par la tabl
 | localiser qqch touchant plus d'1 fichier | `explorateur` |
 | résumer un diff/historique | `resumeur-git` |
 | lire une doc externe | `lecteur-doc` |
+| comprendre un flux existant (lecture seule) | `analyste-flux` |
 | build/typecheck/tests | script `n0.mjs`, **jamais un agent** : `node .claude/workflow/bin/n0.mjs` (`node plugin/bin/n0.mjs` dans ce dépôt) |
 
 **Premier plan ou arrière-plan : une seule condition, jamais deux règles de catégorie.**
@@ -42,7 +44,7 @@ le plan (`WORKFLOW.md` §9c). Critère général et cas non couverts par la tabl
 > **Au premier plan si quelqu'un attend ce verdict dans le tour courant. En arrière-plan si ce qui
 > attend est une notification, pas une réponse.**
 
-Les trois agents et `n0.mjs` se lancent donc **au premier plan**, jamais `run_in_background: true` :
+Les quatre agents et `n0.mjs` se lancent donc **au premier plan**, jamais `run_in_background: true` :
 ton appel conditionne la suite immédiate de la même tâche (`WORKFLOW.md` §5) — c'est le premier cas
 connu. Le second est la session que tu es toi-même : l'orchestrateur t'a lancée en arrière-plan parce
 que ce qui l'attend est une boucle de notification, pas une réponse dans son tour — ça ne change rien

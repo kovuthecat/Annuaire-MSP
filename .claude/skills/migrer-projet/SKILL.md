@@ -133,7 +133,7 @@ Ordre imposé : le gain décroît, le risque croît.
    **n'écrase ni** les skills propres au projet, **ni** le `AGENTS.md` racine.
 
 2. **Settings** — remplacer `.claude/settings.json` par
-   `.claude/workflow/templates/project-settings.json`, qui câble les 4 hooks en
+   `.claude/workflow/templates/project-settings.json`, qui câble les 5 hooks en
    `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/`. **Fusionner** : `permissions.allow` = union de
    l'ancienne liste et de la nouvelle, jamais un remplacement — elle a été enrichie par l'usage réel.
 
@@ -242,12 +242,12 @@ cinquième exige une **nouvelle session**, la configuration n'étant lue qu'au d
    ```
    → `ÉTAT: à jour`, exit **0**.
 3. **Aucun résidu du modèle plugin** dans `.claude/settings.json` : ni `enabledPlugins`, ni
-   `extraKnownMarketplaces`, ni chemin absolu. Les 4 hooks pointent vers
+   `extraKnownMarketplaces`, ni chemin absolu. Les 5 hooks pointent vers
    `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/`, et `.claude/hooks/session-start.sh` n'existe plus.
    ```bash
    node -e "const j=require('./.claude/settings.json');const t=JSON.stringify(j.hooks);console.log('plugin:',!!j.enabledPlugins||!!j.extraKnownMarketplaces,'| absolus:',/[A-Za-z]:[\\\\/]/.test(t),'| hooks:',Object.keys(j.hooks).length)"
    ```
-   Attendu : `plugin: false | absolus: false | hooks: 4`.
+   Attendu : `plugin: false | absolus: false | hooks: 5`.
 4. **Les hooks vendorés s'exécutent** — `node --check` sur chacun, et chaque fichier de contexte
    sous son plafond (`wc -l`) :
    ```bash

@@ -6,11 +6,13 @@ description: Déroule un plan entier, vague après vague, sans rendre la main en
 # Orchestrer un plan
 
 Sonnet, jamais Haiku (`WORKFLOW.md` §3) pour l'orchestrateur lui-même — contrainte inchangée. Chaque
-session tourne, elle, à l'effort de sa ligne d'index : `subagent_type: "session-<effort>"` le porte en
-frontmatter (Étape 1), sans geste humain à régler avant de lancer.
+session tourne, elle, à l'effort de sa ligne d'index : le champ `agent` rendu par le script
+(`subagent_type`, `model`) le porte en frontmatter (Étape 1), recopié tel quel, sans geste humain à
+régler avant de lancer.
 Deux gestes en boucle : **lancer des sessions**, **collecter des verdicts**. L'état se calcule par un
 script (C2, `prochaine-action.mjs`) depuis les fichiers commités — budget, nature → modèle,
-dépendances, recoupement par les commits en sortent : l'action rendue s'exécute, ne se recalcule pas.
+dépendances, recoupement par les commits, appel d'agent prêt à recopier, arbre sale avant une vague
+en sortent : l'action rendue s'exécute, ne se recalcule pas.
 
 ## La boucle
 
@@ -23,7 +25,8 @@ vendorée (C4), le régler avant de lancer.
 
 - **Ne jamais ouvrir un `S<k>.md`**, sans exception — un message de commit sous verrou vient
   d'`index.md` (Étape 1). L'`index.md` et `git log` suffisent.
-- **Ne jamais lire un diff ni une sortie de build.** Déléguer à `resumeur-git` / `verificateur-n0`.
+- **Ne jamais lire un diff ni une sortie de build.** Déléguer à `resumeur-git` ; un code de sortie
+  n'est pas une sortie.
 - **Ne jamais corriger soi-même, ni reprendre une session en échec.** `fork` vers l'agent en échec
   interdit sans condition ; `SendMessage` seulement sous les trois conditions du canal court
   (`references/remediation.md`), sinon à froid.
@@ -55,13 +58,15 @@ effort, env, dépendances, zone) et, sous « ## Ordonnancement », le *Pourquoi 
 et la ligne « en clair » de chaque session — jamais un `S<k>.md`. Index sans ligne « en clair » :
 annoncer sans elle, le signaler une fois, ne jamais l'inventer ni ouvrir le `S<k>.md`.
 
-**Préflight** : (1) **arbre sale** — `resumeur-git` ; un fichier non commité qui intersecte une `Zone modifiée` de la vague → **gate** (`WORKFLOW.md` §9c).
-(2) **verrou si `parallele`** — zones disjointes seulement, au moindre doute séquentiel ; poser
-`.claude/wave.lock` juste avant le premier lancement, jamais avant. (3) **agents du plugin absents du
-bac à sable** — seuls les agents génériques listés : le dire sur « À régler AVANT de lancer », revues
-annoncées absentes pour la vague, **et** pour chaque effort effectivement demandé par la vague à
-lancer, vérifier que `session-<effort>` (ou `workflow:session-<effort>`) résout ; sinon annoncer déjà
-là le repli en `claude` (cran 3, Étape 1) plutôt que de le découvrir au premier lancement.
+**Préflight** : (1) **arbre sale** — déjà fait par le script avant de rendre `lancer` : un fichier non
+commité qui intersecte une `Zone modifiée` de la vague fait rendre `question` (source `arbre-sale`)
+à la place, jamais un préflight délégué. (2) **verrou si `parallele`** — zones disjointes seulement,
+au moindre doute séquentiel ; poser `.claude/wave.lock` juste avant le premier lancement, jamais
+avant. (3) **agents du plugin absents du bac à sable** — seuls les agents génériques listés : le dire
+sur « À régler AVANT de lancer », revues annoncées absentes pour la vague, **et** pour chaque effort
+effectivement demandé par la vague à lancer, vérifier que `session-<effort>` (ou
+`workflow:session-<effort>`) résout ; sinon annoncer déjà là le repli en `claude` (cran 3, Étape 1)
+plutôt que de le découvrir au premier lancement.
 
 **Annoncer, puis lancer** — jamais l'inverse, jamais en ouvrant un `S<k>.md` :
 
@@ -89,24 +94,24 @@ session marquée `pastille` dans sa ligne « en clair ») : une pastille `spawn_
 « Démarrer localement », jamais le worktree par défaut, puis rendre la main ; titrer `P<n> · S<k> —
 <titre> · <M>/<E>` et sortir « À régler AVANT de lancer » (`WORKFLOW.md` §3).
 
-**Sous-agent, la seule voie** (`WORKFLOW.md` §5b) sinon — un agent par session, dans l'ordre de l'index ; parallèle → tous en arrière-plan, le premier
-seul puis les autres une fois qu'il produit (cache, §3b) ; séquentiel → un seul à la fois, arrêt au
-premier `FAIL`. `isolation: "worktree"` et `subagent_type: "fork"` interdits ; ne jamais recopier le
+**Sous-agent, la seule voie** (`WORKFLOW.md` §5b) sinon — un agent par session, dans l'ordre de l'index ; parallèle → tous en arrière-plan, la première
+session seule dans un message, les autres dans le message suivant, sans attendre sa notification
+(D4, gain de cache mesuré en §3b) ; séquentiel → un seul à la fois, arrêt au premier `FAIL`. `isolation: "worktree"` et `subagent_type: "fork"` interdits ; ne jamais recopier le
 `S<k>.md` dans le prompt.
 
 ```
 Agent({
   description: "P<n>/S<k>",
-  subagent_type: "session-<effort lu dans l'index>",
-  model: <modèle lu dans l'index>,
+  subagent_type: <agent.subagent_type de la session>,
+  model: <agent.model de la session>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
 Ouvre plans/P<n>/S<k>.md et exécute-le. Reste
 dans l'arbre de travail courant : n'ouvre AUCUN worktree. Déroule /fin-de-tache en fin de session. Tu es orchestrée : si l'outil Agent
 n'est pas disponible dans ton bac à sable, saute la relecture de session (je la lance moi-même).
-Tout appel Agent que tu fais porte run_in_background: false — verificateur-n0 compris — et aucune
-commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle n'est lu par
-personne, et « j'attends le rapport de l'agent » n'est pas un retour.
+Tout appel Agent que tu fais porte run_in_background: false, et N0 (n0.mjs) s'exécute au premier
+plan — et aucune commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle
+n'est lu par personne, et « j'attends le rapport de l'agent » n'est pas un retour.
 Un blocage se diagnostique avant de conclure (WORKFLOW.md §9a) : ce qui est à ta portée se
 corrige et n'est pas un échec. En cas d'ÉCHEC, écris d'abord un rapport de passation dans
 plans/P<n>/S<k>.echec.md, ligne `Nature :` comprise (gabarit : skill /reprendre-echec), puis
@@ -146,9 +151,10 @@ orchestré, commits présents (git log --grep
 })
 ```
 
-`Agent type 'relecteur-session' not found` : repli `subagent_type: "general-purpose"`, `model: "sonnet"`, prompt « Lis `.claude/agents/relecteur-session.md`
-et tiens ce rôle pour S<k> de P<n> … ». Repli en échec aussi → `Revue S<k> : absente` au rapport, non
-bloquante, + incident (§9b).
+`Agent type 'relecteur-session' not found` : repli `subagent_type: "workflow:relecteur-session"` ;
+encore introuvable → `subagent_type: "general-purpose"`, `model: "sonnet"`, prompt « Lis
+`.claude/agents/relecteur-session.md` et tiens ce rôle pour S<k> de P<n> … ». Repli en échec aussi →
+`Revue S<k> : absente` au rapport, non bloquante, + incident (§9b).
 
 Lire seulement les deux lignes rendues, jamais les trouvailles. `Bloquant : <n>` avec n > 0 : une
 ligne au rapport (`Revue S<k> : <n> bloquant(s) → plans/P<n>/S<k>.revue.md`), et le statut de S<k>
@@ -183,5 +189,18 @@ geste, plan fini ou arrêté — jamais depuis une session, jamais sur une vague
    Rapport : plans/P<n>/S<k>.echec.md · reste lançable sans décider : <S<j>, S<l> | rien>
 ```
 
-Options jamais inventées ici : `motifs.source` de l'action (`etape6`, `budget-epuise`, `reprise-manuelle`, `wave-lock`) et la section `## Issues` d'un rapport
-d'enquête (mot pour mot, `references/remediation.md`) les fournissent. Une seule question par arrêt.
+**Calcul de « reste lançable »** : parcourir `index.md`, garder seulement les sessions non `[x]`
+dont la colonne « Dépend de » est vide, **ou** ne nomme que des sessions déjà `[x]` — jamais une
+session dont une dépendance (directe ou transitive) est celle qui bloque, même non encore passée à
+`[x]` par un mécanisme différent. Une session qui dépend de S<k> (la session bloquée) n'est jamais
+« encore lançable » : elle hérite du même blocage. Aucune dépendance ⇒ `rien`.
+
+Options jamais inventées ici : `motifs.source` de l'action (`etape6`, `budget-epuise`, `reprise-manuelle`, `wave-lock`, `arbre-sale`) et la section `## Issues` d'un rapport
+d'enquête (`references/remediation.md`) les fournissent. Les lignes de `## Issues` **sont** les
+options : recopiées sans rien changer, ni la forme ni l'ordre ; un ancien rapport d'une autre forme
+se recopie tel quel aussi. Source `arbre-sale`,
+options fixes : `1. Committer ces fichiers toi-même, puis relancer — débloque la vague · 2. Les mettre
+de côté (git stash), puis relancer — débloque la vague, tes changements restent récupérables ·
+3. Sortir la session concernée de la vague (index) — débloque les autres sessions`. Motif « arbre
+invérifiable » : option unique « vérifier git dans ce dépôt, puis relancer ». Une seule question par
+arrêt.

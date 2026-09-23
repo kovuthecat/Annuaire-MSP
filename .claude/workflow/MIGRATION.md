@@ -16,6 +16,21 @@ chargement des skills que la bascule vendorée a précisément éliminés. Il a 
 Les trois skills sont vendorées dans `.claude/skills/` : elles fonctionnent depuis un simple clone,
 sans rien installer.
 
+## Vers 0.41.0
+
+Rien à faire côté projet hors `/maj-workflow` : les changements sont des textes de skills et deux
+comportements de `prochaine-action.mjs`, qui arrivent par la synchronisation. Trois points à savoir :
+
+- Un **plan en cours** dont l'orchestration s'appuyait sur l'ancien préflight délégué à
+  `resumeur-git` se termine tel quel — le nouveau préflight (arbre sale rendu par le script) ne
+  casse rien en route, il rend `question` au lieu de `lancer` si un fichier non commité intersecte
+  la zone de la vague suivante.
+- Les **rapports `.echec.md` existants** gardent leurs `## Issues` : l'orchestrateur les relaie
+  telles quelles, sans les reformater.
+- Un projet qui a déjà ses cinq hooks n'a rien à reprendre ; `/migrer-projet` les exigeait encore
+  au nombre de quatre et pouvait déclarer complet un projet qui ne l'était pas — c'est le contrôle
+  qui change, pas les hooks.
+
 ## Vers 0.40.0
 
 Une mise à jour ordinaire pour tout projet vendoré : les quatre agents `session-<effort>` arrivent

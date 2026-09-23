@@ -76,9 +76,14 @@ ENQUETE: PISTE|OPTIONS · MOTIF: <une phrase> · RAPPORT: <chemin>
 - **`PISTE`** — une hypothèse neuve, testable, dans le périmètre de la tâche d'origine. Le motif
   la nomme en une phrase ; le détail est dans le rapport, l'orchestrateur ne l'ouvre pas.
 - **`OPTIONS`** — aucune hypothèse ne tient dans ce périmètre : le rapport gagne une section
-  `## Issues` de **2 à 4 options**, chacune avec son coût et ce qu'elle débloque, et une
-  recommandation. C'est cette section qui devient la question posée à l'utilisateur
-  (`/orchestrer-plan` Étape 6) — l'écrire pour quelqu'un qui n'a rien vu de la session.
+  `## Issues` de **2 à 4 options**, chacune écrite **déjà au format de la question**
+  (`/orchestrer-plan` Étape 3) — une ligne par option, exactement :
+  `N. <option> — <coût> · débloque <ce que ça rouvre>`, numérotées à partir de 1, plus une
+  recommandation. Exemple : `1. Committer la migration manquante, puis rejouer N0 — 5 min ·
+  débloque la tâche T3`. L'orchestrateur recopie ces lignes sans rien reformuler : c'est pour ça
+  qu'elles s'écrivent déjà dans ce format, pas dans un autre qu'il faudrait ensuite retoucher.
+  C'est cette section qui devient la question posée à l'utilisateur (`/orchestrer-plan` Étape 6) —
+  l'écrire pour quelqu'un qui n'a rien vu de la session.
   **Et une ligne mécanique en tête du rapport**, sous `Mesure :` : `Auto : oui · option <m>` si
   l'option recommandée est un correctif localisé (`WORKFLOW.md` §9a, les quatre conditions) ou un
   geste dans l'objectif inchangé du plan, réversible et jugé par la gate de la session ;
@@ -203,14 +208,17 @@ de soin : c'est le cas où l'état laissé derrière est le moins connu.
 
 **La ligne `Nature :` oriente la reprise avant tout diagnostic** (`WORKFLOW.md` §9a) :
 
-- `prémisse` → **en mode orchestré, cette ligne n'arrive jamais telle quelle** : l'orchestrateur a
-  fait vérifier l'affirmation (`verificateur-premisse`, `/orchestrer-plan` 5c) et n'a lancé cette
-  reprise que parce qu'elle a été **réfutée** — le prompt de lancement porte alors la preuve.
-  Traiter la session comme une nature `exécution`, en partant de cette preuve : la vraie cause est
-  ailleurs que là où la session l'a cherchée. En invocation **manuelle**, à l'inverse, la prémisse
-  n'a été vérifiée par personne : la confronter au dépôt (déléguer à `explorateur`) avant de
-  conclure quoi que ce soit, et n'aiguiller vers `/nouveau-plan` Étape 0 que si elle tient.
-  `Mesure :` présente → partir de la mesure, pas de l'hypothèse.
+- `prémisse` → **en mode orchestré, deux cas, jamais la ligne prise telle quelle sans regarder
+  lequel** : (1) l'orchestrateur a fait vérifier l'affirmation (`verificateur-premisse`,
+  `/orchestrer-plan` 5c) et n'a lancé cette reprise que parce qu'elle a été **réfutée** — le prompt
+  de lancement porte alors la preuve. Traiter la session comme une nature `exécution`, en partant de
+  cette preuve : la vraie cause est ailleurs que là où la session l'a cherchée. (2) le prompt de
+  lancement porte `Nature : prémisse` + `Auto : oui · option <m>` : la prémisse **n'a pas été
+  vérifiée** — `remedier()` a fait passer l'option avant la nature (C5). Appliquer l'option <m> de
+  la section `## Issues` du rapport, ne jamais la présumer réfutée. En invocation **manuelle**, à
+  l'inverse, la prémisse n'a été vérifiée par personne : la confronter au dépôt (déléguer à
+  `explorateur`) avant de conclure quoi que ce soit, et n'aiguiller vers `/nouveau-plan` Étape 0 que
+  si elle tient. `Mesure :` présente → partir de la mesure, pas de l'hypothèse.
 - `environnement` → vérifier que la remédiation nommée est acquise ici (permission héritée, outil
   présent, humain là) **avant** l'Étape 2. Si elle ne l'est pas :
   - **à portée dans l'arbre du projet** — dossier manquant, dépendance non installée, arbre en

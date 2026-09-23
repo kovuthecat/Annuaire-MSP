@@ -2,17 +2,8 @@
 
 Annexe de `/orchestrer-plan` — un bloc par geste que le modèle doit écrire, pour les actions `verifier-premisse`, `reprendre`, `enqueter` de la table des
 actions (`SKILL.md`). Budget, table nature → modèle, dépendances, vérification du commit d'une
-mesure : rendus par `prochaine-action.mjs` (C2), rien de tout ça ne se recalcule ici.
-
-**Modèle → effort**, pour composer `subagent_type: "session-<effort>"` d'une reprise ou d'une
-enquête à partir du seul `modele` que l'action rend (`WORKFLOW.md` §3) — une seule copie, les deux
-blocs y renvoient plutôt que de la recopier :
-
-| Modèle de l'action | Effort de session |
-| --- | --- |
-| Opus | `high` |
-| Sonnet | `medium` |
-| Haiku | `low` |
+mesure, appel d'agent prêt à recopier (`subagent_type`, `model`) : rendus par `prochaine-action.mjs`
+(C2), rien de tout ça ne se recalcule ici.
 
 ## `verifier-premisse`
 
@@ -30,7 +21,8 @@ Réponse finale en UNE ligne, exactement : PREMISSE: CONFIRMEE|REFUTEE|INDECIDAB
 })
 ```
 
-Agent introuvable : repli `subagent_type: "general-purpose"`, `model: "haiku"`, prompt « Lis `.claude/agents/verificateur-premisse.md` et tiens ce rôle… ». Quatre issues :
+Agent introuvable : repli `subagent_type: "workflow:verificateur-premisse"` ; encore introuvable →
+`subagent_type: "general-purpose"`, `model: "haiku"`, prompt « Lis `.claude/agents/verificateur-premisse.md` et tiens ce rôle… ». Quatre issues :
 
 - **`REFUTEE`** → rappeler le script (traite la session comme `exécution`) + incident (§9b, nature `prémisse`).
 - **`CONFIRMEE`** → `question` (Étape 3 de `SKILL.md`), motif `etape6`.
@@ -40,9 +32,11 @@ Agent introuvable : repli `subagent_type: "general-purpose"`, `model: "haiku"`, 
 
 ## `reprendre` — canal court d'abord
 
-Trois conditions, domicile unique (`WORKFLOW.md` §9c) : (1) identifiant d'agent de la session, gardé à la collecte, jamais `ListAgents` ; (2) `verificateur-n0`
-lancé par l'orchestrateur lui-même, vert ; (3) aucune fausse piste (`Blocage :` du rapport nomme un
-geste, pas une hypothèse). Les trois tiennent → canal court ci-dessous ; une manque → à froid.
+Trois conditions, domicile unique (`WORKFLOW.md` §9c) : (1) identifiant d'agent de la session, gardé à la collecte, jamais `ListAgents` ; (2) N0 vert —
+`node plugin/bin/n0.mjs` (source) / `node .claude/workflow/bin/n0.mjs` (vendoré), lancé par
+l'orchestrateur au premier plan, code de sortie seul (0 = vert), sortie jamais lue ; (3) aucune
+fausse piste (`Blocage :` du rapport nomme un geste, pas une hypothèse). Les trois tiennent → canal
+court ci-dessous ; une manque → à froid.
 
 ```
 SendMessage({
@@ -56,13 +50,13 @@ Consomme une reprise du budget comme à froid ; en échec, **ne se retente pas**
 
 ## `reprendre` — à froid
 
-`modele`/`option` déjà décidés par l'action rendue :
+`agent`/`option` déjà décidés par l'action rendue :
 
 ```
 Agent({
   description: "P<n>/S<k> reprise",
-  subagent_type: "session-<effort du modèle de l'action, table en tête d’annexe>",
-  model: <modele de l'action>,
+  subagent_type: <agent.subagent_type de l'action>,
+  model: <agent.model de l'action>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
 Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
@@ -72,9 +66,9 @@ Traite la session comme une nature exécution et cherche la cause ailleurs. »>
 <si `option` : « Applique l'option <option> de la section ## Issues du rapport, puis rejoue la tâche. »>
 <si bloquant de revue corrigeable (C5, quatre conditions du correctif localisé) : « Ce bloquant de revue (§9a) tient les quatre conditions : <bloquant, tel
 quel, depuis plans/P<n>/S<k>.revue.md>. Applique le correctif, commit séparé, rejoue la gate. »>
-Tout appel Agent que tu fais porte run_in_background: false — verificateur-n0 compris — et aucune
-commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle n'est lu par
-personne, et « j'attends une tâche de fond » n'est pas un retour.
+Tout appel Agent que tu fais porte run_in_background: false, et N0 (n0.mjs) s'exécute au premier
+plan — et aucune commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle
+n'est lu par personne, et « j'attends une tâche de fond » n'est pas un retour.
 Incrémente la ligne `Tentatives :` du rapport avant de rendre la main, sauf si tu le supprimes.
 Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
@@ -89,13 +83,13 @@ l'Étape 1 de `SKILL.md` (T5) : `session-<effort>` → `workflow:session-<effort
 
 ## `enqueter`
 
-Lecture seule (ne corrige rien, ne committe rien, ne lance pas N0), `modele` déjà décidé :
+Lecture seule (ne corrige rien, ne committe rien, ne lance pas N0), `agent` déjà décidé :
 
 ```
 Agent({
   description: "P<n>/S<k> enquête",
-  subagent_type: "session-<effort du modèle de l'action, table en tête d’annexe>",
-  model: <modele de l'action>,
+  subagent_type: <agent.subagent_type de l'action>,
+  model: <agent.model de l'action>,
   run_in_background: true,
   prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
 Déroule la skill /reprendre-echec pour plans/P<n>/S<k>.echec.md (session S<k> du plan
@@ -123,4 +117,6 @@ ci-dessus (lui-même celui de l'Étape 1 de `SKILL.md`, T5) : `session-<effort>`
 sed -n '/^## Issues/,/^## /p' plans/P<n>/S<k>.echec.md
 ```
 
-Relayée **mot pour mot** à l'Étape 3 de `SKILL.md`, jamais résumée ni réordonnée ; absente ou vide → relayer le motif seul et le dire.
+Les lignes de `## Issues` **sont** les options de l'Étape 3 de `SKILL.md` : recopiées sans rien
+changer, ni la forme ni l'ordre ; un ancien rapport d'une autre forme se recopie tel quel aussi.
+Absente ou vide → relayer le motif seul et le dire.

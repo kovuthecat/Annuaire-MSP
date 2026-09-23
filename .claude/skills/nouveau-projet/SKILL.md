@@ -31,16 +31,19 @@ installé) : passer à la Phase A.
 de passer à la suivante — l'utilisateur doit pouvoir corriger avant que ça s'accumule.
 
 1. **Problème & objectif** — qu'est-ce qui est pénible aujourd'hui ? à quoi ressemble « réussi » ?
-2. **Utilisateurs & contexte d'usage** — qui, sur quel appareil, à quelle fréquence ?
+2. **Utilisateurs & contexte d'usage** — qui, sur quel appareil, à quelle fréquence ? (→ section
+   « Usage prévu » du brief.)
 3. **Usage & déploiement** — perso ou pas, usage local ou pas, déploiement prévu ou pas, d'autres
    utilisateurs que la personne qui développe ou pas (4 oui/non → section « Usage prévu » du brief).
 4. **Fonctionnalités MVP** — 3 à 7, formulées en verbes ; pour chacune : indispensable au jour 1 ?
 5. **Hors-périmètre explicite** — ce qu'on refuse de faire au MVP, au moins 3 items.
 6. **Vision & idées futures** — au-delà du MVP, la direction générale si tout se passe bien ; idées
    de v2 notées mais jamais promises.
-7. **Plateformes cibles** — desktop / mobile / PWA (conditionne les contraintes UI).
+7. **Plateformes cibles** — desktop / mobile / PWA (conditionne les contraintes UI). (→
+   `ARCHITECTURE.md`, instancié en Phase D.)
 8. **Contraintes** — offline, accessibilité, ton visuel, perf.
-9. **Données** — entités principales, volumétrie, besoin multi-appareil ?
+9. **Données** — entités principales, volumétrie, besoin multi-appareil ? (→ `ARCHITECTURE.md`,
+   instancié en Phase D.)
 10. **Stack** — candidats **au regard des contraintes de la question 8** ; la stack familière
     (Vite+React+TS, Dexie ou Supabase selon les projets existants) reste le candidat privilégié pour
     son coût de maintenance connu, **à condition de satisfaire le besoin** — dire en une ligne ce
@@ -72,12 +75,12 @@ place d'un humain.
 ## Phase C — Instanciation mécanique (seulement après validation de la Phase B)
 
 1. **Vendorer le workflow**, s'il ne l'est pas déjà (`.claude/workflow/manifest.json` absent) —
-   c'est la commande d'amorçage en tête de cette skill. Si le manifeste existe, le workflow est
-   déjà là : ne rien refaire.
+   c'est la commande d'amorçage en tête de cette skill. Si le manifeste existe : le workflow est
+   déjà là, dérouler `/maj-workflow` (contrôle de version, C4), puis continuer.
 
 2. Copier `.claude/workflow/templates/project-settings.json` → `.claude/settings.json`.
 
-   > Ce fichier câble les 4 hooks en `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/`. Il ne porte
+   > Ce fichier câble les 5 hooks en `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/`. Il ne porte
    > **ni** `enabledPlugins`, **ni** `extraKnownMarketplaces` : le workflow est dans le repo, il
    > n'y a rien à rapatrier au démarrage. Les deux ensemble le chargeraient deux fois.
    >
