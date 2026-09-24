@@ -1,7 +1,7 @@
 # PROJECT_BRIEF.md — Annuaire MSP
 
 > Répertoire partagé de correspondants et ressources d'adressage pour une maison de santé
-> pluriprofessionnelle (MSP), Paris 20e, ~10 membres. Nom de travail : « Annuaire MSP » (renommable).
+> pluriprofessionnelle (MSP), Paris 20e, ~13 membres. Nom de travail : « Annuaire MSP » (renommable).
 
 ## Objectif du projet
 
@@ -15,19 +15,21 @@ permettre d'**imprimer une liste d'adressage propre pour un patient**. Priorité
 
 - Usage personnel : non — outil **collectif** de la MSP.
 - Usage local : non — **base partagée en ligne**.
-- Déploiement prévu : oui (Vercel + Supabase).
-- Utilisateurs autres que moi : oui — ~10 membres de la MSP.
+- Déploiement prévu : oui — **en production** (Vercel + Supabase).
+- Utilisateurs autres que moi : oui — ~13 membres de la MSP.
 
 ## Fonctionnalités MVP
 
-1. **Annuaire consultable** : recherche tolérante (accents/casse/fautes légères) + filtres (type,
-   profession/spécialité, secteur/arrondissement, prend de nouveaux patients, visites à domicile,
-   accepte AME/CMU, secteur conventionnement) + **mots-clés transversaux** + bascule **mes contacts / tous**.
+1. **Annuaire consultable** : recherche **multi-termes** tolérante (accents/casse/fautes légères),
+   classée par pertinence (recommandations en tête à égalité) et surlignée, portant aussi sur les
+   **mots-clés transversaux** et les commentaires ; filtres recentrés **Secteur 1 / Pédiatrie /
+   À compléter** + facette **Catégorie** (le reste passe par la recherche texte, ex. « cardio 75020 ») ;
+   bascule **mes contacts / tous**.
 2. **Fiche flexible** : un contact peut être un praticien **ou** une structure/ressource (type de
    contact). Séparation **coordonnées patient** (imprimables) / **coordonnées pro** (confidentielles,
    jamais imprimées) + tags.
-3. **Ajout / édition collaborative** : tout membre peut créer et corriger une fiche ; **très peu de
-   champs obligatoires** ; historique « créé/modifié par ».
+3. **Ajout / édition / suppression collaborative** : tout membre peut créer, corriger ou supprimer
+   une fiche ; **très peu de champs obligatoires** ; historique « créé/modifié par ».
 4. **« Mes contacts »** = fiches créées **ou adoptées** par le membre (une seule fiche par pro, pas de
    doublon) ; bascule avec « tous les contacts ».
 5. **Commentaires typés** (recommandation, avis négatif, spécificité, info pratique… — extensible),
@@ -36,25 +38,31 @@ permettre d'**imprimer une liste d'adressage propre pour un patient**. Priorité
    **contenu est inclus dans la recherche**.
 6. **Impression / PDF d'une liste patient** : sélection multiple → feuille propre (en-tête MSP,
    **coords patient uniquement**, **sans commentaires**).
-7. **Comptes individuels email + mot de passe** (session persistée sur le poste), comptes provisionnés par un référent.
+7. **Comptes individuels email + mot de passe** (session persistée sur le poste, connexion par
+   prénom), comptes provisionnés par un référent.
 
 ## Hors périmètre v1
 
-- Import automatisé des carnets via l'UI — traité **hors app** en migration assistée one-shot.
-- Consultation hors-ligne / PWA — réseau accessible en pratique (à reconsidérer plus tard).
-- Carte géographique de proximité.
+- Import automatisé des carnets via l'UI — traité **hors app** en migration assistée (carnets
+  supplémentaires intégrés au fil de l'eau, même pipeline).
+- Consultation hors-ligne / PWA — réseau accessible en pratique ; seule l'icône d'installation
+  (manifest) est en place.
 - Annuaire interne des membres de la MSP (l'annuaire ne porte que les correspondants externes).
 - Base de connaissances / mémos « orphelins » sans correspondant rattaché.
-- Intégration Doctolib ou logiciel métier.
+- Intégration serveur avec Doctolib ou un logiciel métier (cf. « À éviter »).
+- Notification email des retours membres (demanderait Edge Function / SMTP) — le référent consulte
+  `/retours`.
 
 ## Stack technique
 
-- Frontend : **Vite + React + TypeScript**.
+- Frontend : **Vite + React + TypeScript** (React Router, carte Leaflet/react-leaflet, tests Vitest).
 - Backend : **Supabase** (Postgres géré + Auth + Row-Level Security).
-- Base de données : Postgres (Supabase).
-- Authentification : Supabase Auth — **email + mot de passe** (session persistée), comptes provisionnés par un référent.
+- Base de données : Postgres (Supabase) — schéma de référence `supabase/schema.sql`, rejoué à la main.
+- Authentification : Supabase Auth — **email + mot de passe** (session persistée, connexion par
+  prénom résolu en email côté client), comptes provisionnés par un référent.
 - Hébergement : **Vercel** (front) + Supabase (données).
-- Autres services : —
+- Autres services : API Adresse (BAN) pour le géocodage, tuiles OpenStreetMap, arrêts IDFM (GTFS,
+  Licence Mobilité) embarqués en JSON statique ; `html2canvas` pour la capture d'écran des retours.
 
 ## Contraintes et priorités
 
@@ -71,13 +79,20 @@ Spécifique au projet :
 
 ## Risques connus
 
-- **Dédoublonnage à l'import** : mêmes correspondants sous orthographes variées, sans RPPS.
+- **Dédoublonnage** : mêmes correspondants sous orthographes variées, sans RPPS — à l'import de
+  chaque carnet comme à la saisie (détection de doublon heuristique, faux positifs possibles).
 - **Enrichissement web** : contacts souvent réduits à un nom → complétés par recherche web ; risque
   d'homonymes (Paris) → ne compléter qu'en cas de **match fiable** (annuaire santé Ameli), sinon
   marquer « à vérifier ». Jamais deviner (adressage médical).
-- **Fraîcheur des données** dans le temps (fiches obsolètes) → édition collaborative + statut « à vérifier ».
-- **RGPD** : fiches et commentaires nomment des tiers (professionnels) → accès restreint aux membres,
-  modération sociale de l'équipe.
+- **Fraîcheur des données** dans le temps (fiches obsolètes) → édition collaborative + statut « à
+  vérifier ». Les arrêts de transport sont un instantané GTFS figé, rafraîchi à la main
+  (`transit_prep.py`).
+- **Migrations de schéma manuelles** : un front poussé sur Vercel avant d'avoir rejoué
+  `supabase/schema.sql` en prod casse la fonctionnalité concernée.
+- **Bookmarklet Doctolib** dépendant de la structure des pages Doctolib (JSON-LD/DOM) et de leur CSP
+  → peut casser sans préavis.
+- **RGPD** : fiches, commentaires et captures d'écran des retours nomment des tiers (professionnels)
+  → accès restreint aux membres (captures lisibles du seul référent), modération sociale de l'équipe.
 - **Adoption** : si la saisie est lourde, l'outil ne sera pas alimenté → minimiser les champs requis.
 
 ---
@@ -93,7 +108,7 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 
 - [x] Annuaire : recherche + filtres + mes/tous + tags
 - [x] Fiche flexible (praticien/structure) : coords patient vs pro, infos pratiques, tags
-- [x] Ajout / édition collaborative (peu de champs requis, historique)
+- [x] Ajout / édition / suppression collaborative (peu de champs requis, historique)
 - [x] Mes contacts (créées + adoptées)
 - [x] Commentaires typés, signés, datés
 - [x] Impression / PDF liste patient
@@ -104,17 +119,25 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 
 - [x] Import assisté des carnets : parse + **enrichissement web** des contacts incomplets, relu
       (migration one-shot) — base 1 226 fiches (4 carnets + répertoire partagé + 2 carnets
-      Elena/Maylis, croisés open data CNAM + Doctolib)
+      Elena/Maylis, croisés open data CNAM + Doctolib) ; carnet Clara (+7 fiches) préparé, pas
+      encore appliqué en prod
 - [x] Affinage des filtres et de la recherche à l'usage — recherche multi-termes/tolérante aux
-      fautes/pertinence, filtres recentrés (Secteur 1 / Pédiatrie / À compléter + facette Catégorie)
+      fautes/pertinence (recommandations en tête à égalité), filtres recentrés (Secteur 1 /
+      Pédiatrie / À compléter + facette Catégorie)
 - [x] Détection de doublons à la saisie
+- [x] **Recueil de retours** — bouton flottant « Un souci ? » (contexte + capture d'écran auto) →
+      table `feedback`, écran référent `/retours` (cf. `DECISIONS.md` 2026-07-19)
 
 ### Version 2 / idées réalisées ou en cours
 
 - [x] **Carte de proximité** — géocodage BAN, distance à vol d'oiseau, carte Leaflet/OSM (annuaire +
-      fiche), arrêts de transport IDFM (plan `plans/P3/`)
+      fiche), arrêts de transport IDFM (plan `plans/P3/`) — reste le backfill géo de masse des
+      fiches existantes
 - [x] **Ajout assisté depuis Doctolib** (bookmarklet, JSON-LD → préremplissage `/nouveau?prefill=`) —
       reste un test humain (clic réel sur le favori) pour écarter tout blocage CSP (plan `plans/P4/`)
+- [x] **Listes d'impression nommées et favorites** (`/listes`) — visibles de tous, éditables par le
+      créateur seul, favori ouvert à tous (cf. `DECISIONS.md` 2026-08-07) — migration prod et
+      validation visuelle restant à faire
 - [ ] PWA / consultation hors-ligne
 - [ ] Base de mémos / protocoles
 - [ ] Statistiques d'usage
@@ -128,7 +151,7 @@ bonne ressource, avec l'expérience partagée de l'équipe, et remettre au patie
 ### À éviter pour l'instant
 
 - Sur-structurer les « infos pratiques » (garder un texte libre).
-- Rôles / permissions complexes (10 membres, confiance mutuelle).
+- Rôles / permissions complexes (~13 membres, confiance mutuelle).
 - Intégration serveur avec Doctolib ou un logiciel métier (scraping, API) — reste hors périmètre ;
   le bookmarklet P4 lit uniquement la page déjà ouverte dans le navigateur du membre, sans requête
   serveur vers Doctolib (cf. `DECISIONS.md` 2026-07-17).
