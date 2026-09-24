@@ -34,7 +34,8 @@ Jamais de dépendance ajoutée seul : à trancher dans le plan (« Modifier »),
   uniquement via le navigateur in-app de Desktop (`/verif-visuelle`) ; ailleurs, la skill sort une
   checklist à dérouler à la main.
 - **N2 humain (non bloquant)** : jugement esthétique / UX / ton. Claude ne l'évalue pas, il le
-  consigne dans `VALIDATION.md` — et **rien d'autre** n'y va.
+  consigne dans `VALIDATION.md` — et **rien d'autre** n'y va (sauf proposition demandée en
+  `/revue-d-usage`, `WORKFLOW.md` §6).
 
 Jamais de Playwright, de script de capture ni d'automatisation de navigateur hors outils in-app :
 aucune régression visuelle scriptée dans ce workflow (`WORKFLOW.md` §6).

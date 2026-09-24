@@ -67,7 +67,7 @@ Seuls outils et modèle forcent une reconstruction complète (aucune échappatoi
 
 ## 4. Plans
 
-Backlog : `TASKS.md`. Un plan est précédé d'une **décision écrite** : QUOI/POURQUOI pas tranché → `/cadrer`, sortie dans `docs/decisions/`. Question non identifiée → `/revue-de-conception` (interview, rapport dans `docs/revues/`). Puis Opus déroule `/nouveau-plan`, qui crée `plans/P<n>/` :
+Backlog : `TASKS.md`. Un plan est précédé d'une **décision écrite** : QUOI/POURQUOI pas tranché, idée neuve comprise → `/cadrer`, sortie dans `docs/decisions/`. Question non identifiée sur un existant qui a dérivé → `/revue-de-conception` (interview, rapport dans `docs/revues/`). Puis Opus déroule `/nouveau-plan`, qui crée `plans/P<n>/` :
 
 - **`index.md`** — objectif, table des sessions, vagues. **Seul endroit où vit le statut.**
 - **`S<k>.md` par session** — un lancement (modèle/effort/contexte), décision finale + chemins + étapes, jamais les alternatives (`docs/decisions/`).
@@ -133,6 +133,10 @@ Une seconde famille cohabite dans `plugin/agents/` sans en faire partie : les qu
 `session-<effort>` ne rendent aucune conclusion à un parent, ils *sont* la session — rôle et
 mécanisme en §3, pas ici.
 
+Une troisième cohabite de même : `parcoureur-usage` ne rend pas de conclusion à une session de plan,
+il joue un parcours et rend ses constats à la skill `/revue-d-usage` qui l'a lancé — jamais lancé
+proactivement, jamais par une session de plan.
+
 **N0 n'est plus un agent, c'est un script (C1)** : `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` dans ce dépôt) — **au premier plan, comme toute commande**, sans sous-agent ni frontière de tour.
 
 **Les quatre derniers** : personne ne relit son propre travail (découpe fausse, faille de plan, PASS vide, prémisse fausse). Les huit agents de délégation se lancent **au premier plan** (invariant : `EXECUTANT.md`, domicile §5b) — leur verdict conditionne la suite. `relecteur-session` : dernier geste, jamais en arrière-plan (la revue ne serait jamais déposée).
@@ -169,6 +173,11 @@ Une paraphrase dérivera. `publier.mjs` vérifie sa présence, jamais son sens.
 | **N2 humain** | l'utilisateur | non | jugement esthétique/UX/ton — **rien d'autre** |
 
 Desktop a un navigateur in-app : ce qu'il constate seul n'atterrit plus dans `VALIDATION.md`. **N1 dépend de l'environnement** : bandeau `Environnement : Desktop (navigateur requis) | indifférent`, colonne **Env.** de l'`index.md` ; N1 structurant → Desktop ; ailleurs `/verif-visuelle` sort la commande dev et une checklist manuelle. Hors navigateur in-app : jamais de Playwright ni de capture scriptée. Protocole : skill `/verif-visuelle`.
+
+`/revue-d-usage` est une **étape de revue nommée, sans rang** (même statut que `/code-review`,
+décision du 2026-08-30) : la grille ci-dessus reste à trois, pas de N3. **Exception à N2** : par
+défaut il reste humain, mais quand l'interview de `/revue-d-usage` a demandé la passe esthétique,
+Claude propose sur le N2 — proposer, jamais trancher, une ligne `VALIDATION.md` par proposition.
 
 ## 7. Garde-fous appliqués (hooks)
 

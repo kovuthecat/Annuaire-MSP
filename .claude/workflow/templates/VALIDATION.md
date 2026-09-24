@@ -1,7 +1,9 @@
 # VALIDATION.md — jugement humain en attente (N2 uniquement)
 
 > Items N2 (jugement humain) EN ATTENTE uniquement. Un item tranché = ligne supprimée du fichier
-> (git est l'archive).
+> (git est l'archive). Une **proposition issue d'une revue** (`/revue-d-usage`, passe esthétique
+> demandée ; ou toute autre passe esthétique demandée) est du N2 : une ligne `[ ]` dans le bloc de
+> son écran, cochée elle est acceptée et devient une tâche, supprimée elle est refusée.
 >
 > Tout ce qu'un navigateur peut constater seul — erreur console, élément absent, 404, débordement
 > horizontal — est du **N1** : c'est à Claude de le vérifier (`/verif-visuelle`) et de le corriger

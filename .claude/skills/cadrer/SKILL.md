@@ -1,7 +1,8 @@
 ---
 name: cadrer
-description: Session de réflexion avec Opus en amont d'un plan, jusqu'à un écrit tranchant les options. À dérouler quand le QUOI et le POURQUOI ne sont pas encore tranchés, avant `/nouveau-plan`.
+description: Session de réflexion avec Opus en amont d'un plan, jusqu'à un écrit tranchant les options. À dérouler quand le QUOI et le POURQUOI ne sont pas encore tranchés — y compris une idée neuve à évaluer avant de l'intégrer au projet —, avant `/nouveau-plan`.
 allowed-tools: Read, Glob, Grep, Agent, WebFetch, WebSearch, Write, Edit
+model: opus
 ---
 
 # Cadrer un sujet
@@ -17,6 +18,13 @@ Ici Opus ne sert qu'à **arbitrer**. Jamais à chercher, lire, lancer ou vérifi
 > vérifiée le 2026-09-15). Le garde-fou reste le **Plan Mode**, dès le début : il interdit
 > l'écriture dans le dépôt, pas le lancement d'une **sonde jetable** (Étape 2) — c'est la seule
 > exception au « ne rien lancer, ne rien vérifier » (C6).
+>
+> `model: opus` bascule sur Opus **pour ce même seul tour** : dès le message suivant, la session
+> reprend son modèle (doc Claude Code, Skills, vérifiée le 2026-09-24). Or un cadrage se mène sur
+> plusieurs tours — interview d'une idée, arbitrage — et le frontmatter ne couvre que le premier :
+> l'Étape 0, et l'Étape 1 quand la question est déjà posée. **Ouvrir la session sur Opus**
+> (`/model opus`) reste donc la règle. Invoquée en cours de conversation sur un autre modèle, la bascule
+> repaie un préfixe de cache complet (`WORKFLOW.md` §3b) — une raison de plus de cadrer à froid.
 
 ## Étape 0 — La session est-elle seulement nécessaire ?
 
@@ -26,12 +34,19 @@ C'est l'économie la plus grosse : ne pas ouvrir la session. STOP si la réponse
 - Réponse dans le repo → `explorateur`.
 - **Décision déjà prise** → registre `DECISIONS.md`, puis `docs/decisions/` pour le détail.
   Rejuger une décision close est le gaspillage le plus fréquent, et le plus invisible.
+- **Idée déjà écartée ou reportée** → registre, puis « Version 2 / idées futures » de
+  `PROJECT_BRIEF.md` : une idée reportée se rouvre sur le signal écrit à côté d'elle, pas sur l'envie.
 - Choix d'un mécanisme Claude Code → `/choisir-mecanisme`.
 - Question pointue sur Claude Code lui-même → agent `claude-code-guide`.
 
 ## Étape 1 — Écrire la question avant de réfléchir
 
-Deux lignes, en clair, avant toute autre chose :
+**On arrive avec une idée, pas avec une question** (« et si l'app faisait X ? ») : la question
+n'existe pas encore, et l'écrire tout de suite ferait trancher « comment faire X » avant « faut-il
+X ». La faire émerger d'abord par l'interview courte de `references/deplier-une-idee.md`, qui rend
+précisément les deux lignes ci-dessous.
+
+Deux lignes, en clair, avant toute délibération :
 
 - **Question** : ce qui doit être tranché, formulé pour qu'une réponse soit reconnaissable.
 - **Critère de fin** : ce qui, une fois écrit, clôt la session.
@@ -60,6 +75,9 @@ Ce qui se lit quand même en direct, parce que c'est court et structurant : le r
 ## Étape 3 — Borner les options
 
 Assez d'options pour trancher, pas un panorama. Pour chacune : ce qu'elle coûte, et ce qu'elle ferme.
+
+Quand l'entrée était une idée, **« ne pas le faire » et sa version minimale sont toujours parmi les
+options** : ce sont les deux qu'on oublie quand l'idée plaît.
 
 Terminer par **une recommandation motivée**, pas un tableau neutre laissé à trancher. Une option
 écartée se note en une ligne — elle sert au lecteur futur, pas à la délibération en cours.
@@ -99,8 +117,13 @@ froid, pas celui d'un sous-agent.
 | --- | --- | --- |
 | **Décision structurante** | un arbitrage qui contraindra le code plus tard | `docs/decisions/<date>-<sujet>.md` + une ligne dans le registre `DECISIONS.md` |
 | **Chantier à mener** | il y a du travail à découper | la décision d'abord, puis `/nouveau-plan` |
-| **Rien à faire** | la question tombe, ou le sujet attend | une ligne dans le registre, et on s'arrête |
+| **Rien à faire** | la question tombe, le sujet attend, ou l'idée est écartée | une ligne dans le registre, et on s'arrête — c'est ce qui empêche de la rejuger |
+| **Idée reportée** | l'idée tient, mais pas maintenant | une ligne dans « Version 2 / idées futures » de `PROJECT_BRIEF.md`, avec le **signal qui la rouvrira** — pas le registre, réservé au transverse |
 | **Preuve à faire** | la question ne se tranche pas en lecture : la réponse n'existe qu'à l'exécution | un **protocole de preuve** (ci-dessous) + une ligne dans le registre — pas de décision, pas de plan |
+
+Toute issue qui écrit un `docs/decisions/` y met la ligne `Brief :` ; si elle n'est pas `inchangé`,
+la section nommée de `PROJECT_BRIEF.md` est réécrite **dans le même commit** — c'est
+`brief-a-jour.mjs`, lancé par `/nouveau-plan`, qui vérifiera que la propagation a bien eu lieu.
 
 Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle sera refaite.
 
@@ -139,7 +162,9 @@ lui-même : c'est `/nouveau-plan` qui écrit la session `exploration`, pas une s
 improvise.
 
 **Committer et pousser l'écrit avant de rendre la main** — staging explicite du `docs/decisions/` et
-de la ligne de registre, puis `git push` sur `main` (`WORKFLOW.md` §4b), session cloud comprise. Une
+de la ligne de registre, plus `PROJECT_BRIEF.md` quand la ligne `Brief :` l'a touché ou qu'une idée
+y est reportée, puis `git push`
+sur `main` (`WORKFLOW.md` §4b), session cloud comprise. Une
 décision qui n'existe que sur ce poste ne sera pas lue par la session de plan qui devait s'en servir,
 et c'est elle qu'on refera. Le cadrage est une unité de travail : il se clôt poussé.
 

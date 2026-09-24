@@ -39,7 +39,12 @@ n'a aucune raison d'être en contexte tant que la décision n'est pas remise en 
 
 ## Impact IA _(optionnel)_
 <une ligne si la décision change la complexité, le contexte nécessaire ou `PROJECT_MAP.md`>
+
+Brief : inchangé | <section du brief> : <ce qui change>
 ```
+
+La ligne `Brief :`, hors section, est **obligatoire** — `inchangé` s'écrit quand même : c'est la
+preuve que la question a été posée, pas une case qu'on saute quand la réponse est non.
 
 ---
 

@@ -96,6 +96,21 @@ if (!vagueParallele(cwd) && aUnRemote(cwd)) {
   }
   const courante = brancheCourante(cwd);
   const integration = brancheParDefaut(cwd);
+  // À jour avec la branche d'intégration, pas seulement avec son propre amont : une branche de
+  // worktree ou d'exploration suit `origin/<elle-même>` (ou rien), et le contrôle ci-dessus la dit
+  // à jour pendant que `main` avance sans elle. Sauté quand l'amont EST déjà la branche
+  // d'intégration — le retard y a déjà été dit. Ref absente (jamais récupérée) : `git` rend null, muet.
+  const refIntegration = `origin/${integration}`;
+  if (amont?.amont !== refIntegration) {
+    const retardIntegration = Number(git(cwd, 'rev-list', '--count', `HEAD..${refIntegration}`));
+    if (retardIntegration > 0) {
+      lignes.push(
+        `**En retard de ${retardIntegration} commit(s) sur \`${refIntegration}\`** ` +
+        `(branche \`${courante ?? 'HEAD détachée'}\`) — intégrer \`${refIntegration}\` AVANT de ` +
+        `commencer (\`WORKFLOW.md\` §4b) : ce qui a été fusionné depuis n'est pas dans cet arbre.`
+      );
+    }
+  }
   if (courante && courante !== integration) {
     lignes.push(
       `**Branche \`${courante}\`, alors que l'intégration se fait sur \`${integration}\`** — le ` +

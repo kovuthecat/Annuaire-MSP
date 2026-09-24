@@ -312,10 +312,12 @@ Principes :
 
 ## Étape 4b — Faire vérifier la découpe (jamais par soi-même)
 
-Le plan est écrit, rien n'est encore commité. Lancer l'agent **`verificateur-plan`**, **au premier
-plan** (§5), en lui donnant `P<n>` et, en mode extension, les sessions ajoutées :
+Le plan est écrit, rien n'est encore commité. Lancer d'abord `brief-a-jour.mjs` **au premier plan**
+(`node .claude/workflow/bin/brief-a-jour.mjs`, `plugin/bin/` dans ce dépôt source), puis l'agent
+**`verificateur-plan`**, **au premier plan** (§5), en lui donnant `P<n>`, en mode extension les
+sessions ajoutées, et la sortie du script :
 
-> Vérifie `plans/P<n>/` — les dix contrôles.
+> Vérifie `plans/P<n>/` — les onze contrôles. Sortie de brief-a-jour : <sortie>
 
 Il ne juge pas la conception : il confronte le plan au dépôt (fichiers de « Modifier » qui
 n'existent pas sans étape de création, sessions parallèles dont les fichiers se recoupent,
@@ -329,6 +331,12 @@ Chaque écart rendu se corrige **ici**, avant l'Étape 6, ou se justifie en une 
 `S<k>.md` concerné s'il est volontaire (un fichier créé par une session d'une
 vague antérieure, par exemple). `RAS` → continuer sans rien écrire : la vérification ne laisse pas de trace,
 c'est le plan corrigé qui en est la trace.
+
+**Un écart n°11 se traite avant l'Étape 6** : ligne `Brief : <section> : …` non appliquée →
+réécrire la section dans un commit séparé `docs(brief): applique <décision>` portant
+`Brief-applique: <chemin>`, puis relancer le script ; ligne absente → l'ajouter (`inchangé` ou
+section) dans ce même commit ; ligne ambiguë (section ou changement indéduisibles) → `/cadrer`, pas
+de plan.
 
 ## Étape 5 — Reporter dans `TASKS.md`
 

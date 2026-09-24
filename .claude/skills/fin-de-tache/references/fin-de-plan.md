@@ -12,8 +12,10 @@ chaque session a pris et poussé le sien. Il ne reste que le rangement.
    jamais avant.
 2. **Nettoyer les marqueurs** : `.claude/wave.lock` s'il existe, et `.claude/vague/` (sorties brutes
    et identifiants de session — transitoires).
-3. **Ranger le contexte** : statuts complets dans l'`index.md` — et **aucun `[x]!` ne survit à la
-   clôture** : verser son bloquant dans `TASKS.md` est précisément ce qui le repasse à `[x]`
+3. **Ranger le contexte** : passer à `[x]` les items `### MVP` / `### Version 1` de
+   `PROJECT_BRIEF.md` que le plan a livrés, et rien d'autre du brief. Statuts complets dans
+   l'`index.md` — et **aucun `[x]!` ne survit à la clôture** : verser son bloquant dans `TASKS.md`
+   est précisément ce qui le repasse à `[x]`
    (`WORKFLOW.md` §4a). Un `[x]!` encore là en fin de plan veut dire qu'une revue n'a pas été
    triée. Puis : lignes purgées de `TASKS.md`, `STATUS.md` à jour, points N2 des `S<k>.md` reversés
    dans `VALIDATION.md`. **Trier les revues** : chaque `plans/P<n>/S<k>.revue.md` — déjà commité —
@@ -36,7 +38,7 @@ Depuis n'importe quelle tâche, pas seulement en fin de plan : bumper `version` 
 emplacement, jamais sous `.claude/workflow/bin/`). Sans bump, les projets vendorés ne voient jamais
 la mise à jour ; sans publication, toute machine neuve embarque une version périmée.
 
-**Puis, dans ce dépôt source seulement** : `claude plugin update workflow@templates` — ce dépôt
+**Puis, dans ce dépôt source seulement** : `claude plugin update workflow@templates --scope local` — ce dépôt
 charge son propre plugin par une installation **locale** au poste (`.claude/settings.local.json`,
 jamais commité), qui copie `plugin/` dans le cache. Sans ce geste, ce poste continue de dérouler la
 version d'avant le bump (constat du 2026-09-17, `CLAUDE.md` « Règles spécifiques »).

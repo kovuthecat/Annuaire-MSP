@@ -77,7 +77,9 @@ corrige dans la session, il ne se consigne **pas** dans `VALIDATION.md`.
 **Point N2 à faire trancher** : plutôt que de décrire l'élément en mots, dire à l'utilisateur qu'il
 peut le **désigner** — `Ctrl/Cmd+Shift+B` ouvre le panneau Browser, `Ctrl/Cmd+Shift+S` arme la
 sélection, il clique l'élément et dit quoi changer. Ça ne déplace pas la frontière : le jugement
-reste le sien, seule la désignation devient exacte.
+reste le sien, seule la désignation devient exacte. Pour une revue **d'ensemble** à un jalon
+(parcours, ergonomie, accessibilité), c'est `/revue-d-usage` : cette skill-ci reste un N1 d'écran
+après une tâche.
 
 ## Mode B — Pas de navigateur (VSCode, terminal, cloud, mobile)
 
