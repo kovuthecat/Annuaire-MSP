@@ -86,7 +86,12 @@
       "Bash(git pull:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git pull --rebase:*)",
+      "Bash(git push:*)",
+      "Bash(node .claude/workflow/bin/n0.mjs:*)",
+      "Bash(node .claude/workflow/bin/verifier-plan.mjs:*)",
+      "Bash(node .claude/workflow/bin/prochaine-action.mjs:*)"
     ],
     "deny": [
       "Read(.env*)",
