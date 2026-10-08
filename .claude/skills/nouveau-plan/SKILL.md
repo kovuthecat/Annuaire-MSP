@@ -1,6 +1,6 @@
 ---
 name: nouveau-plan
-description: Découper un chantier en sessions et générer le dossier plans/P<n>/ (index + un fichier par session). À dérouler par Opus quand une tâche demande plusieurs sessions, ou quand le scope est flou.
+description: Découper un chantier en sessions et générer le dossier plans/P<n>/ (index + un fichier par session). À dérouler par Opus quand une tâche demande plusieurs sessions.
 model: opus
 ---
 
@@ -41,7 +41,8 @@ Un plan sert deux lectures, et rate sa cible s'il n'en sert qu'une :
 `/maj-workflow`. Sans `DÉRIVE` : mise à jour sans question, rapportée ; avec `DÉRIVE` : question
 avant de continuer. Écrire un plan sur un workflow en retard fige dans les squelettes ce que la
 source a déjà corrigé. Dépôt source du workflow (pas de `.claude/workflow/manifest.json`, `plugin/`
-présent) → `claude plugin update workflow@templates` à la place de `/maj-workflow`.
+présent) → `"$CLAUDE_CODE_EXECPATH" plugin update workflow@templates --scope local` (le shim `claude`
+peut manquer sous Desktop), puis `node plugin/bin/installer-mods.mjs` à la place de `/maj-workflow`.
 
 Un plan en cours peut produire un résultat qui invalide une hypothèse dont dépendent ses sessions
 restantes : vérité de référence fausse, contrat à changer, mesure qui contredit l'attendu d'une
@@ -65,13 +66,24 @@ sondable rencontrée à l'Étape 1 — pas seulement au deuxième plan tué sur 
 `/cadrer`, qui sortira par un protocole de preuve, plutôt que de continuer à découper un plan sur
 une inconnue.
 
-**Avant d'écrire un plan neuf, regarder si la zone a déjà tué un plan sur une prémisse** :
-`grep -l 'Nature :.*prémisse' plans/*/*.echec.md`. **Deuxième plan sur la même zone avec cette
-cause → ne pas en écrire un troisième.** La réponse n'existe qu'à l'exécution, et un plan de plus
-gèlera en « tranché » ce qui a tué le précédent — c'est ainsi qu'une zone finit par ne plus contenir
-le geste qu'un humain fait. Dérouler `/cadrer`, qui sortira par un protocole de preuve (décision du
-2026-09-14). `prémisse` est le mode d'échec dominant du workflow : une fois, c'est le système qui
-fonctionne ; c'est la **répétition sur une même zone** qui est le signal.
+### Seuil unique — domicile de « encore un plan ou `/cadrer` »
+
+C'est le seul endroit du workflow qui définit ce seuil ; tout autre texte qui l'évoque y renvoie,
+sans le reformuler ni recalculer son propre compteur.
+
+- **zone** = les chemins de la colonne « Zone modifiée » (`/nouveau-plan` Étape 2).
+- **Un plan a été tué sur une prémisse** si un de ses `.echec.md` a porté `Nature : prémisse`, **y
+  compris supprimé** (l'Étape 5 de `/reprendre-echec` le supprime une fois l'échec résolu — un
+  `grep` sur les fichiers présents sous-compte) :
+  `git log --all -p --diff-filter=AD -- 'plans/*/*.echec.md' | grep -n 'Nature :.*pr[ée]misse'`.
+- **Deuxième plan tué sur la même zone avec cette cause → ne pas en écrire un troisième.** La
+  réponse n'existe qu'à l'exécution, et un plan de plus gèlera en « tranché » ce qui a tué le
+  précédent — c'est ainsi qu'une zone finit par ne plus contenir le geste qu'un humain fait.
+  Dérouler `/cadrer`, qui sortira par un protocole de preuve (décision du 2026-09-14). `prémisse`
+  est le mode d'échec dominant du workflow : une fois, c'est le système qui fonctionne ; c'est la
+  **répétition sur une même zone** qui est le signal.
+- La règle de la **troisième vague de remédiation** (ci-dessus) reste, inchangée : c'est un
+  deuxième compteur, sur le même plan plutôt que sur la zone, et les deux s'appliquent.
 
 ## Étape 1 — Investiguer (jamais modifier)
 
@@ -108,7 +120,8 @@ fichiers → agent `explorateur` ; **compréhension d'un flux** (point 1) → ag
 sépare faits, inférences et inconnues — une inconnue qu'il nomme est une hypothèse à typer au point
 5, pas un fait ; résumé de diff/historique git → agent `resumeur-git`. Chacun ne rend que sa
 conclusion, l'exploration ne pollue pas le contexte Opus (qui est le plus cher). Garder pour soi les
-points 1, 5 et 6 — c'est le raisonnement, pas la recherche.
+points 1, 5 et 6 — c'est le raisonnement, pas la recherche. Tout appel `Agent` porte
+`run_in_background: false` — sans lui, l'agent part en arrière-plan (`WORKFLOW.md` §5).
 
 ## Étape 1bis — Critiquer avant de faire approuver (conditionnel)
 
@@ -201,10 +214,15 @@ Le squelette de l'index est en annexe : **ouvrir `references/squelette-index.md`
 skill) au moment de l'écrire. Les règles de rédaction — ligne « en clair », ordonnancement,
 colonnes — sont ci-dessous.
 
+**Preuve N0.** Écrire `Preuve N0 : requise`, sauf si `.claude/n0.json` porte `sansCommande` (projet
+sans build ni test, motif obligatoire) : alors, et alors seulement, `Preuve N0 : non requise`, et
+`N0 auto : — (non requise : <motif>)` dans les tâches. `verifier-plan.mjs` contrôle les deux sens
+(index et `n0.json` doivent s'accorder) ; `n0.mjs` ne rend jamais de vert sur une liste vide.
+
 **La ligne « en clair » est un contrat de lisibilité, pas une redite du titre.** Elle dit ce que la
 session change et **à quoi l'utilisateur le constatera** : un écran, un comportement, un fichier
 produit, une mesure obtenue. `/orchestrer-plan` la relaie **mot pour mot** au lancement de la vague
-(son Étape 3) sans jamais ouvrir le `S<k>.md` — c'est donc la seule chose que l'utilisateur lira
+(son Étape 1) sans jamais ouvrir le `S<k>.md` — c'est donc la seule chose que l'utilisateur lira
 avant de voir passer les commits. Une ligne qui paraphrase le titre (« S2 — refonte du module
 d'édition ») ne lui apprend rien ; deux phrases suffisent, à condition d'être les bonnes.
 
@@ -218,7 +236,7 @@ vague n'a droit ni à la reprise ni à l'enquête automatiques) portent sur la v
 précise — elle se lance par le repli pastille (premier plan, navigateur complet), **même en
 Desktop** : c'est le cadreur qui le décide ici, au cadrage, quand le N1 de cette session est
 structurant (nouvel écran, refonte de mise en page) et mérite un déroulé surveillé plutôt qu'un
-sous-agent (`/orchestrer-plan` Étape 3, `/verif-visuelle`).
+sous-agent (`/orchestrer-plan` Étape 1, `/verif-visuelle`).
 
 **`validation-humaine` a un seul critère : le `PASS` lui-même demande ton jugement** — une ligne
 `N2 humain` non vide dans une session de la vague, dont la réponse décide s'il faut lancer la
@@ -231,8 +249,8 @@ plus : `/orchestrer-plan` l'ignore.
 
 **Vagues orchestrées (optionnel)** — toute vague s'exécute via `/orchestrer-plan`, qui déroule les
 sessions les unes après les autres jusqu'à épuisement, une `validation-humaine`, ou une **question** à l'utilisateur.
-Un `FAIL` déclenche par défaut le cycle de remédiation à froid (`/orchestrer-plan` 5c et 5d,
-budget : 2 reprises et 1 enquête par session, `WORKFLOW.md` §9c) ; le mot **`reprise-manuelle`** sur
+Un `FAIL` déclenche par défaut le cycle de remédiation à froid (`/orchestrer-plan` actions `reprendre`
+et `enqueter`, budget : 2 reprises et 1 enquête par session, `WORKFLOW.md` §9c) ; le mot **`reprise-manuelle`** sur
 la ligne d'ordonnancement d'une vague le désactive — à déclarer au cadrage quand un échec dans
 cette vague doit passer par un humain d'emblée (état coûteux à annuler, zone sensible). Voies et
 colonne `Env.` : domicile `WORKFLOW.md` §5b, ne pas le reformuler ici. Résumé pour le découpage :
@@ -256,8 +274,10 @@ Trois éditions ponctuelles, rien de plus :
 1. **Table des sessions** : ajouter les lignes en continuant la numérotation du plan. Jamais de
    `S5bis` — le repère `Plan: P<n>/S<k>/T<m>` des commits doit rester unique et triable.
 2. **Ordonnancement** : insérer la vague **avant** celles qu'elle débloque, avec sa cause dans le
-   titre — `**Vague <w> — remédiation de S<j>** (ajoutée le YYYY-MM-DD) : S8 · S9.` Sans cette
-   trace, un plan relu dans un mois ne distingue plus le prévu du réparé. La vague ajoutée porte
+   titre — `- **Vague <w> — remédiation de S<j> (ajoutée le YYYY-MM-DD)** : S8 · S9.` (tiret
+   initial, date dans le gras — la forme lue sans tolérance par `prochaine-action.mjs`, T4/P10/S2 :
+   sans le tiret ni la date à l'intérieur des `**`, la vague entière était ignorée, incident MYO du
+   2026-09-22). Sans cette trace, un plan relu dans un mois ne distingue plus le prévu du réparé. La vague ajoutée porte
    son *Pourquoi maintenant* et ses lignes « en clair » comme les autres — c'est même là qu'elles
    comptent le plus : une vague de remédiation est ce que l'utilisateur n'avait pas prévu de lire.
 3. **Statuts en aval** : une session déjà `[x]` dont le résultat repose sur l'hypothèse invalidée
@@ -285,7 +305,8 @@ Principes :
 
 - **Le bandeau est auto-suffisant** : modèle, effort, environnement, mode parallèle — jamais besoin
   de retourner à l'index pour lancer la session.
-- **« Lire » est restrictif et porté** : que ces fichiers, à la section/fonction près.
+- **« Lire » est un point de départ, pas un plafond** : la lecture reste ouverte, seule
+  l'**écriture** est bornée (à la zone du plan) — `EXECUTANT.md`.
 - **« Étapes » = le comment**, ordonné. Plus le modèle est faible, plus elles sont fines ; si une
   tâche demande trop de jugement pour le modèle visé → la **découper**. Une étape dont l'intention
   n'est pas évidente porte sa raison en fin de ligne, après un tiret : c'est ce qui permet de
@@ -312,16 +333,19 @@ Principes :
 
 ## Étape 4b — Faire vérifier la découpe (jamais par soi-même)
 
-Le plan est écrit, rien n'est encore commité. Lancer d'abord `brief-a-jour.mjs` **au premier plan**
+Le plan est écrit, rien n'est encore commité. Lancer d'abord
+`node .claude/workflow/bin/verifier-plan.mjs P<n>` (vendoré :
+`node .claude/workflow/bin/verifier-plan.mjs P<n>`). En mode extension, ajouter `--extension` (ne force pas la preuve N0 sur les anciennes sessions). Corriger tout écart mécanique ou format non
+reconnu jusqu'à `RAS` ; le script ne juge pas le design. Puis lancer `brief-a-jour.mjs` **au premier plan**
 (`node .claude/workflow/bin/brief-a-jour.mjs`, `plugin/bin/` dans ce dépôt source), puis l'agent
-**`verificateur-plan`**, **au premier plan** (§5), en lui donnant `P<n>`, en mode extension les
+**`verificateur-plan`**, **au premier plan** (`run_in_background: false`, §5), en lui donnant `P<n>`, en mode extension les
 sessions ajoutées, et la sortie du script :
 
-> Vérifie `plans/P<n>/` — les onze contrôles. Sortie de brief-a-jour : <sortie>
+> Vérifie `plans/P<n>/` — contrôles sémantiques restants. Sortie de verifier-plan : RAS. Sortie de brief-a-jour : <sortie>
 
-Il ne juge pas la conception : il confronte le plan au dépôt (fichiers de « Modifier » qui
-n'existent pas sans étape de création, sessions parallèles dont les fichiers se recoupent,
-Validation sans commande vérifiable, `Dépend de` incohérent). Haiku, un tour, quelques secondes.
+Le script a vérifié chemins, collisions et dépendances. L'agent ne les refait pas : il juge la
+pertinence des validations, les justifications d'exception et les arrêts humains. Une seule passe.
+
 
 **Pourquoi un autre que le cadreur** : l'Étape 1 finit par « plan rédigeable maintenant ? », et
 c'est le rédacteur qui répond. Une découpe fausse ne se voit pas de l'intérieur — elle se voit à
@@ -337,6 +361,11 @@ réécrire la section dans un commit séparé `docs(brief): applique <décision>
 `Brief-applique: <chemin>`, puis relancer le script ; ligne absente → l'ajouter (`inchangé` ou
 section) dans ce même commit ; ligne ambiguë (section ou changement indéduisibles) → `/cadrer`, pas
 de plan.
+
+Même traitement pour une ligne `Règles : <règle> : …` non appliquée : réécrire la règle dans
+`CLAUDE.md` § Règles spécifiques, commit séparé `docs(regles): applique <décision>` portant
+`Regles-appliquees: <chemin>`, puis relancer le script ; ligne absente → pas d'écart (décision d'avant
+la règle).
 
 ## Étape 5 — Reporter dans `TASKS.md`
 

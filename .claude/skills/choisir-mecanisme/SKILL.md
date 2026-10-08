@@ -95,7 +95,8 @@ oubliée une fois · le déclencheur est mécanique (avant commit, après éditi
 
 **Agent plutôt que le faire soi-même quand** : la tâche est mécanique et répétitive · sa sortie
 brute (logs, recherche large, lecture de code volumineuse) polluerait le contexte principal sans
-valeur ajoutée à y garder · le résultat attendu est un résumé court, pas le détail brut.
+valeur ajoutée à y garder · le résultat attendu est un résumé court, pas le détail brut. Lancé
+avec `run_in_background: false` quand la suite attend sa conclusion (`WORKFLOW.md` §5).
 
 **NE PAS utiliser de MCP quand** : une simple CLI ou un appel API direct suffit · l'intégration est
 utilisée une seule fois · le service n'a pas besoin d'état ou de contexte structuré entre appels ·

@@ -20,12 +20,18 @@
 //
 // Exemptions de la gate de push (C3) : pas de remote · vague en cours · remote injoignable (hors
 // ligne, signalé en avertissement non bloquant, jamais un blocage).
+//
+// Session planifiée (lancée par une tâche planifiée — `estSessionPlanifiee`) : mêmes vérifications,
+// mais jamais `decision: block`, seulement un rappel non bloquant. Personne n'y lit le blocage : il
+// relance la session pour un tour de plus, après son verdict (P13, P14 ; faussait le nombre de tours
+// mesuré, docs/decisions/2026-10-06-suite-des-preuves-mods.md, leçon 5). Revers : une session
+// planifiée reprise ensuite à la main n'a plus que ce rappel.
 
-import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, statSync } from 'node:fs';
 import {
   lireEntree, repertoireProjet, estUnDepot, fichiersModifies, fichiersSuivisModifies,
   depassements, estFichierDeSuivi, lirePlafonds, repondre, riendafaire,
-  vagueParallele, repereSession, revuesManquantes,
+  vagueParallele, repereSession, revuesManquantes, estSessionPlanifiee,
   git, etatAmont, aUnRemote, brancheCourante,
 } from './lib.mjs';
 
@@ -35,6 +41,7 @@ const cwd = repertoireProjet(entree);
 if (!estUnDepot(cwd)) riendafaire();
 
 const sousVerrou = vagueParallele(cwd);
+const planifiee = estSessionPlanifiee(entree.transcript_path);
 const problemes = [];
 // Avertissements non bloquants : jamais de blocage dessus (réseau injoignable — exemption C3),
 // seulement un signal. Ne peut être peuplé que hors vague (le contrôle de push y est suspendu).
@@ -64,19 +71,23 @@ if (!sousVerrou) {
   // qu'aucune relecture n'ait été déposée. La seule absence légitime est celle du tri de clôture, qui
   // verse la revue dans TASKS.md puis la supprime — elle se déclare par un repère `Revues:`.
   let repereHead = null;
+  let debutSession = null;
   try {
     const { chemin } = repereSession(entree, cwd, 'head');
-    if (existsSync(chemin)) repereHead = readFileSync(chemin, 'utf8').trim();
+    if (existsSync(chemin)) {
+      repereHead = readFileSync(chemin, 'utf8').trim();
+      debutSession = statSync(chemin).mtimeMs;
+    }
   } catch { /* repère illisible : contrôle désactivé, jamais de faux positif */ }
 
-  for (const ref of revuesManquantes(cwd, repereHead)) {
+  for (const ref of revuesManquantes(cwd, repereHead, debutSession)) {
     problemes.push(
-      `**Revue de session absente — ${ref}.** Des commits de cette session portent du code sous ` +
-      `\`Plan: ${ref}/\`, mais git ne trouve aucun commit ayant ajouté \`plans/${ref}.revue.md\`. ` +
+      `**Revue de session absente ou incomplète — ${ref}.** Des commits de cette session portent du code sous ` +
+      `\`Plan: ${ref}/\`, mais git ne trouve aucune revue terminée dans \`plans/${ref}.revue.md\`. ` +
       `Si la revue n'a pas tourné : lance l'agent \`relecteur-session\` AU PREMIER PLAN ` +
-      `(/fin-de-tache, « Relecture de session ») — c'est LUI qui dépose et commite le fichier. Si ` +
+      `(/fin-de-tache, « Relecture de session ») — il dépose le fichier ; le parent le committe. Si ` +
       `cette session n'a pas l'outil Agent (sous-agent orchestré) : dis-le en une ligne, ` +
-      `l'orchestrateur la lance après collecte (/orchestrer-plan Étape 5).`
+      `l'orchestrateur la lance après collecte (/orchestrer-plan Étape 2).`
     );
   }
 
@@ -207,6 +218,15 @@ if (sousVerrou) {
     systemMessage:
       `⚠ Vague parallèle en cours (\`.claude/wave.lock\`) — rappel NON bloquant :\n- ${problemes.join('\n- ')}\n` +
       `À traiter en fin de plan, via /fin-de-tache puis /purge-contexte.${suffixeAvertissements}`,
+  });
+}
+
+// Session planifiée : aucun chemin ne rend `block`. Même marqueur anti-répétition que les rappels.
+if (planifiee) {
+  if (dejaSignale === empreinte) riendafaire();
+  memoriser();
+  repondre({
+    systemMessage: `⚠ Session planifiée — rappel non bloquant :\n- ${problemes.join('\n- ')}${suffixeAvertissements}`,
   });
 }
 

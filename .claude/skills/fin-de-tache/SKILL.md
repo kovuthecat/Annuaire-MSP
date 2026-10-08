@@ -5,14 +5,28 @@ description: Checklist de fin de tâche et de fin de session — statuts, fichie
 
 # Fin de tâche
 
-Lire le bandeau du `S<k>.md` : **parallèle : oui/non** détermine le mode. Qui committe/pousse,
-quand, et l'exception `.claude/wave.lock` : `WORKFLOW.md` §4b (domicile). Où vit le statut d'une
-tâche : §4a (domicile) — jamais recopié dans un `S<k>.md` ni dans `TASKS.md`.
+## Mode orchestré (ton prompt exige `VERDICT:`)
+
+- Pas de bloc de relance, pas de rapport en prose, pas de `references/fin-de-plan.md` — la clôture
+  revient à l'orchestrateur.
+- Aucun `.revue.md` ni `.echec.md` supprimé.
+- Tu coches `[x]`, jamais `[x]!` (seul qui lit `Bloquant : n`, à l'étape Relecture ci-dessous, pose
+  `[x]!`).
+- Échec : `.echec.md` commité **sur la branche courante**, jamais `wip/…` — l'orchestrateur partage
+  ton arbre.
+- Ta **dernière ligne** est `VERDICT: …`, exactement comme ton prompt la dicte.
+
+Hors mode orchestré, ce qui suit s'applique tel quel.
+
+`.claude/wave.lock` existe ? détermine le mode — pas le bandeau `parallèle`. Qui committe/pousse,
+quand, et l'exception : `WORKFLOW.md` §4b (domicile). Où vit le statut d'une tâche : §4a (domicile)
+— jamais recopié dans un `S<k>.md` ni dans `TASKS.md`.
 
 ## Après chaque tâche
 
 1. **N0** : `node .claude/workflow/bin/n0.mjs` (ce dépôt : `plugin/bin/n0.mjs`) — sinon la tâche
-   n'est pas finie. **Juste après, avant le N1** : toute skill projet `verif-<chose>`
+   n'est pas finie (index `Preuve N0 : non requise` → N0 sauté, bilan
+   `N0 : — (non requise : <motif de sansCommande>)`). **Juste après, avant le N1** : toute skill projet `verif-<chose>`
    (`.claude/skills/`, jamais du workflow vendoré).
 2. **N1** si la tâche touchait l'UI : `/verif-visuelle`. Avec navigateur in-app, un défaut N1 se
    corrige maintenant, il ne se reporte pas. Sans (mode checklist de `/verif-visuelle`), il se
@@ -43,20 +57,29 @@ pas le bandeau `parallèle`.
 
 Sinon :
 
-9. **Statut** : `index.md` du plan → `[x]` (ou `[x]!`, revue à bloquant non trié), avec la date,
-   dans le commit du point 10 — cocher **sa propre ligne**, et elle seule, si d'autres sessions de
-   la vague restent à exécuter.
+9. **Statut** : `index.md` du plan → `[x]`, avec la date, dans le commit du point 10 — cocher **sa
+   propre ligne**, et elle seule, si d'autres sessions de la vague restent à exécuter. Coche `[x]`.
+   Seul qui lit `Bloquant : n` (l'étape Relecture, point 13) pose `[x]!`.
 10. **Contexte** : `STATUS.md` à jour ; les autres fichiers **seulement si leur contenu change**.
 11. **N2** : `VALIDATION.md`, uniquement le jugement humain encore EN ATTENTE — supprimer ce qui
     est déjà tranché.
 12. **Plafonds** dépassés (hook) → `/purge-contexte` maintenant, pas plus tard.
-13. **Push (C3)** : `git pull --rebase` puis `git push` — arbre propre et poussé avant de rendre la
-    main. N0 rouge à l'interruption, ou arrêt en cours de tâche → branche `wip/P<n>-S<k>` poussée
-    avec le `.echec.md`, jamais `main`. `main` impossible à pousser (cloud) → pousser la branche
-    courante et la **nommer** dans la relance. Exemptions : pas de remote, remote injoignable
+13. **Relecture** (chaînage manuel seulement — en mode orchestré, l'orchestrateur s'en charge, cf.
+    « Mode orchestré » en tête de ce fichier) :
+    - session `low`, ou `Zone modifiée : aucune` dans l'`index.md` → sautée, une ligne au bilan
+      (« Relecture : sautée (low/zone aucune) ») ;
+    - sinon, lancer `relecteur-session` **au premier plan** (`run_in_background: false`), avec la session à relire. Agent
+      introuvable : repli `workflow:relecteur-session`, puis `general-purpose` tenant le rôle décrit
+      dans `relecteur-session.md` ;
+    - committer le `.revue.md` qu'il a déposé (`revue(P<n>): S<k> relue, <n> bloquant`, repère
+      `Plan: P<n>/S<k>`), et poser `[x]!` dans l'index (point 9) si `Bloquant ≥ 1`.
+14. **Push (C3)** : `git pull --rebase` puis `git push` — arbre propre et poussé avant de rendre la
+    main. Branche `wip/`, cas cloud : `WORKFLOW.md` §4b (domicile). **En mode orchestré, jamais
+    `wip/`** — cf. « Mode orchestré » en tête. Exemptions : pas de remote, remote injoignable
     (signalé, non bloquant), `wave.lock` (couvert ci-dessus).
 
 Session suivante du plan prête, ou vague/plan à collecter → **bloc de relance obligatoire**, sans
 exception : ouvrir `references/bloc-de-relance.md`.
 
-Toutes les sessions du plan exécutées et validées → ouvrir `references/fin-de-plan.md`.
+Toutes les sessions du plan exécutées et validées, **hors mode orchestré** (la clôture orchestrée
+revient à l'orchestrateur, cf. « Mode orchestré » en tête) → ouvrir `references/fin-de-plan.md`.

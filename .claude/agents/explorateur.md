@@ -1,6 +1,6 @@
 ---
 name: explorateur
-description: Proactively locates files, symbols and conventions in the repository. Use whenever finding something would require scanning more than one file. Returns only paths + roles, never file dumps.
+description: Proactively locates files, symbols and conventions in the repository. Use for broad exploration, multiple hypotheses or verbose results. Precise bounded searches can be performed directly, even across several files. Returns only paths + roles, never file dumps.
 tools: Read, Grep, Glob
 model: haiku
 maxTurns: 15

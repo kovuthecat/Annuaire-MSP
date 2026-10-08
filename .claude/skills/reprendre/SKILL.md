@@ -2,6 +2,7 @@
 name: reprendre
 description: Répondre à « où j'en étais ? » sur un projet laissé de côté, jusqu'à UNE prochaine action proposée. À dérouler en ouverture de session sur un projet dormant, ou si SessionStart signale un STATUS.md en retard.
 model: sonnet
+effort: medium
 ---
 
 # Reprendre un projet
@@ -41,7 +42,8 @@ git log -1 --format=%H -- STATUS.md     # dernier commit touchant STATUS.md
 Passer l'intervalle `<sha>..HEAD` — plus `git status` si l'arbre de travail est sale — à
 **`resumeur-git`**. Il rend une ligne par fichier changé et les signaux notables ; le diff brut ne
 remonte jamais dans la conversation. Si un chemin ou une feature citée reste à localiser :
-**`explorateur`**. Rien d'autre ne se délègue ici, et rien d'autre ne se lit.
+**`explorateur`**. Rien d'autre ne se délègue ici, et rien d'autre ne se lit. Tout appel `Agent`
+porte `run_in_background: false` — sans lui, l'agent part en arrière-plan (`WORKFLOW.md` §5).
 
 ## Étape 3 — Croiser, et signaler les écarts sans les gommer
 

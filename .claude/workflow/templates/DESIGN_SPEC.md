@@ -39,6 +39,10 @@ fichier qu'on envoie tel quel à **Claude Design** (claude.ai) pour y dessiner l
 
 ## Contraintes UI
 
+> Interdits et seuils : `CLAUDE.md` § Règles spécifiques au projet (seule source, ne pas les
+> recopier). Un critère d'aspect sans seuil mesurable (« lisible à 1 m ») est un jugement humain :
+> il va en N2 (`VALIDATION.md`), pas ici.
+
 - <mobile-first ? offline ? accessibilité ? ton visuel ?>
 
 ---

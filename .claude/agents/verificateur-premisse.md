@@ -67,7 +67,7 @@ PREMISSE: CONFIRMEE|REFUTEE|INDECIDABLE[ · comportementale] · PREUVE: <chemin:
 Exemples :
 
 ```
-PREMISSE: REFUTEE · PREUVE: src/parse.ts:44 — la détection renvoie bien un identifiant, le nommage est appliqué en aval dans render.ts:112
-PREMISSE: CONFIRMEE · PREUVE: docs/procedure.md — 32 titres de niveau 2, pas 37 (grep -c '^## ')
-PREMISSE: INDECIDABLE · comportementale · PREUVE: l'affirmation porte sur le comportement au lancement, aucune lecture ne le montre
+PREMISSE: REFUTEE · PREUVE: src/parse.ts:44 — la détection renvoie bien un identifiant, le nommage est appliqué en aval dans render.ts:112 : l'affirmation « la détection est incorrecte, le problème vient du nommage » est fausse
+PREMISSE: CONFIRMEE · PREUVE: docs/procedure.md:12 — 32 titres de niveau 2 (grep -c '^## '), pas 37 : l'affirmation « la procédure ne compte pas 37 étapes » est vraie
+PREMISSE: INDECIDABLE · comportementale · PREUVE: l'affirmation « le traitement termine en moins d'une seconde » porte sur un comportement au lancement, aucune lecture ne le montre
 ```

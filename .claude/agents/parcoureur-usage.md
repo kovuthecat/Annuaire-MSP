@@ -17,8 +17,9 @@ les suivre. Ses interdits (pas de `fork`, pas de worktree, pas de dépendance) v
 ## Premier geste
 
 1. Les outils `mcp__Claude_Browser__*` (`preview_start`, `read_page`, `computer`…) sont-ils dans ta
-   session ? **Non** → ta réponse entière est une seule ligne : `OUTILS NAVIGATEUR ABSENTS`. Rien
-   d'autre, pas d'essai de contournement.
+   session, y compris comme outils différés : les charger par `ToolSearch` avant de rendre
+   `OUTILS NAVIGATEUR ABSENTS` ? Toujours absents → ta réponse entière est une seule ligne :
+   `OUTILS NAVIGATEUR ABSENTS`. Rien d'autre, pas d'essai de contournement.
 2. `tabs_context`, puis `preview_start` avec le `name` reçu. `reused: true` et le même `tabId` sont
    normaux : l'onglet, les cookies et le `localStorage` sont partagés avec les parcours précédents.
 3. `navigate` vers la première route du parcours. **Refusé** : vérifier une fois que le serveur

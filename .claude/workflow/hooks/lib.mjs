@@ -2,10 +2,10 @@
 // Aucune dépendance externe (pas de jq, pas de npm install).
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -153,13 +153,49 @@ export function nbLignes(chemin) {
   return lignes.length;
 }
 
+/** Résout un motif de plafond à segments `<…>` (ex. `plans/P<n>/S<k>.echec.md`, un `<…>` par
+ *  segment de chemin, jamais de `/` à l'intérieur) contre les fichiers RÉELS sous `cwd`. Jusqu'ici
+ *  la seule clé motif de `plafonds.json` ne matchait jamais rien : `depassements()` faisait
+ *  `join(cwd, fichier)` sur le motif LITTÉRAL (`_comment_echec` de `plafonds.json`, T2/P10/S1).
+ *  Dossier absent ou illisible à un niveau → cette branche rend simplement aucun chemin, jamais une
+ *  exception (même tolérance que le reste de ce fichier). */
+function resoudreMotif(cwd, motif) {
+  let chemins = [''];
+  for (const segment of motif.split('/')) {
+    const suivants = [];
+    if (segment.includes('<')) {
+      const regex = new RegExp(
+        '^' + segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/<[^>]+>/g, '[^/]+') + '$'
+      );
+      for (const base of chemins) {
+        let entrees;
+        try {
+          entrees = readdirSync(join(cwd, base));
+        } catch {
+          continue;
+        }
+        for (const entree of entrees) {
+          if (regex.test(entree)) suivants.push(base ? `${base}/${entree}` : entree);
+        }
+      }
+    } else {
+      for (const base of chemins) suivants.push(base ? `${base}/${segment}` : segment);
+    }
+    chemins = suivants;
+  }
+  return chemins;
+}
+
 /** Fichiers de contexte dépassant leur plafond. Renvoie [{fichier, lignes, plafond}]. */
 export function depassements(cwd) {
   const { plafonds } = lirePlafonds();
   const resultats = [];
-  for (const [fichier, plafond] of Object.entries(plafonds)) {
-    const n = nbLignes(join(cwd, fichier));
-    if (n !== null && n > plafond) resultats.push({ fichier, lignes: n, plafond });
+  for (const [motif, plafond] of Object.entries(plafonds)) {
+    const chemins = motif.includes('<') ? resoudreMotif(cwd, motif) : [motif];
+    for (const chemin of chemins) {
+      const n = nbLignes(join(cwd, chemin));
+      if (n !== null && n > plafond) resultats.push({ fichier: chemin, lignes: n, plafond });
+    }
   }
   return resultats;
 }
@@ -170,13 +206,6 @@ export function estFichierDeSuivi(chemin, fichiersDeSuivi) {
   return fichiersDeSuivi.includes(base) || chemin.startsWith('plans/');
 }
 
-/** Racine du dépôt principal, même appelé depuis un worktree lié : `--git-common-dir` pointe
- *  toujours le `.git` d'origine, là où vivent `.claude/wave.lock` et `.claude/vague/`. */
-export function racineDepot(cwd) {
-  const commun = git(cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  return commun ? dirname(commun) : cwd;
-}
-
 /** Vrai si le cwd est un worktree LIÉ, et non l'arbre principal du dépôt. */
 export function worktreeLie(cwd) {
   const propre = git(cwd, 'rev-parse', '--path-format=absolute', '--git-dir');
@@ -184,8 +213,48 @@ export function worktreeLie(cwd) {
   return Boolean(propre && commun && resolve(propre) !== resolve(commun));
 }
 
+/** Racine de l'arbre de travail principal du dépôt — même appelé depuis un worktree lié, même
+ *  quand `.git` y est un FICHIER (gitdir déplacé, cas de ~20 projets depuis le 2026-09-15,
+ *  `docs/decisions/2026-09-24-revue-finale-et-regime-pro.md` point 1). `null` si elle ne peut pas
+ *  être établie avec certitude — jamais une racine devinée : c'est `vagueParallele` qui traduit
+ *  ce `null` en refus par défaut, pas cette fonction.
+ *
+ *  - Hors worktree lié (arbre principal, `.git` dossier OU fichier) : `--show-toplevel` suffit,
+ *    et résout correctement le cas du gitdir déplacé (contrairement à `dirname(--git-common-dir)`,
+ *    qui rendait `C:/Users/Kovu/.gitdirs` — la cause des 6 incidents « commit sous verrou »).
+ *  - Worktree lié d'un dépôt classique (`--git-common-dir` se termine par `.git`, un dossier) :
+ *    `dirname(commun)` reste juste, inchangé.
+ *  - Worktree lié d'un dépôt à `.git` déplacé : sondé le 2026-09-24 (plans/P10/S1.md) — les
+ *    gitdirs n'ont pas de `core.worktree`, et `git worktree list --porcelain` y rend en première
+ *    entrée le gitdir lui-même, jamais l'arbre principal. Aucune détection fiable : `null`.
+ *  - Pas un dépôt du tout : comportement historique inchangé (rend `cwd`) — un `cwd` qui n'est pas
+ *    sous git n'est pas le cas ambigu que cette fonction refuse par défaut, seul un dépôt existant
+ *    dont la racine ne peut pas être établie l'est. */
+export function racineDepot(cwd) {
+  if (!estUnDepot(cwd)) return cwd;
+  if (!worktreeLie(cwd)) {
+    return git(cwd, 'rev-parse', '--path-format=absolute', '--show-toplevel');
+  }
+  const commun = git(cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  if (!commun) return null;
+  if (basename(commun) === '.git') return dirname(commun);
+  return null;
+}
+
+/** Vrai si `racineDepot` ne peut pas établir la racine (worktree lié d'un dépôt à `.git`
+ *  déplacé) — utilisé par `pretooluse-git.mjs` pour distinguer ce cas, dans son message de refus,
+ *  d'une vague parallèle ordinaire. */
+export function racineIntrouvable(cwd) {
+  return racineDepot(cwd) === null;
+}
+
+/** `true` aussi bien sous `.claude/wave.lock` que lorsque la racine du dépôt est introuvable : une
+ *  racine inconnue ne peut pas être vérifiée pour un verrou, donc refus par défaut — comme si le
+ *  verrou était posé (décision du 2026-09-24, point 1). */
 export function vagueParallele(cwd) {
-  return existsSync(join(racineDepot(cwd), '.claude', 'wave.lock'));
+  const racine = racineDepot(cwd);
+  if (racine === null) return true;
+  return existsSync(join(racine, '.claude', 'wave.lock'));
 }
 
 /** Marqueur temporaire propre à une session (garde anti-boucle du Stop, repère HEAD du
@@ -204,7 +273,7 @@ export function repereSession(entree, cwd, suffixe) {
  *  (`docs/decisions/2026-09-07-revue-orpheline.md`), sans que rien ne le rende visible.
  *
  *  Mais le fichier est transitoire : le tri de clôture le verse dans `TASKS.md` puis le supprime
- *  (`/fin-de-tache` point 16). Une session qui clôt un plan voyait donc ses propres revues — faites,
+ *  (`/fin-de-tache`, Relecture). Une session qui clôt un plan voyait donc ses propres revues — faites,
  *  puis rangées dans les règles — signalées comme manquantes : sur disque, « consommée au tri » et
  *  « jamais lancée » sont le même vide. Désormais `.revue.md` est COMMITÉ (C3) : la preuve qu'une
  *  revue a existé n'est plus un repère `Revues:` déclaré à la main au tri, mais git lui-même —
@@ -213,14 +282,28 @@ export function repereSession(entree, cwd, suffixe) {
  *  création : une suppression ultérieure ne referait jamais apparaître le faux positif que le
  *  repère `Revues:` existait pour éviter.
  *
+ *  `debut` (ms, heure du repère) écarte les commits **tirés** par un `git pull` : ils entrent dans
+ *  `depuis..HEAD` sans être de cette session (incident Templates 2026-10-06, deux fois). Une avance
+ *  rapide garde leur date de commit d'origine, un `pull --rebase` ne redate que les commits locaux
+ *  — ceux de la session. Reste compté : un commit fait par une autre session PENDANT celle-ci.
+ *
  *  Fail-open partout : repère illisible, `git` en échec, aucun repère `Plan:` → tableau vide. Ce
  *  contrôle signale un manque, il n'invente jamais une session. */
-export function revuesManquantes(cwd, depuis) {
+export function revuesManquantes(cwd, depuis, debut = null) {
   if (!depuis) return [];
   const { fichiersDeSuivi } = lirePlafonds();
 
-  const changes = (git(cwd, 'diff', '--name-only', `${depuis}..HEAD`) || '')
+  // Commits de la session : ceux de `depuis..HEAD`, moins les tirés (date de commit antérieure au
+  // repère, une minute de marge pour l'horloge).
+  const commits = (git(cwd, 'log', '--format=%H %ct', `${depuis}..HEAD`) || '')
     .split('\n')
+    .map((l) => l.trim().split(' '))
+    .filter(([sha, ct]) => sha && (debut === null || Number(ct) * 1000 >= debut - 60000))
+    .map(([sha]) => sha);
+  if (commits.length === 0) return [];
+
+  const changes = commits
+    .flatMap((sha) => (git(cwd, 'diff-tree', '--no-commit-id', '--name-only', '-r', '--root', sha) || '').split('\n'))
     .map((f) => f.trim().replaceAll('\\', '/'))
     .filter(Boolean);
   // Une session dont les commits ne portent que du suivi (bilan, statuts) n'a pas produit de code :
@@ -228,19 +311,36 @@ export function revuesManquantes(cwd, depuis) {
   const code = changes.filter((f) => !estFichierDeSuivi(f, fichiersDeSuivi) && !f.startsWith('.claude/'));
   if (code.length === 0) return [];
 
-  const messages = git(cwd, 'log', '--format=%B', `${depuis}..HEAD`) || '';
+  // Racine introuvable (worktree lié d'un dépôt à `.git` déplacé) : rien à signaler, jamais une
+  // exception — ce contrôle appartient à l'arbre principal, pas à un worktree qui ne devrait de
+  // toute façon pas exister sous une vague (`racineIntrouvable` fait déjà refuser commit/push).
+  const racine = racineDepot(cwd);
+  if (racine === null) return [];
+
+  const messages = commits.map((sha) => git(cwd, 'log', '-1', '--format=%B', sha) || '').join('\n');
   const refs = new Set();
   for (const m of messages.matchAll(/Plan:\s*(P\d+)\/(S[A-Za-z0-9_-]+)\//g)) refs.add(`${m[1]}/${m[2]}`);
 
+  const toutes = toutesLesSessions(cwd);
   const manquantes = [];
   for (const ref of refs) {
     const [plan, session] = ref.split('/');
-    const dossier = join(racineDepot(cwd), 'plans', plan);
+    const dossier = join(racine, 'plans', plan);
     // Un `.echec.md` dispense de revue : la session n'a pas livré, elle a passé la main.
     if (existsSync(join(dossier, `${session}.echec.md`))) continue;
+    // Une session `low` n'est jamais relue (C7, relecteur-session.md « Sessions à sauter ») —
+    // exemptée ici, au seul endroit qui décide quoi relire pour ce hook (T2, P10/S1), plutôt que
+    // de réclamer une revue que personne ne relira.
+    const entree = toutes.find((s) => s.plan === plan && s.session === session);
+    if (entree && entree.effort === 'low') continue;
     const cheminRevue = `plans/${plan}/${session}.revue.md`;
     const ajoutee = git(cwd, 'log', '--diff-filter=A', '--format=%H', '--', cheminRevue);
-    if (ajoutee) continue;
+    if (ajoutee) {
+      const dernier = git(cwd, 'log', '-1', '--diff-filter=AM', '--format=%H', '--', cheminRevue);
+      const contenu = dernier ? git(cwd, 'show', `${dernier}:${cheminRevue}`) : null;
+      const couverture = /^Couverture\s*:\s*(.+)$/m.exec(contenu ?? '')?.[1].trim();
+      if (/^Bloquant\s*:\s*\d+/m.test(contenu ?? '') && (!couverture || couverture === 'complète')) continue;
+    }
     manquantes.push(ref);
   }
   return manquantes;
@@ -256,16 +356,24 @@ export function familleModele(valeur) {
   return ['opus', 'sonnet', 'haiku', 'fable'].find((f) => s.includes(f)) ?? null;
 }
 
-/** Sessions restant à faire dans les plans ouverts : `[{plan, session, modele, effort}]`.
+/** Table BRUTE de toutes les sessions déclarées dans `plans/P<n>/index.md`, cochées ou non :
+ *  `[{plan, session, modele, effort, statutBrut}]`. Partagée par `sessionsOuvertes` (qui filtre
+ *  sur `[ ]`) et `revuesManquantes` (qui a besoin de l'Effort d'une session quel que soit son
+ *  statut — une session `low` reste exemptée de revue même une fois cochée, T2/P10/S1) : une seule
+ *  lecture de la table, jamais deux parseurs à tenir synchronisés.
  *
- *  Lues dans `plans/P<n>/index.md`, **seul porteur des statuts** (§4a) — jamais dans les `S<k>.md`,
- *  qui les dupliqueraient. Colonnes attendues : Session, Tâches, Titre, Modèle, Effort, Env.,
- *  Dépend de, Zone, Statut ; une ligne qui n'a pas cette forme est ignorée.
+ *  Colonnes attendues : Session, Tâches, Titre, Modèle, Effort, Env., Dépend de, Zone, Statut ;
+ *  une ligne qui n'a pas cette forme est ignorée. `effort` normalisé comme dans
+ *  `plugin/bin/prochaine-action.mjs` (emphase markdown retirée, minuscules) — les deux scripts
+ *  doivent lire le même effort pour la même cellule.
  *
- *  Tolérant de bout en bout : dossier absent, table mal formée, fichier illisible → tableau vide.
- *  Ce qui s'appuie dessus signale un écart, il n'invente jamais une session. */
-export function sessionsOuvertes(cwd) {
-  const dossierPlans = join(racineDepot(cwd), 'plans');
+ *  Tolérant de bout en bout : racine introuvable, dossier absent, table mal formée, fichier
+ *  illisible → tableau vide. Ce qui s'appuie dessus signale un écart, il n'invente jamais une
+ *  session. */
+function toutesLesSessions(cwd) {
+  const racine = racineDepot(cwd);
+  if (racine === null) return []; // racine introuvable : rien à signaler, jamais une exception
+  const dossierPlans = join(racine, 'plans');
   if (!existsSync(dossierPlans)) return [];
   let entrees;
   try {
@@ -284,19 +392,79 @@ export function sessionsOuvertes(cwd) {
     } catch {
       continue;
     }
+    const clos = /^Clos\s*:/m.test(contenu);
     for (const ligne of contenu.split('\n')) {
       if (!ligne.trim().startsWith('|')) continue;
       const cellules = ligne.split('|').slice(1, -1).map((c) => c.trim());
       if (cellules.length < 9) continue;
       const session = /\b(S\d+)\b/.exec(cellules[0]);
       if (!session) continue;
-      // `[ ]` = reste à faire. `[x]`, `[x]!` (revue à bloquant, §4a), `[~]`, l'en-tête et le
-      // séparateur sont hors sujet.
-      if (!/\[\s\]/.test(cellules[8])) continue;
-      out.push({ plan, session: session[1], modele: cellules[3], effort: cellules[4] });
+      out.push({
+        plan,
+        session: session[1],
+        modele: cellules[3],
+        effort: cellules[4].replace(/[`*]/g, '').trim().toLowerCase(),
+        statutBrut: cellules[8],
+        clos,
+      });
     }
   }
   return out;
+}
+
+/** Sessions restant à faire dans les plans ouverts : `[{plan, session, modele, effort}]`.
+ *
+ *  Lues dans `plans/P<n>/index.md`, **seul porteur des statuts** (§4a) — jamais dans les `S<k>.md`,
+ *  qui les dupliqueraient.
+ *
+ *  Tolérant de bout en bout : dossier absent, table mal formée, fichier illisible → tableau vide.
+ *  Ce qui s'appuie dessus signale un écart, il n'invente jamais une session. */
+export function sessionsOuvertes(cwd) {
+  return toutesLesSessions(cwd)
+    // `[ ]` = reste à faire. `[x]`, `[x]!` (revue à bloquant, §4a), `[~]`, l'en-tête et le
+    // séparateur sont hors sujet. Un plan `Clos :` n'a plus rien à faire, abandons compris.
+    .filter((s) => !s.clos && /\[\s\]/.test(s.statutBrut))
+    .map(({ plan, session, modele, effort }) => ({ plan, session, modele, effort }));
+}
+
+/** La prochaine session à lancer : première `[ ]`, dans l'ordre de la table, du plan ouvert le plus
+ *  récent (numéro le plus haut). `null` si aucune. Comparer le modèle courant à TOUTES les sessions
+ *  ouvertes taisait l'écart dès qu'un vieux plan dormant demandait la même famille (incident
+ *  EBM-MSPv2 2026-10-05 : P7/S3 Opus lancée en Sonnet, P4/P5 en Sonnet ouverts). */
+export function prochaineSession(cwd) {
+  const ouvertes = sessionsOuvertes(cwd);
+  if (ouvertes.length === 0) return null;
+  const plus = Math.max(...ouvertes.map((s) => Number(s.plan.slice(1))));
+  return ouvertes.find((s) => s.plan === `P${plus}`) ?? null;
+}
+
+/** Session lancée par une tâche planifiée ? Le transcript porte, en tête, un enregistrement
+ *  `queue-operation` / `enqueue` dont `content` commence par `<scheduled-task name=` — pas forcément
+ *  en ligne 1 (l'ordre du fichier ne suit pas les horodatages). On lit une tête bornée (64 Kio) et on
+ *  s'arrête au premier enregistrement `user` / `assistant`. Fichier absent, illisible ou champ absent →
+ *  `false` : un faux positif retirerait la garde à une session interactive, un faux négatif ne coûte
+ *  qu'un tour. Ne lève jamais. */
+export function estSessionPlanifiee(transcriptPath) {
+  let fd = null;
+  try {
+    if (typeof transcriptPath !== 'string' || transcriptPath === '' || !existsSync(transcriptPath)) return false;
+    fd = openSync(transcriptPath, 'r');
+    const tampon = Buffer.alloc(65536);
+    const lu = readSync(fd, tampon, 0, tampon.length, 0);
+    for (const ligne of tampon.subarray(0, lu).toString('utf8').split('\n')) {
+      let e;
+      try { e = JSON.parse(ligne); } catch { continue; }
+      if (!e || typeof e !== 'object') continue;
+      if (e.type === 'user' || e.type === 'assistant') return false;
+      if (e.type === 'queue-operation' && e.operation === 'enqueue' &&
+          typeof e.content === 'string' && e.content.startsWith('<scheduled-task name=')) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  } finally {
+    if (fd !== null) { try { closeSync(fd); } catch { /* rien */ } }
+  }
 }
 
 export function repondre(objet) {
@@ -329,15 +497,20 @@ export function versionSuperieure(a, b) {
  *  vendoré du projet (`.claude/workflow/manifest.json`, champ `source` : un slug
  *  `propriétaire/dépôt`, l'URL interrogée étant `https://github.com/<slug>`).
  *
- *  Cache 24 h dans `.git/workflow-version.json` (`{ version, lu }`) : un `git ls-remote` sur un
- *  dépôt public coûte un aller-retour réseau à CHAQUE SessionStart sans lui. Plafond de 3 s sur
+ *  Cache 24 h sous le VRAI gitdir (`{ version, lu }`, via `--git-path`, jamais
+ *  `join(racine, '.git', …)` : quand `.git` est un FICHIER — gitdir déplacé, ~20 projets depuis le
+ *  2026-09-15 — ce chemin littéral n'existe pas, le cache ne s'écrivait ni ne se relisait jamais, et
+ *  `git ls-remote` retentait le réseau à CHAQUE SessionStart, T2/P10/S1) : un `git ls-remote` sur un
+ *  dépôt public coûte un aller-retour réseau à chaque fois sans ce cache. Plafond de 3 s sur
  *  l'appel réseau — un réseau lent ou injoignable ne doit jamais coûter le hook au-delà de ce délai.
  *  Échec (hors ligne, dépôt introuvable, délai dépassé, pas de manifeste) → `null`, cache JAMAIS
  *  écrit : un état transitoire ne doit pas geler `null` pendant 24 h la prochaine fois que le
  *  réseau revient. */
 export function derniereVersionPubliee(cwd) {
   const racine = racineDepot(cwd);
-  const cheminCache = join(racine, '.git', 'workflow-version.json');
+  if (racine === null) return null; // racine introuvable : jamais de réseau, jamais une exception
+  const cheminCache = git(racine, 'rev-parse', '--path-format=absolute', '--git-path', 'workflow-version.json');
+  if (!cheminCache) return null; // `git` en échec (pas un dépôt) : jamais de cache, jamais une exception
   const maintenant = Date.now();
   const TTL_MS = 24 * 60 * 60 * 1000;
 

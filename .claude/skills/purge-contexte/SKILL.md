@@ -2,13 +2,18 @@
 name: purge-contexte
 description: Ramener les fichiers de contexte sous leur plafond de lignes en archivant sans perdre d'information. À dérouler quand un hook signale un dépassement, ou avant de reprendre un projet dormant.
 model: haiku
+effort: low
 ---
 
 # Purge du contexte
 
-**Règle absolue : on ne supprime pas, on déplace.** Un fichier de contexte est cher parce qu'il est
-relu à chaque session — mais une information perdue coûte bien plus qu'un fichier long.
-En cas de doute : déplacer vers `docs/`, jamais effacer.
+**Règle unique : on ne supprime que ce que git garde déjà et qu'aucun fichier vivant ne cite** —
+l'historique de `STATUS.md` (il reste dans `git log`), un item `VALIDATION.md` tranché (il reste
+dans le commit qui l'a résolu), une tâche `TASKS.md` dont le plan est clos (elle reste dans
+l'`index.md`), une section `PROJECT_MAP.md` vide ou une feature disparue. **Tout le reste se
+déplace** vers `docs/` — jamais effacé. Un fichier de contexte est cher parce qu'il est relu à
+chaque session — mais une information perdue coûte bien plus qu'un fichier long. En cas de doute :
+déplacer, jamais effacer.
 
 Plafonds : source unique = `.claude/workflow/hooks/plafonds.json` (lu aussi par les
 hooks) — ne jamais recopier les valeurs ici, elles dérivent et finissent par diverger.

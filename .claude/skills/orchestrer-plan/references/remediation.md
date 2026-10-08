@@ -5,6 +5,33 @@ actions (`SKILL.md`). Budget, table nature → modèle, dépendances, vérificat
 mesure, appel d'agent prêt à recopier (`subagent_type`, `model`) : rendus par `prochaine-action.mjs`
 (C2), rien de tout ça ne se recalcule ici.
 
+## Table des natures
+
+Cinq natures possibles sur `Nature :` (`WORKFLOW.md` §9a pour les trois premières) ; ce que
+`prochaine-action.mjs` en fait quand la session est en échec — aucun budget de reprise consommé n'y
+est recalculé, ce tableau ne fait que nommer l'action rendue (T5, P10/S2) :
+
+| Nature | Action rendue |
+| --- | --- |
+| `environnement` | `reprendre`, même modèle |
+| `exécution` | `reprendre` (escalade : voir la table d'escalade ci-dessous) ou `enqueter` |
+| `prémisse` | `verifier-premisse` (ou `question` si une mesure commitée la prouve déjà) |
+| `filtre` | `question` — jamais repris à l'identique |
+| `interruption` | `relancer-interrompue` — hors budget, avant tout `pousser` |
+
+## Table d'escalade (nature `exécution`)
+
+Décision du 2026-09-24, points 4 et 6 — Opus économe en permanence (T6, P10/S2) :
+
+| Tentative | Modèle |
+| --- | --- |
+| 1re reprise | le modèle de l'index, inchangé |
+| 2e reprise | un cran au-dessus (Haiku→Sonnet, Sonnet→Opus) |
+| Passe Opus (reprise ou enquête, session Opus comprise) | **une seule par plan** — au-delà : `question`, source `budget-opus` |
+
+Le décompte vit dans la ligne `Remédiation Opus :` de l'index (`squelette-index.md`), incrémentée
+par l'orchestrateur, jamais recalculée sur les `.echec.md` présents (ils disparaissent au PASS).
+
 ## `verifier-premisse`
 
 Affirmation reprise depuis la section « Ce qu'il faudrait pour que ça passe » du rapport, **elle
@@ -15,8 +42,7 @@ Agent({
   description: "P<n>/S<k> prémisse",
   subagent_type: "verificateur-premisse",
   run_in_background: false,
-  prompt: "Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
-Vérifie cette affirmation contre le dépôt : « <l'affirmation, telle quelle> ».
+  prompt: "Vérifie cette affirmation contre le dépôt : « <l'affirmation, telle quelle> ».
 Réponse finale en UNE ligne, exactement : PREMISSE: CONFIRMEE|REFUTEE|INDECIDABLE · PREUVE: <une phrase>"
 })
 ```
@@ -24,7 +50,9 @@ Réponse finale en UNE ligne, exactement : PREMISSE: CONFIRMEE|REFUTEE|INDECIDAB
 Agent introuvable : repli `subagent_type: "workflow:verificateur-premisse"` ; encore introuvable →
 `subagent_type: "general-purpose"`, `model: "haiku"`, prompt « Lis `.claude/agents/verificateur-premisse.md` et tiens ce rôle… ». Quatre issues :
 
-- **`REFUTEE`** → rappeler le script (traite la session comme `exécution`) + incident (§9b, nature `prémisse`).
+- **`REFUTEE`** → ajouter au `.echec.md` la ligne `Premisse : refutee · <preuve>` (la preuve rendue
+  par `verificateur-premisse`, telle quelle), committer, puis rappeler le script — qui traite
+  désormais la session comme `exécution` (T5, P10/S2) — + incident (§9b, nature `prémisse`).
 - **`CONFIRMEE`** → `question` (Étape 3 de `SKILL.md`), motif `etape6`.
 - **`INDECIDABLE`** → `question`, motif « prémisse invérifiable par lecture : <l'affirmation> ».
 - **`INDECIDABLE · comportementale`** → `question`, « à sonder » + option **exploration ouverte**
@@ -41,12 +69,17 @@ court ci-dessous ; une manque → à froid.
 ```
 SendMessage({
   to: <identifiant d'agent de la session>,
-  message: "Reprends : <le geste de `Blocage :`, tel quel>. Réponse finale en UNE ligne, exactement :
-VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
+  message: "Reprends : <le geste de `Blocage :`, tel quel>. Pas de travail de fond : tout appel Agent
+que tu fais porte run_in_background: false, et N0 (n0.mjs) s'exécute au premier plan — aucune
+commande détachée. Incrémente la ligne `Tentatives :` de ton rapport avant de rendre la main, sauf
+si tu le supprimes ; réécris ton `.echec.md` si tu échoues de nouveau. Réponse finale en UNE ligne,
+exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION · MOTIF: <une phrase> · RAPPORT: <chemin, ou ->"
 })
 ```
 
-Consomme une reprise du budget comme à froid ; en échec, **ne se retente pas** — à froid ensuite, plus jamais un `SendMessage` sur cette session.
+Consomme une reprise du budget comme à froid ; en échec, **ne se retente pas** — à froid ensuite, plus jamais un `SendMessage` sur cette session. Modèle cible Opus, remédiation Opus pas encore
+consommée sur ce plan : incrémenter `Remédiation Opus :` dans l'index (la créer à 1 sous l'objectif
+si elle manque), dans le même commit que l'envoi ou juste avant.
 
 ## `reprendre` — à froid
 
@@ -64,8 +97,6 @@ P<n>). Mode orchestré. Reste dans l'arbre de travail courant : n'ouvre AUCUN wo
 <si prémisse réfutée : « La prémisse du rapport a été vérifiée et RÉFUTÉE : <preuve, telle quelle>.
 Traite la session comme une nature exécution et cherche la cause ailleurs. »>
 <si `option` : « Applique l'option <option> de la section ## Issues du rapport, puis rejoue la tâche. »>
-<si bloquant de revue corrigeable (C5, quatre conditions du correctif localisé) : « Ce bloquant de revue (§9a) tient les quatre conditions : <bloquant, tel
-quel, depuis plans/P<n>/S<k>.revue.md>. Applique le correctif, commit séparé, rejoue la gate. »>
 Tout appel Agent que tu fais porte run_in_background: false, et N0 (n0.mjs) s'exécute au premier
 plan — et aucune commande n'est détachée. Ta réponse finale CLÔT ton tour : ce qui finit après elle
 n'est lu par personne, et « j'attends une tâche de fond » n'est pas un retour.
@@ -76,6 +107,11 @@ Réponse finale en UNE ligne, exactement : VERDICT: PASS|FAIL|ENQUETE|DECISION �
 
 Repli à trois crans si `subagent_type` ne résout pas — même forme et même annonce au cran 3 qu'à
 l'Étape 1 de `SKILL.md` (T5) : `session-<effort>` → `workflow:session-<effort>` → `claude` (annoncé).
+
+Avant de lancer, `modele` Opus : incrémenter `Remédiation Opus :` dans l'index (la créer à 1 sous
+l'objectif si elle manque), dans le même commit que le lancement ou juste avant (`prochaine-action.mjs`
+a déjà refusé de rendre cette action si une passe Opus était déjà consommée sur ce plan — ce geste ne
+fait qu'enregistrer celle-ci).
 
 `fork` interdit sans condition. Ne jamais recopier le `.echec.md`/`.revue.md` au-delà de la ligne citée. Collecte : mêmes règles que l'Étape 1 de `SKILL.md`
 (`partial` = `FAIL`, recoupement par les commits). `PASS` → rappeler le script ; `ENQUETE`/`FAIL` →
@@ -106,6 +142,9 @@ Repli à trois crans si `subagent_type` ne résout pas — identique à celui de
 ci-dessus (lui-même celui de l'Étape 1 de `SKILL.md`, T5) : `session-<effort>` →
 `workflow:session-<effort>` → `claude` (annoncé).
 
+Avant de lancer, `modele` Opus : incrémenter `Remédiation Opus :` dans l'index (la créer à 1 sous
+l'objectif si elle manque), dans le même commit que le lancement ou juste avant.
+
 - **`PISTE`** → rappeler le script : il rend `reprendre` si le budget le permet, sinon `question`.
 - **`OPTIONS`** → le script lit déjà `Auto :` pour décider `reprendre`/`question` ; s'il rend `question`, les options viennent de la section `## Issues` du
   rapport (ci-dessous) — l'**exploration ouverte** (C6) en fait partie quand aucune autre n'est
@@ -120,3 +159,28 @@ sed -n '/^## Issues/,/^## /p' plans/P<n>/S<k>.echec.md
 Les lignes de `## Issues` **sont** les options de l'Étape 3 de `SKILL.md` : recopiées sans rien
 changer, ni la forme ni l'ordre ; un ancien rapport d'une autre forme se recopie tel quel aussi.
 Absente ou vide → relayer le motif seul et le dire.
+
+## `relancer-interrompue`
+
+Coupure par quota (nature `interruption`, écrite par l'orchestrateur à la collecte, `SKILL.md`
+Étape 1) — **hors budget** : ni reprise ni enquête décomptée, dans aucun des deux cas ci-dessous.
+
+1. Attendre la réinitialisation du quota. Le dire à l'utilisateur en une ligne, avec l'heure si le
+   message de coupure la donne.
+2. `SendMessage` à l'identifiant de la ligne `Agent :` du rapport — **exception écrite** aux trois
+   conditions du canal court (`WORKFLOW.md` §9c) : N0 peut être rouge en pleine édition, ce n'est
+   pas ce qu'on vérifie ici.
+
+```
+SendMessage({
+  to: <identifiant de la ligne `Agent :` du rapport>,
+  message: "Quota revenu. Reprends où tu t'es arrêtée ; l'arbre contient ton travail partiel. Fin :
+`/fin-de-tache` Mode orchestré, dernière ligne `VERDICT:`."
+})
+```
+
+3. `SendMessage` en échec (agent introuvable, ne répond plus) → reprise **à froid** sur le même
+   modèle, par le prompt de `reprendre — à froid` ci-dessus, avec le `.echec.md` en entrée.
+4. Dans les deux cas, **aucune reprise du budget n'est consommée** — hors budget signifie aussi hors
+   décompte.
+5. Au `PASS` qui suit, supprimer le `.echec.md` par un commit (comme toute reprise résolue).

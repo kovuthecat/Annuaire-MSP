@@ -25,7 +25,8 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 - Date : YYYY-MM-DD · Branche : <ou — ; obligatoire (nommée, poussée) si Régime : ouvert>
 
 ## Lire (commun à la session — point de départ, pas une clôture)
-`.claude/workflow/EXECUTANT.md` (toujours en premier), puis :
+- Lire : `.claude/workflow/EXECUTANT.md`
+<ajouter les lectures communes au même format, une ligne par chemin>
 <fichiers + portée précise (section / fonction / lignes) — point de départ de la lecture ; elle
  reste ouverte au-delà (C5, `WORKFLOW.md` §1) — seule l'écriture reste bornée à « Modifier » / la
  zone du plan>
@@ -58,6 +59,10 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
  qu'il faut y regarder. « Fais comme là » remplace six lignes d'étapes (mesure B4).>
 
 ### Lire / Modifier
+- Lire : `chemin-existant`
+- Modifier : `chemin-existant`
+- Modifier : `nouveau-chemin` (créer)
+<!-- Une ligne par chemin ; pas de glob ni d’accolades. Le script verifier-plan.mjs les contrôle. -->
 <en plus du commun : lectures spécifiques ; fichiers à modifier/créer — liste exhaustive, **ceinture
  comprise**. La ceinture, c'est ce qui fige les sorties des fichiers modifiés : fixtures golden,
  compteurs codés en dur, métadonnées validées au build. Toucher un générateur les casse
@@ -71,9 +76,11 @@ règles qui gouvernent ce qu'on y met sont restées dans le corps de la skill ; 
 1. …
 
 ### Validation
-- **N0 auto (bloque le commit)** : `node .claude/workflow/bin/n0.mjs [--seulement <nom>]`
+- **N0 auto (bloque le commit)** : `node .claude/workflow/bin/n0.mjs --session P<n>/S<k>`
   (projet vendoré : `node .claude/workflow/bin/n0.mjs`) → <résultat attendu> — **jamais un
-  sous-agent** (C1) : la commande s'exécute au premier plan, comme toute commande
+  sous-agent** (C1) : la commande s'exécute au premier plan, comme toute commande. Index
+  `Preuve N0 : non requise` : écrire `— (non requise : <motif de sansCommande>)` à la place de la
+  commande (`verifier-plan.mjs` l'accepte alors)
 - **Tests** : <créés/mis à jour : fichiers, cas couverts> — ou « — » justifié en 1 ligne
 - **N1 visuel auto** : <écran/parcours à vérifier au navigateur in-app, ou `—`> → `/verif-visuelle`
 - **N2 humain (jugement esthétique/UX)** : <checklist ou `—`> → à consigner dans `VALIDATION.md`

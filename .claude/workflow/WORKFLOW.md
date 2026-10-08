@@ -1,8 +1,16 @@
 # WORKFLOW.md — Modèles, effort, plans, validation, garde-fous
 
-Source unique : répartition du travail, format des plans, niveaux de validation ; les autres fichiers y renvoient. Modèles actuels : Fable 5 · Opus 5 · Sonnet 5 · Haiku 4.5. Squelettes de plan : skill `/nouveau-plan`, pas ici.
+Source unique : répartition du travail, format des plans, niveaux de validation ; les autres fichiers y renvoient. Modèles actuels : Fable 5.1 · Opus 5.5 · Sonnet 5 · Haiku 4.5. Squelettes de plan : skill `/nouveau-plan`, pas ici.
 
 ## 1. Principe directeur
+### Glossaire — mots à double sens
+
+- *gate* : contrôle qui refuse sans demander, jamais « attendre un oui ».
+- *session* : un `S<k>.md` exécuté, pas une conversation.
+- *verdict* : la ligne `VERDICT:` d'une session orchestrée ; ses commits en font foi.
+- *bloquant* : `Bloquant : n` d'une revue de session (la sévérité d'usage est un autre mot).
+- *vague* : groupe de sessions de l'ordonnancement.
+- *clôture* : `fin-de-plan.md`, marqueur `Clos :`.
 
 **Opus pense, les autres font.** Opus (cher) : design, cadrage, écrit les plans. Fable : hors workflow, à la main, jamais dans une grille ni une skill. Sonnet : exécute le cadré moyen, juge le code. Haiku : exécute le cadré mécanique. Claude Design (claude.ai) : maquette UI au cadrage — entrée `ARCHITECTURE.md`, sortie `design/maquettes/`, le câblage suit la maquette.
 
@@ -65,6 +73,8 @@ Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + 
 
 Seuls outils et modèle forcent une reconstruction complète (aucune échappatoire). Minimum cacheable : 512 (Opus 5), 1 024 (Sonnet 5), **4 096 (Haiku 4.5)**. Une entrée ne remonte que 20 positions. Conséquences : régler modèle **et** effort avant de lancer (§3) évite de repayer le préfixe ; `/compact` juste avant un changement **délibéré**, jamais avant une escalade (le résumé perdrait les impasses qui la justifient) ; chaque sous-agent part à froid, payé plein tarif — d'où le socle court. **Lancer une vague en décalé** : le cache ne se lit qu'après le streaming de la première réponse — sur 4 sessions, la part partagée passe d'environ 5,0× à 1,55× le prix d'entrée.
 
+**Quota Pro** : vagues séquentielles par défaut (déjà la règle §4b) — le parallèle concentre la dépense dans la même fenêtre de quota, à réserver aux zones vraiment disjointes.
+
 ## 4. Plans
 
 Backlog : `TASKS.md`. Un plan est précédé d'une **décision écrite** : QUOI/POURQUOI pas tranché, idée neuve comprise → `/cadrer`, sortie dans `docs/decisions/`. Question non identifiée sur un existant qui a dérivé → `/revue-de-conception` (interview, rapport dans `docs/revues/`). Puis Opus déroule `/nouveau-plan`, qui crée `plans/P<n>/` :
@@ -93,7 +103,7 @@ Qui coche `index.md` : un seul juge à la fois, décidé par `.claude/wave.lock`
 | `[x]` | `PASS`, revue sans bloquant ou sans diff à relire |
 | `[x]!` | `PASS`, **revue à bloquant** — commité, défaut connu, non trié |
 
-Verdict **auto-déclaré** par la session qui écrit le code ; la relecture (`relecteur-session`) arrive après et **committe** `.revue.md` (§4b). `/fin-de-tache` verse un `[x]!` dans `TASKS.md` — **ce versement le passe à `[x]`** ; un `[x]!` qui reste est un défaut non arbitré, jamais un oubli. Il ne relance rien, satisfait les dépendances comme un `[x]`.
+Verdict **auto-déclaré** par la session qui écrit le code ; la relecture (`relecteur-session`) arrive après. Qui **committe** `.revue.md` : l'**orchestrateur**, en mode orchestré (`/orchestrer-plan` Étape 2) ; la **session elle-même**, en chaînage manuel (`/fin-de-tache`, Relecture) — jamais les deux (§4b). Le **versement** d'un `[x]!` dans `TASKS.md` a lieu **à la clôture du plan** (`fin-de-plan.md`) — **ce versement le passe à `[x]`** ; un `[x]!` qui reste est un défaut non arbitré, jamais un oubli. Il ne relance pas le code ; il satisfait les dépendances seulement si la revue porte `Dépendances : libres`. Une revue interrompue est reprise une fois, puis signalée en question.
 
 ### 4b. Commits, push et parallélisation — *domicile, les autres fichiers renvoient ici*
 
@@ -103,13 +113,13 @@ Verdict **auto-déclaré** par la session qui écrit le code ; la relecture (`re
 Plan: P<n>/S<k>/T<m>
 ```
 
-- Committe : fichiers de ses tâches, son `S<k>.md`, son `.echec.md`, et — désormais — sa propre `.revue.md` une fois déposée. Rien d'autre.
+- Committe : fichiers de ses tâches, son `S<k>.md`, son `.echec.md`. Rien d'autre — qui committe `.revue.md` dépend du mode (§4a).
 - **N0 vert d'abord**, via `n0.mjs` (§5). **À jour avant de commencer** (`git pull --rebase`, `SessionStart` le constate — §7).
 
 **Fin de tour = arbre propre et poussé (C3)** : plus de push « groupé » de fin de vague/plan — un commit local n'existe pour aucune autre machine, cloud compris.
 
-- `Stop` refuse si commits d'avance sur l'amont ou fichiers suivis non commités (§7). Exemptions : pas de remote, `.claude/wave.lock`, remote injoignable (signalé, jamais bloquant).
-- `git pull --rebase` avant de pousser ; conflit → **question**. Arrêt en cours de tâche/N0 rouge : branche `wip/P<n>-S<k>` poussée avec `.echec.md`, jamais `main`.
+- `Stop` refuse si commits d'avance sur l'amont ou fichiers suivis non commités (§7). Exemptions : pas de remote, `.claude/wave.lock`, remote injoignable (signalé, jamais bloquant), session planifiée (rappel seulement).
+- `git pull --rebase` avant de pousser ; conflit → **question**. Arrêt en cours de tâche/N0 rouge : en chaînage manuel, branche `wip/P<n>-S<k>` poussée avec `.echec.md`, jamais `main` ; en mode orchestré, `.echec.md` commité **sur la branche courante** — l'orchestrateur partage l'arbre de la session.
 - `main` impossible (cloud) : pousser la branche et la **nommer** en relance (`Commit : <sha> poussé sur <branche>`) — premier geste suivant : `git merge-base --is-ancestor <sha> HEAD`.
 - **`.revue.md` et `.echec.md` sont commités** ; le repère `Revues:` disparaît (git seul juge, §7) ; `[x]!` reste (§4a).
 
@@ -119,14 +129,14 @@ Plan: P<n>/S<k>/T<m>
 
 `git add -A`/`.`/`commit -a` refusés par hook. Fin de plan : `STATUS.md`/`TASKS.md`/`VALIDATION.md` à jour, un dernier push.
 
-## 5. Déléguer au lieu de faire
+## 5. Recherche directe et délégation
 
 Chercher, lancer une commande verbeuse ou lire une doc externe remplit le contexte de traces payées à chaque tour. Huit agents **de délégation**, chacun ne rend que sa **conclusion** :
 
-- `explorateur` → localiser (>1 fichier). `analyste-flux` → lire **comment** un flux fonctionne. `resumeur-git` → résumer diff/historique. `lecteur-doc` → lire une doc externe.
-- `relecteur-session` → relire une session close — ou une **vague entière**, `low` exemptées (C7) — **déposer et committer** `.revue.md` (`/fin-de-tache`).
+- `explorateur` → exploration large ou plusieurs pistes ; recherche précise et sortie ≤30 lignes en direct, même multi-fichiers. `analyste-flux` → lire **comment** un flux fonctionne. `resumeur-git` → résumer diff/historique. `lecteur-doc` → lire une doc externe.
+- `relecteur-session` → relire une session close — ou une **vague entière**, `low` exemptées (C7) — **déposer** `.revue.md` ; qui la committe ensuite dépend du mode (§4a).
 - `verificateur-plan` → confronter un plan écrit au dépôt avant commit (`/nouveau-plan` 4b).
-- `verificateur-premisse` → confronter au dépôt l'affirmation d'une session en échec, **avant** qu'elle n'arrête le plan (`/orchestrer-plan` 5c, §9c).
+- `verificateur-premisse` → confronter au dépôt l'affirmation d'une session en échec, **avant** qu'elle n'arrête le plan (`/orchestrer-plan` action `verifier-premisse`, §9c).
 - `critique-plan` → confronter un plan à ses risques **avant** approbation (`/nouveau-plan` 1bis) ; ne juge ni périmètre produit ni style.
 
 Une seconde famille cohabite dans `plugin/agents/` sans en faire partie : les quatre agents
@@ -139,26 +149,30 @@ proactivement, jamais par une session de plan.
 
 **N0 n'est plus un agent, c'est un script (C1)** : `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` dans ce dépôt) — **au premier plan, comme toute commande**, sans sous-agent ni frontière de tour.
 
-**Les quatre derniers** : personne ne relit son propre travail (découpe fausse, faille de plan, PASS vide, prémisse fausse). Les huit agents de délégation se lancent **au premier plan** (invariant : `EXECUTANT.md`, domicile §5b) — leur verdict conditionne la suite. `relecteur-session` : dernier geste, jamais en arrière-plan (la revue ne serait jamais déposée).
+**Les quatre derniers** : personne ne relit son propre travail (découpe fausse, faille de plan, PASS vide, prémisse fausse). Les huit agents de délégation se lancent **au premier plan** (invariant : `EXECUTANT.md`, domicile §5b) — leur verdict conditionne la suite. **`run_in_background: false` s'écrit à chaque appel** : l'outil `Agent` part en arrière-plan quand le paramètre manque (constat du 2026-10-05). `relecteur-session` : dernier geste, jamais en arrière-plan (la revue ne serait jamais déposée).
 
 **`fork`** : contexte courant nécessaire **et** bruit à retenir dehors — jamais pour une session de plan ni une reprise (`docs/decisions/2026-08-30-contexte-des-sous-agents.md`). Pas de `memory:` sur les huit : légitime seulement sans source de dépôt déjà existante.
 
 ## 5b. Sessions & voies d'orchestration — *domicile, les autres fichiers renvoient ici*
 
-**Invariant de lancement.** Tout bloc `Agent({ … })` de `plugin/**` porte, au mot près :
+**Invariant de lancement.** Tout bloc `Agent({ … })` qui lance une session, une reprise ou une
+enquête porte, au mot près :
 
 ```
 Lis .claude/workflow/EXECUTANT.md en entier avant ton premier geste : il porte les invariants de lancement.
 ```
 
-Une paraphrase dérivera. `publier.mjs` vérifie sa présence, jamais son sens.
+Une paraphrase dérivera. `publier.mjs` vérifie sa présence, jamais son sens. Les autres blocs
+(`relecteur-session`, `verificateur-premisse`, `verificateur-plan`, `critique-plan`…) peuvent porter
+la ligne sans y être tenus (décision du 2026-09-24, point 9) : `EXECUTANT.md` n'est lu que par les
+agents qui exécutent.
 
 **Jamais deux sessions d'un même plan dans une seule conversation.**
 
 - **À la main** : `/fin-de-tache` pose une pastille qui lance la suivante.
 - **Vague entière** : `/orchestrer-plan` n'improvise plus (C2) — chaque tour appelle `prochaine-action.mjs P<n>` et exécute l'action rendue (lancer, reprendre, vérifier une prémisse, relire, pousser, question, ou `fini`), dérivée des fichiers commités. Il exécute, ne décide plus.
 
-**Voie normale : sous-agent**, en arrière-plan, quel que soit l'environnement — hérite navigateur in-app et environnement complet de l'orchestration (permissions, MCP), verdict = ses commits (§4b) ; la session d'orchestration reste ouverte. **Cet arrière-plan est celui de la session entière, pas de ses délégations internes** : une fois lancée, ses appels aux trois agents de délégation et son `n0.mjs` restent au **premier plan** (`docs/decisions/2026-09-04-delegation-au-premier-plan.md`).
+**Voie normale : sous-agent**, en arrière-plan, quel que soit l'environnement — hérite navigateur in-app et environnement complet de l'orchestration (permissions, MCP), verdict = ses commits (§4b) ; la session d'orchestration reste ouverte. **Cet arrière-plan est celui de la session entière, pas de ses délégations internes** : une fois lancée, ses appels aux quatre agents de délégation et son `n0.mjs` restent au **premier plan** (`docs/decisions/2026-09-04-delegation-au-premier-plan.md`).
 
 **L'effort d'un sous-agent vient de son frontmatter, sinon de la conversation qui le lance** (l'outil `Agent` règle le modèle, pas l'effort). Une session de plan se lance en `subagent_type: "session-<effort lu dans l'index>"` : c'est le frontmatter de cet agent nommé qui pose l'effort, en trois temps — frontmatter de l'agent de session, sinon niveau de conversation ; et si l'agent ne résout pas (valeur d'index absente de la famille `session-<effort>`), le repli est annoncé par `/orchestrer-plan`, pas recopié ici. Voie headless retirée : une seule voie, le sous-agent (`docs/decisions/2026-09-12-une-seule-voie-d-orchestration-et-hooks-testes.md`).
 
@@ -185,15 +199,15 @@ Cinq hooks (`.claude/workflow/hooks/`, câblés dans `hooks.json`) appliquent ce
 
 | Hook | Événement | Ce qu'il fait |
 | --- | --- | --- |
-| `sessionstart-contexte.mjs` | SessionStart | Injecte `CLAUDE-BASE.md` (sauf reprise) ; signale retard sur `origin/main`, mauvaise branche, vague en cours, modèle hors plan, `STATUS.md` ≥3 commits de retard, plafonds dépassés, dossier synchronisé sans témoin, et — **C4** — workflow vendoré en retard sur le dernier tag (`ls-remote --tags`, cache 24 h/3 s, muet hors ligne/à jour/sans manifeste). Mémorise `HEAD` pour `Stop`. |
-| `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `add -A`/`.`/`--all`, `commit -a` ; refuse commit/push/worktree sous `.claude/wave.lock`. |
+| `sessionstart-contexte.mjs` | SessionStart | Injecte `CLAUDE-BASE.md` (sauf reprise) ; signale retard sur `origin/main`, mauvaise branche, vague en cours, modèle hors plan, `STATUS.md` ≥3 commits de retard, plafonds dépassés, dossier synchronisé sans témoin, — **C4** — workflow vendoré en retard sur le dernier tag (`ls-remote --tags`, cache 24 h/3 s, muet hors ligne/à jour/sans manifeste), et, dans le dépôt source, un plugin **chargé** en retard sur le `plugin.json` de la copie de travail (poste pas rechargé après `publier.mjs`). Mémorise `HEAD` pour `Stop`. |
+| `pretooluse-git.mjs` | PreToolUse (Bash/PowerShell/EnterWorktree) | Refuse `add -A`/`.`/`--all`, `commit -a` (options globales `git -C`/`git -c` tolérées avant la sous-commande) ; refuse commit/push/worktree sous `.claude/wave.lock`, et **par défaut** quand la racine du dépôt est introuvable (worktree lié d'un `.git` déplacé). |
 | `posttooluse-format.mjs` | PostToolUse (Edit/Write) | Prettier si configuré, silencieux sinon. |
 | `postmodelswitch-journal.mjs` | PostModelSwitch | Journalise chaque changement (`.claude/journal-modeles.jsonl`), jamais bloquant. |
-| `stop-contexte.mjs` | Stop | **Gate** (§9c) : refuse si code modifié sans suivi touché, session commitée sans `.revue.md` ajouté par un commit (repère `Revues:` disparu — §4a), plafond dépassé, ou — **C3** — commits d'avance/fichiers suivis non commités. Exemptions : pas de remote, `wave.lock`, remote injoignable (avertissement). Bloque une fois, rappelle si la liste change ; sous `wave.lock`, seuls les plafonds comptent. |
+| `stop-contexte.mjs` | Stop | **Gate** (§9c) : refuse si code modifié sans suivi touché, session commitée sans `.revue.md` ajouté par un commit (repère `Revues:` disparu — §4a), plafond dépassé, ou — **C3** — commits d'avance/fichiers suivis non commités. Exemptions : pas de remote, `wave.lock`, remote injoignable (avertissement), session planifiée (rappel seulement), sessions `low` (C7 — jamais de revue attendue). Bloque une fois, rappelle si la liste change ; sous `wave.lock`, seuls les plafonds comptent. |
 
 ### Plafonds de lignes
 
-Source : `.claude/workflow/hooks/plafonds.json` — `STATUS.md` 80 · `TASKS.md` 60 · `VALIDATION.md` 60 · `DECISIONS.md` 150 · `PROJECT_MAP.md` 200 · `CLAUDE.md` 200 · `plans/P<n>/S<k>.echec.md` 40 (posé comme donnée — `depassements()` ne compare qu'un chemin fixe, pas un motif variable : à câbler dans `lib.mjs`). Un dépassement est une **gate** (§9c) : déclenche `/purge-contexte` sans rien demander.
+Source : `.claude/workflow/hooks/plafonds.json` — `STATUS.md` 80 · `TASKS.md` 60 · `VALIDATION.md` 60 · `DECISIONS.md` 150 · `PROJECT_MAP.md` 200 · `CLAUDE.md` 200 · `plans/P<n>/S<k>.echec.md` 40 (motif à segments `<…>`, résolu contre les plans réels du dépôt par `depassements()`). Un dépassement est une **gate** (§9c) : déclenche `/purge-contexte` sans rien demander.
 
 ## 8. Anti-patterns
 
@@ -223,7 +237,7 @@ Diagnostiquer **ouvre la lecture** (C5) : pas bornée à la liste « Lire », se
 | **exécution** | environnement sain, ça n'aboutit pas | **une** correction, N0 juge ; encore rouge → `FAIL` | un cran au-dessus |
 | **prémisse** | une hypothèse du plan est fausse | `FAIL` **sans corriger**, hypothèse **falsifiable** | `verificateur-premisse` : réfutée → exécution ; confirmée → question (§9c) |
 
-Filtre de contenu : nature à part, jamais reprise à l'identique. Table complète : `references/remediation.md`. La nature décide aussi du canal de reprise (§9c).
+Filtre de contenu : nature `filtre` → question, jamais une reprise. Nature `interruption` : jamais déclarée par la session elle-même — écrite par l'orchestrateur à la collecte (coupure par quota), hors budget de reprise (§9c). Table complète : `skills/orchestrer-plan/references/remediation.md`. La nature décide aussi du canal de reprise (§9c).
 
 **Budget en hypothèses (C5)** : 3 distinctes max, chacune dans « Déjà écarté » avant la suivante ; arrêt sur répétition, ou contexte > 70 %.
 
@@ -231,7 +245,7 @@ Filtre de contenu : nature à part, jamais reprise à l'identique. Table complè
 
 **Ceinture de fichiers dérivés** : extension sans STOP si (1) **forcée** par un changement déjà au périmètre, (2) contenu **dérivé mécaniquement**, (3) **commit séparé** signalé au bilan — sinon STOP. **Instrument de mesure faux** : constat avec preuve, pas un `FAIL`.
 
-**Correctif localisé, posé par la session qui le trouve** (même hors périmètre, même si le `S<k>.md` dit « ne corrige pas ») si : (1) **cause mesurée**, (2) **remède petit** (1-2 fichiers, ~30 lignes hors tests), (3) **réversible** (pas de migration/dépendance/contrat), (4) **jugé** par la gate et N0. Commit séparé, `Plan:` + `Correctif localisé : <fichiers>`, signalé au bilan ; condition manquante → table ci-dessus. Seul le bandeau peut l'éteindre (`interdit — <raison>`). Bloquant de revue qui tient les quatre conditions ⇒ **reprise automatique**, pas un `[x]!` en attente.
+**Correctif localisé, posé par la session qui le trouve** (même hors périmètre, même si le `S<k>.md` dit « ne corrige pas ») si : (1) **cause mesurée**, (2) **remède petit** (1-2 fichiers, ~30 lignes hors tests), (3) **réversible** (pas de migration/dépendance/contrat), (4) **jugé** par la gate et N0. Commit séparé, `Plan:` + `Correctif localisé : <fichiers>`, signalé au bilan ; condition manquante → table ci-dessus. Seul le bandeau peut l'éteindre (`interdit — <raison>`).
 
 *Pourquoi* : `docs/decisions/2026-09-09-nature-de-l-echec-et-incidents.md`, `docs/decisions/2026-09-17-gates-sans-arret-et-correctif-localise.md`.
 
@@ -271,15 +285,15 @@ Qui écrit : la session qui le rencontre (`/fin-de-tache`, avant commit) ; la se
 | cause mesurée, remède petit et réversible, hors périmètre | rien | **correctif localisé** (§9a) |
 | prémisse fausse + mesure commitée + remède en zone + objectif intact | un **amendement** | la session écrit et continue (§9a) |
 | prémisse non sondable / options d'enquête insatisfaisantes | réponse qu'à l'exécution | **exploration ouverte** (C6) |
-| bloquant de revue aux quatre conditions du correctif localisé | remède déjà connu | **reprise automatique**, pas un `[x]!` en attente |
+| coupure par quota (nature `interruption`) | rien à corriger, juste attendre | **`relancer-interrompue`** (`SendMessage`, sinon à froid), hors budget |
 | enquête `OPTIONS` recommandant `Auto : oui` | remède connu | **reprise** qui l'applique |
 | vague collectée, tout `PASS` | rien | **vague suivante** — seule `validation-humaine` arrête |
 | migration à annuler, permission à élargir, prémisse confirmée, budget épuisé | un choix | **question** |
 
 *Pourquoi* : un humain qui reçoit « ça a échoué » n'a aucune information de plus que l'orchestrateur ; décider à sa place dépasse le rôle de l'orchestrateur.
 
-**Canal de reprise, trois conditions observables** — `SendMessage` **si et seulement si** : (1) **agent reprenable** (identifiant de l'appel `Agent`, jamais `ListAgents` ; un `SendMessage` en échec = démarrage à froid, sans retenter) ; (2) **N0 vert**, constaté par un `n0.mjs` lancé par l'**orchestrateur** lui-même ; (3) **aucune fausse piste** (`Tentatives : reprise=0`, `Blocage :` nomme un geste). Une condition manque → démarrage à froid, toujours pour un agent à bout de tours, une hypothèse fausse ou un retour `partial`.
+**Canal de reprise, trois conditions observables** — `SendMessage` **si et seulement si** : (1) **agent reprenable** (identifiant de l'appel `Agent`, jamais `ListAgents` ; un `SendMessage` en échec = démarrage à froid, sans retenter) ; (2) **N0 vert**, constaté par un `n0.mjs` lancé par l'**orchestrateur** lui-même ; (3) **aucune fausse piste** (`Tentatives : reprise=0`, `Blocage :` nomme un geste). Une condition manque → démarrage à froid, toujours pour un agent à bout de tours, une hypothèse fausse ou un retour `partial`. **Exception écrite** : une coupure par quota (nature `interruption`, action `relancer-interrompue`) suit le canal court même si N0 est rouge — l'agent est coupé en pleine édition, ce n'est pas ce que la condition (2) vérifie.
 
-**Budget** : 2 reprises et 1 enquête par session, 2 enquêtes par plan — ligne mécanique (`Tentatives : reprise=<n> enquete=<n>`, gabarit `/reprendre-echec`), survit à une orchestration relancée. Épuisé → question, rien ne relance. `SendMessage` consomme une reprise, ne se retente pas en échec.
+**Budget** : 2 reprises et 1 enquête par session, 2 enquêtes par plan — ligne mécanique (`Tentatives : reprise=<n> enquete=<n>`, gabarit `/reprendre-echec`), survit à une orchestration relancée. Épuisé → question, rien ne relance. `SendMessage` consomme une reprise, ne se retente pas en échec — sauf `relancer-interrompue`, hors budget. Et une **passe Opus de remédiation par plan** (`Remédiation Opus :` dans l'index) : au-delà, `question` source `budget-opus`.
 
-**La forme n'est pas cosmétique** : un arrêt = **question** (phrase, 2-4 options chiffrées, une recommandation, ce qui reste lançable) — jamais un renvoi qui fait refaire le diagnostic payé. Les options viennent de l'enquête (`## Issues` du `.echec.md`) ou de `/orchestrer-plan` Étape 6.
+**La forme n'est pas cosmétique** : un arrêt = **question** (phrase, 2-4 options chiffrées, une recommandation, ce qui reste lançable) — jamais un renvoi qui fait refaire le diagnostic payé. Les options viennent de l'enquête (`## Issues` du `.echec.md`) ou de `/orchestrer-plan` Étape 3.

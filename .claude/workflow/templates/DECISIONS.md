@@ -41,10 +41,13 @@ n'a aucune raison d'être en contexte tant que la décision n'est pas remise en 
 <une ligne si la décision change la complexité, le contexte nécessaire ou `PROJECT_MAP.md`>
 
 Brief : inchangé | <section du brief> : <ce qui change>
+Règles : inchangées | <règle> : <ce qui change>
 ```
 
 La ligne `Brief :`, hors section, est **obligatoire** — `inchangé` s'écrit quand même : c'est la
 preuve que la question a été posée, pas une case qu'on saute quand la réponse est non.
+La ligne `Règles :` l'est aussi, sur le même principe : si elle n'est pas `inchangées`, la règle
+est réécrite dans `CLAUDE.md` § Règles spécifiques dans le même commit (`brief-a-jour.mjs` le contrôle).
 
 ---
 

@@ -72,6 +72,7 @@ projet n'a jamais été outillé du tout : `/migrer-projet` d'abord.
 ## Étape 2 — L'état réel, sans le lire soi-même
 
 Déléguer (`.claude/workflow/WORKFLOW.md` §5) : Opus lit des conclusions, pas des traces.
+Tout appel `Agent` porte `run_in_background: false` — sans lui, l'agent part en arrière-plan.
 
 | Agent | Ce qu'on lui demande |
 | --- | --- |
@@ -79,11 +80,6 @@ Déléguer (`.claude/workflow/WORKFLOW.md` §5) : Opus lit des conclusions, pas 
 | `analyste-flux` | comment le périmètre fonctionne réellement, quand `explorateur` a dit où |
 | `resumeur-git` | quels fichiers du périmètre ont été le plus retouchés, et par quels types de commits |
 | `lecteur-doc` | uniquement si le « meilleur moyen » dépend d'une capacité externe à vérifier |
-
-**N0** n'est plus un agent : `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` dans ce dépôt)
-donne l'état de santé (build, typecheck, tests) directement. **N0 rouge : gate, pas un arrêt de
-conception** (`WORKFLOW.md` §9c) : ce n'est pas une revue qu'il faut, c'est une réparation —
-s'arrêter là sans rien demander.
 
 **Le signal le moins cher et le plus fiable est la répétition des correctifs.** Une zone qui a reçu
 cinq `fix:` en trois mois n'est pas malchanceuse : sa conception ne tient pas la charge qu'on lui
@@ -127,7 +123,7 @@ Squelette à adapter au constat — n'en garder que ce que l'Étape 2 a réellem
 7. **La phase du projet** — ajout, stabilisation, ou fin de vie ? **Aucune recommandation n'a de
    sens sans cette réponse** : la même dette se corrige en phase d'ajout et se garde en fin de vie.
 
-### Gate — l'étalon arrêté
+### Question — l'étalon arrêté
 
 Restituer en **dix lignes au plus** : l'objectif recalé, ce qui entre dans le périmètre, ce qui en
 sort, la phase du projet. **Faire valider explicitement.** Pas de « je considère que c'est
@@ -198,48 +194,23 @@ Hors périmètre), dans le même commit.
 | **Rapport seul** | tout est en C/D — le projet tient | on s'arrête, la revue a répondu |
 | **Correction directe** | un ou deux écarts A, petits et localisés | une ligne dans `TASKS.md` |
 | **Arbitrage à rendre** | décision technique à rouvrir, deux conceptions possibles | `/cadrer`, entrée = ce rapport |
-| **Chantier** | plusieurs écarts liés, plusieurs sessions | la décision d'abord, puis `/nouveau-plan` |
+| **Chantier** | plusieurs écarts liés, plusieurs sessions | la décision d'abord, puis `/nouveau-plan` (seuil « deuxième plan tué sur la même zone » : domicile `/nouveau-plan` Étape 0, « Seuil unique ») |
 
-```md
-# YYYY-MM-DD — Revue de conception : <périmètre>
-
-**Déclencheur** : <symptôme observé, ou jalon>
-**Étalon d'origine** : <l'intention écrite, 3 lignes> — sources : <fichiers lus>
-**Étalon arrêté en interview** : <objectif recalé, périmètre, hors périmètre, phase du projet>
-**Ce qui a bougé** : <en une ligne : l'objectif, l'usage, le périmètre — ou « rien »>
-
-## Écarts retenus
-
-### 1. <titre> — <dérive | écrit périmé | dette de conception> — classe <A|B|C|D>
-
-- Ce qu'on paie aujourd'hui :
-- Meilleur moyen depuis ici :
-- Coût de bascule / ce qui casse :
-- Si on ne fait rien :
-
-## Écartés — ne pas reproposer
-
-- <idée> — <motif>
-
-## Écrit mis à jour
-
-- <fichier + section>, ou « aucun — l'objectif n'a pas bougé »
-
-## Prochaine action
-
-<une seule> → <TASKS.md | /cadrer | /nouveau-plan>
-```
+Gabarit exact du rapport : annexe `references/gabarit-rapport.md`.
 
 ## Interdits
 
-- **Aucune modification de code** — Plan Mode (Shift+Tab) dès le début. Le frontmatter
-  **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash` et `PowerShell`
-  (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se réinitialisent au
-  message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une session qui dure, le
-  garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste une règle tenue à la
-  main, pas une impossibilité.
-- **Aucune écriture avant la gate d'Étape 3**, et rien hors du rapport, de `PROJECT_BRIEF.md`
-  (Objectif / Hors périmètre) et d'une décision écrite. Aucun autre fichier de contexte.
+- **Aucune modification de code** — Plan Mode (Shift+Tab) pour les Étapes 0 à 5, à quitter avant
+  l'Étape 6, qui écrit seulement le rapport et, si l'objectif a bougé, `PROJECT_BRIEF.md` et une
+  décision. Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) et **retire** `Bash`
+  et `PowerShell` (`disallowed-tools`) — pour le seul tour qui invoque la skill : les deux se
+  réinitialisent au message suivant (doc Claude Code, Skills, vérifiée le 2026-09-15). Sur une
+  session qui dure, le garde-fou est le **Plan Mode** ; « ne rien lancer, ne rien vérifier » reste
+  une règle tenue à la main, pas une impossibilité.
+- **Aucune écriture avant la question d'Étape 3**, et rien hors du rapport, de `PROJECT_BRIEF.md`
+  (Objectif / Hors périmètre), d'une décision écrite et de `TASKS.md` (Étape 5, classes A et B :
+  c'est le seul autre fichier de contexte que la revue écrive). L'interdit porte sur le **code** —
+  la revue ne corrige rien, ne découpe pas de plan.
 - **Aucun écart classé sans étalon arrêté** : sans interview, la revue s'arrête au constat.
 - **Aucune question dont la réponse est dans les fichiers**, aucune question sans le constat qui
   l'a produite.

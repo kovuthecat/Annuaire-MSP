@@ -4,14 +4,15 @@
 // fonctionne pas en cloud). Les vérifications de dérive n'écrivent RIEN si tout est sain ;
 // l'émission de CLAUDE-BASE.md, elle, a lieu à chaque session (coût token assumé, D-P2-2).
 
-import { readFileSync, existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync, statSync, readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import {
   lireEntree, repertoireProjet, estUnDepot, git, depassements, vagueParallele, worktreeLie,
   repereSession, repondre, riendafaire, racineDepot,
   recupererAmont, etatAmont, aUnRemote, brancheCourante, brancheParDefaut,
-  familleModele, sessionsOuvertes, derniereVersionPubliee, versionSuperieure,
+  familleModele, prochaineSession, derniereVersionPubliee, versionSuperieure,
 } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -122,20 +123,22 @@ if (!vagueParallele(cwd) && aUnRemote(cwd)) {
 
 // Modèle courant contre celui que le plan demande. La ligne « À régler AVANT de lancer » (§3) ne
 // fait que **rappeler** : jusqu'ici rien ne vérifiait, et une session partie au hasard des réglages
-// de la veille ne se découvrait qu'au résultat. Le hook reçoit `model` — si aucune session restant
-// à faire ne demande cette famille, le dire maintenant, quand la correction est encore gratuite.
+// de la veille ne se découvrait qu'au résultat. Le hook reçoit `model` — si la prochaine session du
+// plan en cours demande une autre famille, le dire maintenant, quand la correction est encore gratuite.
 // Muet pendant une vague (les sous-agents héritent du modèle de l'orchestrateur, pas du plan) et
 // dès qu'aucun plan ouvert ne déclare de modèle.
 if (!vagueParallele(cwd)) {
   const familleCourante = familleModele(entree.model);
   if (familleCourante) {
-    const ouvertes = sessionsOuvertes(cwd).filter((s) => familleModele(s.modele));
-    const attendues = new Set(ouvertes.map((s) => familleModele(s.modele)));
-    if (attendues.size > 0 && !attendues.has(familleCourante)) {
-      const detail = ouvertes.map((s) => `${s.plan}/${s.session} ${s.modele}/${s.effort}`).join(' · ');
+    // La prochaine session du plan le plus récent, pas toutes les sessions ouvertes : un vieux plan
+    // dormant de la même famille taisait l'écart (`lib.mjs` `prochaineSession`).
+    const prochaine = prochaineSession(cwd);
+    const attendue = prochaine ? familleModele(prochaine.modele) : null;
+    if (attendue && attendue !== familleCourante) {
       lignes.push(
-        `**Session lancée en ${familleCourante}, qu'aucune session restant à faire ne demande** ` +
-        `(${detail}). Régler modèle **et** effort avant de commencer (\`WORKFLOW.md\` §3) : en ` +
+        `**Session lancée en ${familleCourante}, la prochaine session du plan demande ${attendue}** ` +
+        `(${prochaine.plan}/${prochaine.session} ${prochaine.modele}/${prochaine.effort}). Si c'est elle ` +
+        `que tu lances : régler modèle **et** effort avant de commencer (\`WORKFLOW.md\` §3) — en ` +
         `changer en cours de route repaie tout le préfixe (§3b).`
       );
     }
@@ -165,8 +168,11 @@ for (const d of depassements(cwd)) {
 // manifeste, comme CE dépôt source) → muet ; le réseau et le cache 24 h sont entièrement portés
 // par `derniereVersionPubliee`, qui rend `null` sans jamais bloquer sur un échec.
 try {
-  const cheminManifeste = join(racineDepot(cwd), '.claude', 'workflow', 'manifest.json');
-  if (existsSync(cheminManifeste)) {
+  const racineManifeste = racineDepot(cwd);
+  const cheminManifeste = racineManifeste
+    ? join(racineManifeste, '.claude', 'workflow', 'manifest.json')
+    : null;
+  if (cheminManifeste && existsSync(cheminManifeste)) {
     const manifeste = JSON.parse(readFileSync(cheminManifeste, 'utf8'));
     const versionVendoree = manifeste.version;
     const versionPubliee = derniereVersionPubliee(cwd);
@@ -181,6 +187,81 @@ try {
   }
 } catch { /* manifeste illisible ou JSON invalide : contrôle désactivé, jamais de faux positif */ }
 
+// Plugin CHARGÉ contre la copie de travail, dans le DÉPÔT SOURCE seulement (pas de manifeste vendoré,
+// et `plugin/.claude-plugin/plugin.json` présent — CE dépôt). Un incident du 2026-09-22 (rejoué le
+// 2026-09-23 sur Templates, le 2026-09-24 sur DrumsTraining) : le plugin local installé au cache
+// n'était pas rechargé après une publication, sans que rien ne le signale — un poste continuait de
+// dérouler une version périmée en pensant éditer la dernière. `ICI` est TOUJOURS la racine du plugin
+// réellement chargé pour cette session (chemin relatif au fichier du hook, comme CLAUDE-BASE.md
+// ci-dessus) — jamais `process.env.CLAUDE_PLUGIN_ROOT`, qui n'est qu'un jeton de substitution du
+// `command` de `hooks.json`, pas une variable d'environnement du process node.
+try {
+  const racineSource = racineDepot(cwd);
+  const cheminManifesteVendore = racineSource
+    ? join(racineSource, '.claude', 'workflow', 'manifest.json')
+    : null;
+  const cheminPluginSource = racineSource
+    ? join(racineSource, 'plugin', '.claude-plugin', 'plugin.json')
+    : null;
+  const estDepotSource = racineSource
+    && !(cheminManifesteVendore && existsSync(cheminManifesteVendore))
+    && cheminPluginSource && existsSync(cheminPluginSource);
+  if (estDepotSource) {
+    const cheminPluginCharge = join(ICI, '..', '.claude-plugin', 'plugin.json');
+    if (existsSync(cheminPluginCharge)) {
+      const versionChargee = JSON.parse(readFileSync(cheminPluginCharge, 'utf8')).version;
+      const versionSource = JSON.parse(readFileSync(cheminPluginSource, 'utf8')).version;
+      if (versionChargee && versionSource && versionChargee !== versionSource) {
+        lignes.push(
+          `**Plugin chargé v${versionChargee}, source v${versionSource}** : ` +
+          '`claude plugin update workflow@templates --scope local`.'
+        );
+      }
+    }
+  }
+} catch { /* plugin.json illisible ou JSON invalide : contrôle désactivé, jamais de faux positif */ }
+
+// Mods du projet absents ou en retard sur ce poste (P16, 2026-10-07). Un mod ne se charge que depuis
+// un plugin INSTALLÉ `--scope local` pour ce dossier ; un poste neuf qui clone un projet à jour n'a
+// rien à synchroniser mais rien d'installé, et l'échec d'installation est « signalé, non bloquant » :
+// ce signal doit donc revenir à chaque session. Lecture seule de `installed_plugins.json`, SANS lancer
+// de processus (budget du hook). Muet en session cloud (`CLAUDE_CODE_REMOTE=true`, pas de poste à
+// équiper), sans mod, ou sur toute erreur de lecture — jamais de faux positif.
+try {
+  const racineMods = racineDepot(cwd);
+  if (racineMods && process.env.CLAUDE_CODE_REMOTE !== 'true') {
+    const vendore = existsSync(join(racineMods, '.claude', 'workflow', 'manifest.json'));
+    const dossierMods = vendore
+      ? join(racineMods, '.claude', 'workflow', 'mods')
+      : join(racineMods, 'plugin', 'mods');
+    const attendus = [];
+    if (existsSync(dossierMods)) {
+      for (const nom of readdirSync(dossierMods)) {
+        const cheminPlugin = join(dossierMods, nom, '.claude-plugin', 'plugin.json');
+        if (existsSync(cheminPlugin)) {
+          attendus.push({ nom, version: JSON.parse(readFileSync(cheminPlugin, 'utf8')).version });
+        }
+      }
+    }
+    if (attendus.length) {
+      const config = process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude');
+      const plugins = JSON.parse(readFileSync(join(config, 'plugins', 'installed_plugins.json'), 'utf8')).plugins || {};
+      const norm = (p) => resolve(p).replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+      const manquants = attendus.filter(({ nom, version }) => !Object.entries(plugins).some(
+        ([cle, liste]) => cle.startsWith(`${nom}@`) && Array.isArray(liste) && liste.some(
+          (x) => x.scope === 'local' && x.projectPath && norm(x.projectPath) === norm(racineMods) && x.version === version,
+        ),
+      ));
+      if (manquants.length) {
+        lignes.push(
+          `**Mods non installés ou en retard** (${manquants.map((m) => m.nom).join(', ')}) — ` +
+          `\`node ${vendore ? '.claude/workflow/bin' : 'plugin/bin'}/installer-mods.mjs\``
+        );
+      }
+    }
+  }
+} catch { /* fichier absent, illisible ou JSON invalide : contrôle désactivé, jamais de faux positif */ }
+
 // Dépôt sous un dossier synchronisé (Synology Drive, OneDrive, Dropbox, iCloud) : le client ne
 // synchronise qu'au fichier près, jamais `.git` en bloc — une reprise en cours d'écriture git
 // corrompt l'objet (torrent-uploader, 2026-09-11). Et une exclusion ne suffit pas : Synology Drive
@@ -189,7 +270,7 @@ try {
 // le témoin dit qu'on a choisi de rester en connaissance de cause. Sans lui, rappel à chaque session.
 try {
   const racine = racineDepot(cwd);
-  if (/SynologyDrive|OneDrive|Dropbox|iCloud/i.test(racine)) {
+  if (racine && /SynologyDrive|OneDrive|Dropbox|iCloud/i.test(racine)) {
     const cheminGit = join(racine, '.git');
     const gitEstUnDossier = existsSync(cheminGit) && statSync(cheminGit).isDirectory();
     if (gitEstUnDossier && !existsSync(join(cheminGit, 'info', 'synchro-exclue'))) {

@@ -16,8 +16,9 @@ Sur le N2 : *proposer, jamais trancher, et seulement si l'interview l'a demandé
 ## Étape 0 — Environnement et garde-fous
 
 **Outils in-app.** Même contrôle que `/verif-visuelle` Étape 0 : `preview_start`, `read_page`,
-`read_console_messages` sont-ils dans la session ? Le refus de `navigate` vers `localhost`, la
-vérification du serveur et la règle « un seul essai » y sont décrits : les appliquer tels quels.
+`read_console_messages` sont-ils dans la session, y compris comme outils différés : les charger par
+`ToolSearch` avant de rendre `OUTILS NAVIGATEUR ABSENTS` ? Le refus de `navigate` vers `localhost`,
+la vérification du serveur et la règle « un seul essai » y sont décrits : les appliquer tels quels.
 
 - **Absents → mode B.** Ne rien parcourir soi-même. Sortir la liste des parcours (Étape 2, depuis
   `ARCHITECTURE.md` seul) et, **par parcours**, un bloc au format du mode B de `/verif-visuelle` :
@@ -84,8 +85,9 @@ premier parcours.
 
 **Un sous-agent `parcoureur-usage` par parcours, en séquence, jamais en parallèle** : l'onglet, les
 cookies et le `localStorage` sont partagés, deux parcours simultanés se marcheraient dessus. Chaque
-parcours part d'un contexte neuf, sans les traces des précédents. L'agent n'a ni shell ni écriture :
-il constate, la skill écrit.
+parcours part d'un **contexte d'agent** neuf ; l'état du navigateur (cookies, stockage) est hérité
+du parcours précédent, voir « État laissé ». L'agent n'a ni shell ni écriture : il constate, la
+skill écrit.
 
 ```
 Agent({

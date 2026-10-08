@@ -42,4 +42,12 @@ il pointe vers le reste, sans le recopier. Plafond : **200 lignes** — au-delà
 
 ## Règles spécifiques au projet
 
-> À remplir à l'instanciation.
+> Seule source des règles du projet : brief, architecture et design y renvoient sans les recopier ;
+> une décision qui en change une met cette section à jour. Une règle par ligne, avec son motif et
+> sa levée :
+>
+> `- <règle> — motif : <…> — levée : <tant que… / sauf si…>`
+>
+> Un interdit qui protège une donnée ou une action précise finit par `— absolu` (motif seul, pas de
+> levée). Un chiffre, un seuil ou une liste fermée porte `(provisoire, à mesurer au premier plan)`.
+> Rempli à l'instanciation par `/nouveau-projet`, règles validées une à une (Phase B2).

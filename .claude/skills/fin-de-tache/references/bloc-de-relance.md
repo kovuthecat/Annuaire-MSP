@@ -1,5 +1,7 @@
 # Bloc de relance — toute fin qui renvoie vers une session neuve
 
+**Session orchestrée (ton prompt exige `VERDICT:`) → ce fichier ne s'applique pas.**
+
 *Domicile de la règle : les autres skills y renvoient, ne la reformulent pas.*
 
 **Sans exception** : dès qu'une session se termine en demandant à l'humain d'ouvrir une
@@ -38,7 +40,9 @@ Branche : <nom, ou « main »>
 Le prompt nomme toujours ses chemins en entier, jamais « le plan » ou « la décision d'hier ». Cas
 planifié : le `S<k>.md` est la passation, `État` / `Déjà tenté` / `À faire` tiennent en une ligne
 chacune. Pastille possible (Desktop) : elle vient **en plus**, même prompt, avec la ligne « À régler
-AVANT de lancer » (`WORKFLOW.md` §3).
+AVANT de lancer » (`WORKFLOW.md` §3). Relance vers `/orchestrer-plan` : cette ligne porte
+**`Sonnet · medium`**, jamais l'effort ambiant de la conversation — l'orchestrateur reste économe
+(régime Pro).
 
 Quatre règles pour qu'il serve à quelque chose :
 
@@ -48,8 +52,9 @@ Quatre règles pour qu'il serve à quelque chose :
   condamne à repayer les mêmes impasses. Même logique que « Écartés — ne pas reproposer » de
   `/revue-de-conception`. Rien à écarter → écrire `aucune`, jamais supprimer la ligne.
 - **« et rien d'autre »** applique au cas non planifié la règle que le socle impose au cas planifié :
-  un exécutant ne lit que les fichiers listés. Sans elle, la session neuve relit le contexte par
-  défaut et repaie un préfixe entier (`WORKFLOW.md` §3b).
+  « Lire » est un point de départ, pas un plafond (lecture ouverte, C5) — seule l'écriture reste
+  bornée à la zone. Sans cette ligne, la session neuve relit le contexte par défaut et repaie un
+  préfixe entier (`WORKFLOW.md` §3b).
 - **Bloc de code clos, dans la conversation** — pas seulement une pastille : le bloc doit être
   copiable en Desktop, VS Code, cloud et mobile. Quand une pastille est possible, elle vient **en
   plus**, avec la ligne « À régler AVANT de lancer » (`WORKFLOW.md` §3).

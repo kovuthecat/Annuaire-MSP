@@ -10,8 +10,8 @@ Elle ne génère pas d'idées : un inventaire d'idées pour la roadmap n'est pas
 
 ## Avant de demander quoi que ce soit
 
-Lire en direct, parce que c'est court : dans `PROJECT_BRIEF.md` s'il existe, l'objectif, « Hors périmètre v1 »,
-« Critères avant ajout de feature » et « Version 2 / idées futures » ; le registre `DECISIONS.md`.
+Lire en direct, parce que c'est court : dans `PROJECT_BRIEF.md` s'il existe, l'objectif, « Hors périmètre v1 »
+et « Version 2 / idées futures », puis `CLAUDE.md` § Règles spécifiques au projet ; le registre `DECISIONS.md`.
 
 - Idée déjà écartée au registre → Étape 0 : on ne la rouvre que si ce qui l'a fait écarter a changé.
 - Idée déjà dans « idées futures » → repartir de sa ligne et du signal écrit à côté.

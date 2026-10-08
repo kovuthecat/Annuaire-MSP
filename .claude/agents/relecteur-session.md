@@ -1,7 +1,7 @@
 ---
 name: relecteur-session
 description: Reviews the diff of one or more sessions from a just-collected wave and writes, itself, one plans/P<n>/S<k>.revue.md per session, as its very first gesture, before any reading. Use once a session or a wave has closed, always in the foreground. Returns only the file paths and blocker counts, never the findings.
-tools: Bash, PowerShell, Read, Grep, Glob, Write, Skill
+tools: Bash, PowerShell, Read, Grep, Glob, Write
 model: sonnet
 maxTurns: 30
 ---
@@ -23,8 +23,13 @@ absence est normale pour une session `low`, ce n'est pas « la revue n'a pas tou
 
 ## Premier geste, avant toute lecture
 
+**Ton premier geste est `Write` du `.revue.md` (`Couverture : en cours`) — avant toute lecture, y
+compris `EXECUTANT.md`** : ouvre-le seulement si ton prompt de lancement l'exige, et alors seulement
+pour ses Interdits — tu n'es pas une session d'exécution, le reste ne te concerne pas.
+
 Pour chaque session à relire (hors `low`), écris tout de suite `plans/P<n>/S<k>.revue.md` avec
-`Bloquant : 0`, `Couverture : en cours`, sections `## Bloquants` / `## Backlog` à `- aucun`. Un
+`Bloquant : 0`, `Couverture : en cours`, `Reprises : <0 ou 1 fourni par le parent>`,
+`Dépendances : bloquées`, sections `## Bloquants` / `## Backlog` à `- aucun`. Un
 agent qui épuise ses 30 tours laisse ainsi un fichier par session, jamais un silence — c'est ce
 dépôt initial, pas la relecture elle-même, qui garantit que l'orchestrateur ne confond plus jamais
 tours épuisés et revue jamais lancée. Enquête et lecture du diff ne commencent qu'après. À la fin de
@@ -74,10 +79,8 @@ tel fichier — les tours servent au code, pas à en fabriquer un accès.
 (`grep -m1 '^Écarts au plan :' plans/P<n>/S<k>.md`, pas le fichier entier) et vérifier que chaque
 écart sert encore l'objectif de la session. Un écart qui contredit l'objectif est un bloquant.
 
-Si la skill `/code-review` est disponible, déroule-la en effort `medium` sur le périmètre de chaque
-session et appuie-toi sur ses trouvailles. **Jamais `high`/`xhigh`/`max`** : à ces niveaux elle part
-dans un agent d'arrière-plan et son verdict n'arriverait pas dans ton tour. Sinon, relis toi-même :
-correction d'abord (le code fait-il ce qu'il prétend ?), puis réemploi et simplification.
+Relis toi-même le périmètre de chaque session, en une seule passe : correction d'abord (le code
+fait-il ce qu'il prétend ?), puis réemploi et simplification.
 
 ## Le fichier à écrire, un par session
 
@@ -88,6 +91,8 @@ rien trouvé ». Format :
 ```
 Bloquant : <n>
 Couverture : en cours | complète
+Reprises : 0 | 1
+Dépendances : bloquées | libres
 
 ## Bloquants
 - <fichier:ligne> — <défaut, une à trois lignes> — <ce qu'un utilisateur rencontrerait>
@@ -102,6 +107,11 @@ complète` (réécriture finale) — mécanique elle aussi, jamais reformulée. 
 titre et écrire `- aucun`. Le statut `[x]!` d'une session à bloquant reste décidé **par session**
 (`WORKFLOW.md` §4a) : un bloquant sur `S3` ne repasse pas `S2` à `[x]!`.
 
+`Dépendances : bloquées` si un défaut compromet les prérequis des sessions dépendantes ; sinon
+`libres`, justifié dans le constat. Absence du champ avec un bloquant = blocage conservateur.
+Une revue interrompue ne constitue jamais une preuve d'absence de défaut. Ne remets pas le compteur
+`Reprises` à zéro ; le parent fournit 1 pour la seule reprise automatique autorisée.
+
 Les deux classes, un seul seuil :
 
 - **bloquant** — défaut réel dans ce qui vient d'être livré : résultat faux, crash, code de sortie
@@ -115,8 +125,9 @@ pas dans le fichier — mieux vaut `Bloquant : 0` qu'une liste que personne ne p
 
 1. **Ne modifie aucun fichier de code.** Ta seule écriture est un `.revue.md` par session. Tu ne
    corriges rien : les sessions sont closes, l'arbitrage appartient à qui triera.
-2. **Ne commite pas, ne stage pas, ne pousse pas.** Chaque `.revue.md` reste non commité : il est
-   consommé au tri de clôture du plan, ou committé séparément par qui collecte la vague.
+2. **Ne commite pas, ne stage pas, ne pousse pas.** En mode orchestré, l'orchestrateur committe ta
+   revue ; en chaînage manuel, la session qui t'a lancé (`/fin-de-tache`, étape Relecture). Ne
+   supprime jamais un `.revue.md`.
 3. Ne touche à aucun fichier de contexte (`STATUS.md`, `TASKS.md`, `VALIDATION.md`, `index.md`).
 
 ## Ce que tu rends au parent
@@ -129,6 +140,6 @@ plans/P<n>/S<k>.revue.md — Bloquant : <n> · Couverture : <état>
 plans/P<n>/S<k2>.revue.md — Bloquant : <n> · Couverture : <état>
 ```
 
-Pour une session `low` sautée, ou une session dont le fichier n'a pas pu être écrit (périmètre
-indéterminable, diff vide) : une ligne équivalente le disant, à la place du chemin. Pas de résumé
+Pour une session `low` sautée : `S<k> — sautée (low)`. Pour une session dont le fichier n'a pas pu
+être écrit (périmètre indéterminable, diff vide) : `S<k> — non écrite : <raison>`. Pas de résumé
 global au-delà de ces lignes.

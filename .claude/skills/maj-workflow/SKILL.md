@@ -9,8 +9,9 @@ model: haiku
 Le workflow vit **dans le repo** (`.claude/skills`, `.claude/agents`, `.claude/workflow`), pas dans
 un plugin installé à l'exécution. Cette skill le resynchronise depuis la source.
 
-**Elle est elle-même vendorée** : elle fonctionne pour quelqu'un qui a seulement cloné le repo, sans
-plugin, sans marketplace, sans rien installer. C'est tout l'intérêt du modèle.
+**Elle est elle-même vendorée** : elle fonctionne pour quelqu'un qui a seulement cloné le repo. Le
+workflow vendoré reste sans plugin ni marketplace ; seuls les **mods** s'installent, localement au
+poste (voir plus bas) — jamais le workflow lui-même.
 
 ## Quand — les frontières de C4, pas « périodiquement »
 
@@ -31,6 +32,12 @@ Sans cette règle, chaque projet dériverait dans son coin et la « source uniqu
 Le manifeste la rend vérifiable mécaniquement : il porte un hash par fichier géré, donc une
 modification locale se voit, au lieu d'être écrasée en silence à la synchronisation suivante.
 
+## Étape 0 — Vérifier qu'aucune vague n'est en cours
+
+`.claude/wave.lock` présent → **STOP** : une vague est en cours, synchroniser plus tard. Une
+synchronisation lancée sous verrou peut écraser les commits d'une session en cours (incident
+ebm-msp, 2026-09-24).
+
 ## Étape 1 — Constater avant d'écrire
 
 ```bash
@@ -44,11 +51,10 @@ Sortie : version de la source vs version du projet, puis un décompte — à jou
 
 | Situation | `--source` |
 | --- | --- |
-| Le dépôt source est cloné sur cette machine | son dossier `plugin/` |
-| Le plugin d'amorçage est installé | `.claude/workflow` |
-| Ni l'un ni l'autre | `git clone --depth 1 https://github.com/kovuthecat/claude-workflow <tmp>` puis `<tmp>` |
+| `workflow@templates` apparaît dans `claude plugin list` | le chemin de cache qu'il rend pour ce plugin — **jamais** `.claude/workflow` (qui est la copie à mettre à jour) |
+| Absent de `claude plugin list` | `git clone --depth 1 https://github.com/kovuthecat/claude-workflow <tmp>` puis `<tmp>` |
 
-Le troisième cas est le mode normal pour quelqu'un qui découvre le projet : un clone jetable, le
+Le second cas est le mode normal pour quelqu'un qui découvre le projet : un clone jetable, le
 temps de la synchronisation, et plus rien à maintenir sur la machine.
 
 **`correctifCritiqueDepuis`** — `plugin.json` de la source peut porter cette clé (une version) : un
@@ -68,7 +74,7 @@ automatique aux frontières de C4 tenable — un humain n'est sollicité que qua
 
 Une ligne `DÉRIVE` signale un fichier géré modifié à la main — peut-être une amélioration jamais
 remontée, peut-être un accident. Ni l'un ni l'autre ne se tranche seul : **question** à
-l'utilisateur (`WORKFLOW.md` §9c), avec le diff (`resumeur-git` si le fichier est commité) et deux
+l'utilisateur (`WORKFLOW.md` §9c), avec le diff (`resumeur-git`, `run_in_background: false`, si le fichier est commité) et deux
 options chiffrées :
 
 1. **Remonter** — la modification a de la valeur : la porter dans le dépôt source, publier, puis
@@ -77,6 +83,19 @@ options chiffrées :
 
 Le moteur **préserve** les dérives par défaut : sans `--force`, un fichier modifié localement n'est
 pas touché. Le défaut protège le travail, il ne l'efface pas.
+
+## Étape 3b — Ligne `SETTINGS  allow en retard`
+
+Une ligne `SETTINGS  allow en retard sur le gabarit — manque : …` signale des entrées du socle du
+gabarit absentes de `permissions.allow` du projet (sans elles, une session headless peut se bloquer
+sur `git push`, `n0.mjs`…). Informatif, jamais bloquant : la rapporter à l'utilisateur et poser une
+**question à options** (`WORKFLOW.md` §9c) :
+
+1. **Ajouter** les entrées manquantes maintenant dans `.claude/settings.json`, en un commit
+   `chore(settings): allow aligné sur le gabarit`.
+2. **Laisser** en l'état.
+
+Jamais d'ajout silencieux : `settings.json` appartient au projet.
 
 ## Étape 4 — Synchroniser
 
@@ -89,6 +108,21 @@ Ajouter `--force` **uniquement** pour écraser une dérive arbitrée « Écraser
 Le moteur écrit les fichiers modifiés, supprime ceux qui ont quitté le payload, et réécrit le
 manifeste. Un fichier propre et déjà à jour n'est pas réécrit : le diff git reste lisible.
 
+## Étape 4b — Installer les mods du poste
+
+Lancée **toujours**, hors de toute condition sur `--check` : un poste neuf qui clone un projet déjà
+à jour n'a rien à synchroniser, mais aucun mod d'installé.
+
+```bash
+node .claude/workflow/bin/installer-mods.mjs
+```
+
+- Sortie `0` : une ligne au rapport (mods installés et vérifiés).
+- Sortie `3` : **signalé, non bloquant** — la synchronisation se commite quand même ; le rapport cite
+  la commande à relancer (celle que le script imprime).
+- Sortie `4` (pas de CLI Claude Code) : une ligne « mods non installés : pas de CLI Claude Code sur
+  ce poste », rien d'autre.
+
 ## Étape 5 — Vérifier
 
 1. Relancer avec `--check` → doit sortir `ÉTAT: à jour` (exit 0).
@@ -99,9 +133,14 @@ manifeste. Un fichier propre et déjà à jour n'est pas réécrit : le diff git
 3. `.claude/settings.json` : les hooks pointent bien vers
    `$CLAUDE_PROJECT_DIR/.claude/workflow/hooks/` et il ne reste **ni** `enabledPlugins`, **ni**
    `extraKnownMarketplaces` (les deux ensemble avec les fichiers vendorés = workflow chargé deux
-   fois — cf. le tableau du double chargement dans `/migrer-projet`).
-4. **Nouvelle session** (la config n'est lue qu'au démarrage) : un `git add -A` de test doit être
-   refusé, et les skills doivent être proposées. C'est la preuve que le câblage est actif.
+   fois — cf. le tableau du double chargement dans `/migrer-projet`). **Exception** : dans
+   `.claude/settings.local.json` (jamais `settings.json`), des entrées pour une marketplace
+   `workflow-mods-*` sont attendues — celle des mods, propre au poste (nom haché sur le chemin),
+   jamais commitable. Les mêmes entrées dans `settings.json`, ou pour `workflow@…`, restent un
+   résidu de double chargement.
+4. **Nouvelle session** (la config n'est lue qu'au démarrage) — contrôle que l'**humain** fait dans
+   cette nouvelle session, jamais la session courante : un `git add -A` doit être refusé, et les
+   skills doivent être proposées. C'est la preuve que le câblage est actif.
 
 ## Signaler l'`AGENTS.md` racine, s'il existe
 

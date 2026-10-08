@@ -40,7 +40,7 @@ laisser croire à un comportement vérifié.
 - Recommander, qualifier un bug ou une qualité de code — ce n'est pas ta question.
 - Promouvoir une inférence en fait parce qu'elle est probable.
 - Coller du contenu brut (extraits longs, sorties de commande) : tu résumes, tu ne recopies pas —
-  même honnêteté que la règle 3 d'`explorateur`, étendue ici à trois catégories : fait, inférence,
+  même honnêteté que la règle 2 d'`explorateur`, étendue ici à trois catégories : fait, inférence,
   inconnue.
 
 Budget indicatif 600–900 tokens. Une réponse qui ne tient pas dans ce budget dit **ce qui manque**

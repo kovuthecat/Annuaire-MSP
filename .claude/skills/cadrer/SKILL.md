@@ -15,9 +15,11 @@ Ici Opus ne sert qu'à **arbitrer**. Jamais à chercher, lire, lancer ou vérifi
 
 > Le frontmatter **pré-autorise** les outils listés (`allowed-tools`) — pour le seul tour qui
 > invoque la skill : la préautorisation se réinitialise au message suivant (doc Claude Code, Skills,
-> vérifiée le 2026-09-15). Le garde-fou reste le **Plan Mode**, dès le début : il interdit
-> l'écriture dans le dépôt, pas le lancement d'une **sonde jetable** (Étape 2) — c'est la seule
-> exception au « ne rien lancer, ne rien vérifier » (C6).
+> vérifiée le 2026-09-15). Le garde-fou reste le **Plan Mode pour l'investigation** (Étapes 0 à 4) :
+> il interdit l'écriture dans le dépôt, pas le lancement d'une **sonde jetable** (Étape 2) — c'est la
+> seule exception au « ne rien lancer, ne rien vérifier » (C6). **En sortir avant l'Étape 5**, qui
+> écrit seulement `docs/decisions/…`, la ligne de `DECISIONS.md` et le brief si la ligne `Brief :`
+> l'exige — le Plan Mode ne couvre que l'investigation, pas la sortie qui l'écrit.
 >
 > `model: opus` bascule sur Opus **pour ce même seul tour** : dès le message suivant, la session
 > reprend son modèle (doc Claude Code, Skills, vérifiée le 2026-09-24). Or un cadrage se mène sur
@@ -66,6 +68,7 @@ Avant de déléguer, l'aiguillage de `references/protocoles.md` : `NONE` est la 
 Une option qui suppose un mécanisme neuf passe par `references/rechercher-existant.md`.
 
 Avant d'ouvrir un fichier soi-même, se demander lequel des agents de délégation rend la conclusion voulue.
+Tout appel `Agent` porte `run_in_background: false` — sans lui, l'agent part en arrière-plan (`WORKFLOW.md` §5).
 Opus lit **les conclusions**, pas les traces. Ce qu'il garde pour lui : le raisonnement, les
 hypothèses racines, l'arbitrage final — le reste se délègue.
 
@@ -119,21 +122,29 @@ froid, pas celui d'un sous-agent.
 | **Chantier à mener** | il y a du travail à découper | la décision d'abord, puis `/nouveau-plan` |
 | **Rien à faire** | la question tombe, le sujet attend, ou l'idée est écartée | une ligne dans le registre, et on s'arrête — c'est ce qui empêche de la rejuger |
 | **Idée reportée** | l'idée tient, mais pas maintenant | une ligne dans « Version 2 / idées futures » de `PROJECT_BRIEF.md`, avec le **signal qui la rouvrira** — pas le registre, réservé au transverse |
-| **Preuve à faire** | la question ne se tranche pas en lecture : la réponse n'existe qu'à l'exécution | un **protocole de preuve** (ci-dessous) + une ligne dans le registre — pas de décision, pas de plan |
+| **Preuve à faire** | la question ne se tranche pas en lecture : la réponse n'existe qu'à l'exécution | une section `## Protocole de preuve` (ci-dessous) dans `docs/decisions/<date>-<sujet>.md` + une ligne dans le registre — pas d'arbitrage tranché, `/nouveau-plan` y relit le protocole |
 
 Toute issue qui écrit un `docs/decisions/` y met la ligne `Brief :` ; si elle n'est pas `inchangé`,
 la section nommée de `PROJECT_BRIEF.md` est réécrite **dans le même commit** — c'est
 `brief-a-jour.mjs`, lancé par `/nouveau-plan`, qui vérifiera que la propagation a bien eu lieu.
+Même règle pour la ligne `Règles :` (`inchangées` | `<règle> : <changement>`) : si elle annonce un
+changement, `CLAUDE.md` § Règles spécifiques est réécrit **dans le même commit**, au format d'une
+règle par ligne (règle — motif — levée).
 
 Une session de réflexion qui ne produit aucun écrit n'a pas eu lieu : elle sera refaite.
 
 ### Le protocole de preuve — quand la réponse n'existe qu'à l'exécution
 
+S'écrit sous une section `## Protocole de preuve` dans `docs/decisions/<date>-<sujet>.md` : c'est
+l'emplacement que `/nouveau-plan` relit (grille de préparation, `references/preparation.md`), pas un
+fichier à part.
+
 **Signal d'entrée**, l'un des suivants suffit (C6) : une première prémisse comportementale non
-sondable en lecture ; une enquête `OPTIONS` sans option satisfaisante ; la zone a déjà tué un plan
-sur une prémisse (deuxième occurrence) ; ou le critère de succès ne s'énonce pas comme un nombre que
-le code d'aujourd'hui produit déjà de façon stable — si la cible bouge quand on change la
-définition, il n'y a pas de plan à écrire, il y a une mesure à établir d'abord.
+sondable en lecture ; une enquête `OPTIONS` sans option satisfaisante ; le seuil « deuxième plan tué
+sur la même zone » (domicile et définition : `/nouveau-plan` Étape 0, « Seuil unique ») ; ou le
+critère de succès ne s'énonce pas comme un nombre que le code d'aujourd'hui produit déjà de façon
+stable — si la cible bouge quand on change la définition, il n'y a pas de plan à écrire, il y a une
+mesure à établir d'abord.
 
 Le protocole remplace la décision. Il porte au minimum :
 
@@ -163,7 +174,7 @@ improvise.
 
 **Committer et pousser l'écrit avant de rendre la main** — staging explicite du `docs/decisions/` et
 de la ligne de registre, plus `PROJECT_BRIEF.md` quand la ligne `Brief :` l'a touché ou qu'une idée
-y est reportée, puis `git push`
+y est reportée, plus `CLAUDE.md` quand la ligne `Règles :` l'a touché, puis `git push`
 sur `main` (`WORKFLOW.md` §4b), session cloud comprise. Une
 décision qui n'existe que sur ce poste ne sera pas lue par la session de plan qui devait s'en servir,
 et c'est elle qu'on refera. Le cadrage est une unité de travail : il se clôt poussé.
@@ -177,7 +188,9 @@ restantes, typées, avec qui les résout.
 
 ## Interdits
 
-- **Aucune modification de code ni de fichier de contexte** — Plan Mode (Shift+Tab) dès le début.
+- **Aucune modification de code ni de fichier de contexte pendant l'investigation** — Plan Mode
+  (Shift+Tab) dès le début, à quitter avant l'Étape 5, qui écrit seulement `docs/decisions/…`, la
+  ligne de `DECISIONS.md` et le brief si la ligne `Brief :` l'exige, et `CLAUDE.md` si la ligne `Règles :` l'exige.
 - **Aucune exploration en direct** dès que ça dépasse un fichier : c'est le travail d'`explorateur`.
 - **Aucun enchaînement de `/nouveau-plan` dans la même conversation — contrainte d'outillage**
   (`WORKFLOW.md` §9c), pas un point d'arrêt de conception : rien ne peut démarrer une session à

@@ -35,8 +35,11 @@ const vers = entree.to_model;
 // Champs absents (contrat non tenu, autre version) ou changement nul : rien à dire.
 if (!de || !vers || de === vers) riendafaire();
 
+const racine = racineDepot(cwd);
+if (racine === null) riendafaire(); // racine introuvable : jamais une exception, jamais un journal orphelin
+
 try {
-  const dossier = join(racineDepot(cwd), '.claude');
+  const dossier = join(racine, '.claude');
   mkdirSync(dossier, { recursive: true });
   appendFileSync(
     join(dossier, 'journal-modeles.jsonl'),

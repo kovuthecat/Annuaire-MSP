@@ -28,7 +28,9 @@ Jamais de dépendance ajoutée seul : à trancher dans le plan (« Modifier »),
 - **N0 auto (bloque le commit)** : `build` + `typecheck` + tests du périmètre, par le script
   `node .claude/workflow/bin/n0.mjs` (`plugin/bin/n0.mjs` en dépôt source) — **au premier plan,
   comme toute commande**, jamais un agent. À créer si la tâche introduit de la logique testable ;
-  `—` (aucun test) justifié dans le plan. Piège du typecheck qui ne compile aucun fichier : gabarit
+  `—` (aucun test) justifié dans le plan. Nouveaux plans : preuve complète `--session P<n>/S<k>`
+  commitée avec le code, vérifiée par le moteur avant de valider le PASS (`EXECUTANT.md`) ; index `Preuve N0 : non requise` →
+  N0 sauté, bilan `N0 : — (non requise : <motif de sansCommande>)` (`EXECUTANT.md`). Piège du typecheck qui ne compile aucun fichier : gabarit
   `CLAUDE.md`.
 - **N1 visuel auto (non bloquant)** : erreurs console, contenu présent, 4xx/5xx, responsive —
   uniquement via le navigateur in-app de Desktop (`/verif-visuelle`) ; ailleurs, la skill sort une
@@ -40,16 +42,14 @@ Jamais de dépendance ajoutée seul : à trancher dans le plan (« Modifier »),
 Jamais de Playwright, de script de capture ni d'automatisation de navigateur hors outils in-app :
 aucune régression visuelle scriptée dans ce workflow (`WORKFLOW.md` §6).
 
-**La grille s'arrête à trois.** La relecture de fin de session (`/fin-de-tache`, agent
-`relecteur-session`) est automatique, non bloquante, et **n'est pas un niveau** — dépôt et tri :
-`docs/decisions/2026-09-07-revue-orpheline.md`.
-
-En mode autonome : enchaîner les tâches (gate = N0), accumuler les points N2, rendre la main en fin de lot.
+**La grille s'arrête à trois.** La relecture de fin de session (agent `relecteur-session`) est
+automatique, non bloquante, et **n'est pas un niveau** — dépôt et tri : `/fin-de-tache`, section
+Relecture (contexte : `docs/decisions/2026-09-07-revue-orpheline.md`).
 
 ## Avant de coder
 
-Plan court (max 5 lignes) : objectif, fichiers, étapes, risques. Déléguer plutôt que faire soi-même
-(table des agents, règle du premier plan, `fork`, mémoire d'agent) — `WORKFLOW.md` §5. `/clear`
+Plan court (max 5 lignes) : objectif, fichiers, étapes, risques. Recherche précise et courte en direct ; déléguer les explorations larges
+(table des agents, premier plan = `run_in_background: false` explicite, `fork`, mémoire d'agent) — `WORKFLOW.md` §5. `/clear`
 entre deux sessions, pour ne pas traîner le contexte de l'une dans l'autre (voie et mécanique §5b).
 
 **Session de plan (`S<k>.md`) ?** Lire d'abord `.claude/workflow/EXECUTANT.md`.

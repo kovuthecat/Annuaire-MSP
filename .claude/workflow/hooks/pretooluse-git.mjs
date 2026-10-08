@@ -3,8 +3,14 @@
 //   1. staging global interdit (git add -A / . / --all, git commit -a) ;
 //   2. commit et push interdits tant qu'une vague parallèle est en cours (.claude/wave.lock) ;
 //   3. worktree interdit pendant une vague — une vague partage UN seul arbre de travail.
+//
+// Les trois règles tolèrent des OPTIONS GLOBALES avant la sous-commande (`git -C <dir> commit`,
+// `git -c user.name=x commit`) : sans ce préfixe dans le motif, ces variantes passaient sous la
+// regex (T2, P10/S1) — un simple `-C .` suffisait à contourner le refus sous verrou.
 
-import { lireEntree, repertoireProjet, vagueParallele, repondre, riendafaire } from './lib.mjs';
+import {
+  lireEntree, repertoireProjet, vagueParallele, racineIntrouvable, repondre, riendafaire,
+} from './lib.mjs';
 
 const entree = await lireEntree();
 const commande = entree?.tool_input?.command;
@@ -25,19 +31,54 @@ function refuser(raison) {
   });
 }
 
-if (/\bgit\s+add\s+(-A\b|--all\b|\.(?:\s|$))/.test(commande)) {
+// `git -C <dir>` / `git -c <clé>=<valeur>` : options globales, valides avant n'importe quelle
+// sous-commande, répétables (`git -c a=1 -c b=2 commit`). Acceptées ici pour que les trois refus
+// ci-dessous voient la sous-commande RÉELLE, quelle que soit l'option globale qui la précède.
+const OPTIONS_GLOBALES = String.raw`(?:\s+-(?:C|c)\s+\S+)*`;
+
+if (new RegExp(String.raw`\bgit${OPTIONS_GLOBALES}\s+add\s+(-A\b|--all\b|\.(?:\s|$))`).test(commande)) {
   refuser(
     "WORKFLOW.md §4b : staging global interdit. Stage explicitement les fichiers de la tâche " +
     '(`git add <fichier> <fichier>`) — jamais `git add -A`, `--all` ni `.`.'
   );
 }
 
-if (/\bgit\s+commit\b/.test(commande) && /\s-(?:a|[a-zA-Z]*a[a-zA-Z]*)\b|--all\b/.test(commande) && !/--amend/.test(commande)) {
+// Le texte cité n'est pas une option : message de commit (`-m "… commit -a …"`), heredoc bash,
+// here-string PowerShell. Il est vidé avant de chercher `-a`, sinon le message lui-même déclenche
+// le refus (incident Templates du 2026-09-29).
+function neutraliserTexte(cmd) {
+  return cmd
+    .replace(/<<-?\s*(['"]?)(\w+)\1[^\n]*\n[\s\S]*?\n\s*\2\b/g, '<<TEXTE')
+    .replace(/@'[\s\S]*?'@|@"[\s\S]*?"@/g, "''")
+    .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, "''");
+}
+
+// Seules comptent les options du segment `git commit` lui-même, jusqu'au prochain séparateur de
+// commande : un `Select-String -NotMatch` enchaîné après le commit n'en est pas une.
+function commitAvecToutStager(cmd) {
+  const neutre = neutraliserTexte(cmd);
+  const motif = new RegExp(String.raw`\bgit${OPTIONS_GLOBALES}\s+commit\b`, 'g');
+  for (const m of neutre.matchAll(motif)) {
+    const segment = neutre.slice(m.index + m[0].length).split(/[;&|\n]/)[0];
+    if (/\s-[a-zA-Z]*a[a-zA-Z]*\b|\s--all\b/.test(segment) && !/--amend/.test(segment)) return true;
+  }
+  return false;
+}
+
+if (commitAvecToutStager(commande)) {
   refuser(
     "WORKFLOW.md §4b : `git commit -a` interdit. Stage explicitement les fichiers de la tâche, " +
     'puis `git commit -m "…"`.'
   );
 }
+
+// Racine introuvable (worktree lié d'un dépôt à `.git` déplacé, plugin/hooks/lib.mjs
+// `racineDepot`) : `vagueParallele` rend `true` par refus par défaut, mais le motif n'est pas une
+// vague — le dire, plutôt que laisser croire à un `.claude/wave.lock` qui n'existe peut-être pas.
+const introuvable = racineIntrouvable(cwd);
+const MOTIF_RACINE_INTROUVABLE =
+  "Racine du dépôt introuvable (worktree lié d'un dépôt à `.git` déplacé) : committe depuis " +
+  "l'arbre principal.";
 
 // Une vague suppose un arbre de travail unique : c'est là que l'orchestrateur (`/orchestrer-plan`)
 // a pris sa référence et là que la consolidation committera tâche par tâche. Un diff resté
@@ -45,18 +86,22 @@ if (/\bgit\s+commit\b/.test(commande) && /\s-(?:a|[a-zA-Z]*a[a-zA-Z]*)\b|--all\b
 // justement le commit qui permettrait de le rapatrier. Le refus tombe donc à la création.
 if (vagueParallele(cwd) && (outilWorktree || (commande ?? '').includes('worktree add'))) {
   refuser(
-    "Vague parallèle en cours (`.claude/wave.lock` présent) : les sessions d'une vague partagent " +
-    "un seul arbre de travail. Un diff produit dans un worktree n'est vu ni par l'orchestrateur " +
-    "(`/orchestrer-plan`) ni par la consolidation de fin de plan, et le verrou interdit le " +
-    "commit qui permettrait de le rapatrier. Travaille dans l'arbre courant."
+    introuvable
+      ? MOTIF_RACINE_INTROUVABLE
+      : "Vague parallèle en cours (`.claude/wave.lock` présent) : les sessions d'une vague partagent " +
+        "un seul arbre de travail. Un diff produit dans un worktree n'est vu ni par l'orchestrateur " +
+        "(`/orchestrer-plan`) ni par la consolidation de fin de plan, et le verrou interdit le " +
+        "commit qui permettrait de le rapatrier. Travaille dans l'arbre courant."
   );
 }
 
-if (vagueParallele(cwd) && /\bgit\s+(commit|push)\b/.test(commande)) {
+if (vagueParallele(cwd) && new RegExp(String.raw`\bgit${OPTIONS_GLOBALES}\s+(commit|push)\b`).test(commande)) {
   refuser(
-    'Vague parallèle en cours (`.claude/wave.lock` présent) : ni commit ni push tant que toutes les ' +
-    'sessions du plan ne sont pas exécutées (WORKFLOW.md §4b). La consolidation se fait en fin de plan, ' +
-    'tâche par tâche. Supprime `.claude/wave.lock` pour clore la vague.'
+    introuvable
+      ? MOTIF_RACINE_INTROUVABLE
+      : 'Vague parallèle en cours (`.claude/wave.lock` présent) : ni commit ni push tant que toutes les ' +
+        'sessions du plan ne sont pas exécutées (WORKFLOW.md §4b). La consolidation se fait en fin de plan, ' +
+        'tâche par tâche. Supprime `.claude/wave.lock` pour clore la vague.'
   );
 }
 

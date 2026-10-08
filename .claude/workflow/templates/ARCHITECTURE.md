@@ -6,6 +6,9 @@ Rempli **après** `PROJECT_BRIEF.md` (le quoi). Le brief UI (écrans, navigation
 vit désormais dans `DESIGN_SPEC.md` — voir ce fichier pour tout ce qui concerne l'interface.
 
 > À l'instanciation : supprimer les sections non pertinentes.
+>
+> Les règles, interdits et seuils du projet vivent dans `CLAUDE.md` § Règles spécifiques au projet :
+> ne pas les recopier ici, y renvoyer.
 
 ## Découpage technique
 

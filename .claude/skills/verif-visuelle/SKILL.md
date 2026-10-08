@@ -18,28 +18,31 @@ Cette skill couvre **N1**. Elle ne fait jamais de N2 : Claude n'évalue pas si c
 ## Étape 0 — Déterminer l'environnement
 
 Regarde si les outils `preview_start` / `read_page` / `read_console_messages` sont disponibles
-dans ta session.
+dans ta session. Outils présents = **listés**, y compris comme outils différés (nom seul) : les
+charger par `ToolSearch` avant de conclure qu'ils manquent.
 
 - **Disponibles → Claude Code Desktop** : dérouler le mode A.
 - **Absents → tout le reste** (VSCode, terminal, session cloud `claude.ai/code`, appli mobile) :
   dérouler le mode B. Ne pas tenter de contourner (pas de
   Playwright, pas de capture par script) — le navigateur in-app est le seul outil visuel autorisé
   à Claude.
+- **Présents, mais `preview_start` refuse « Dev servers can't be started from unattended sessions »**
+  (tâche planifiée, arbre lancé à distance) : mode B d'office, sans second essai — personne n'est là
+  pour approuver la commande. Une ligne au bilan : « `N1 S<k> : à faire — <écran>` ».
 
 Si le bandeau de la session indique `Environnement : Desktop` et que les outils sont absents, la
-session a été lancée au mauvais endroit → **gate** (`WORKFLOW.md` §9c, rien à demander) :
-signale-le, rends la main.
+session a été lancée au mauvais endroit : signale-le au bilan, poursuis en mode B.
 
 **En sous-agent orchestré, `navigate` vers `localhost` peut être refusé** (« navigation to … was
 denied or failed » — constaté deux fois le 2026-09-10/11, cause non documentée) alors que
 `preview_start` ouvre l'onglet sans problème. **Avant de conclure au refus**, vérifier que le
 serveur écoute : `preview_logs` montre son bandeau « ready », `read_network_requests` ne montre pas
 `net::ERR_CONNECTION_REFUSED`. Sinon ce n'est pas le navigateur, c'est le serveur (environnement,
-§9a — torrent-uploader 2026-09-17 : Vite bloqué par un dossier synchronisé). **Un seul essai, puis gate** (`WORKFLOW.md` §9c, rien
-à demander) : refusé → basculer en mode B et
-écrire dans le bilan de session (`/fin-de-tache` point 3) la ligne « N1 à dérouler au premier plan :
-<écran> ». Une session orchestrée qui conclut `PASS` avec cette ligne l'ajoute aussi à son `MOTIF`
-final (« N1 à dérouler au premier plan : <écran> ») — c'est ce que `/orchestrer-plan` Étape 6 relaie.
+§9a — torrent-uploader 2026-09-17 : Vite bloqué par un dossier synchronisé). **Session orchestrée,
+navigation refusée → mode B, une ligne N1 au bilan, et on continue** : un seul essai, puis basculer
+en mode B et écrire dans le bilan de session (`/fin-de-tache` point 3) la ligne « `N1 S<k> : à faire
+— <écran>` ». Une session orchestrée qui conclut `PASS` avec cette ligne l'ajoute aussi à son
+`MOTIF` final (« N1 S<k> : à faire — <écran> ») — c'est ce que `/orchestrer-plan` Étape 3 relaie.
 
 ## Mode A — Navigateur in-app (Desktop)
 
@@ -99,8 +102,9 @@ N2 (jugement) :
 ```
 
 Puis **consigner uniquement la partie N2 dans `VALIDATION.md`** (bloc par écran, cf. l'en-tête du
-fichier). La partie N1 reste dans la réponse : soit l'utilisateur la déroule tout de suite, soit la
-session est rejouée depuis Desktop.
+fichier) — **sous `.claude/wave.lock`, le N2 va dans le `S<k>.md`, pas dans `VALIDATION.md`**
+(`plugin/skills/fin-de-tache/references/vague-parallele.md`, point 2). La partie N1 reste dans la
+réponse : soit l'utilisateur la déroule tout de suite, soit la session est rejouée depuis Desktop.
 
 > Une session dont la validation N1 est structurante (nouvel écran, refonte de mise en page) gagne
 > à être lancée depuis Desktop. C'est ce que déclare la colonne **Env.** de l'`index.md` du plan.

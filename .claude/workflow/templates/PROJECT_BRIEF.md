@@ -38,9 +38,8 @@ Décrire en 3 à 5 lignes ce que le projet doit accomplir.
 ## Contraintes et priorités
 
 Priorités génériques (simplicité, maintenabilité, compatibilité IA) : `CONVENTIONS.md` — ne pas recopier.
-Noter ici **uniquement** les contraintes spécifiques au projet :
-
--
+Contraintes, interdits et seuils du projet : `CLAUDE.md` § Règles spécifiques au projet — seule
+source, ne pas les recopier ici.
 
 ## Risques connus
 
@@ -69,17 +68,3 @@ Décrire la direction générale du projet.
 ### Version 2 / idées futures
 
 - [ ]
-
-### Critères avant ajout de feature
-
-Une feature ne doit être ajoutée que si :
-
-- sa complexité et son coût de maintenance restent proportionnés ;
-- elle se découpe en tâches ciblées sans refactor global injustifié ;
-- elle se documente clairement dans `PROJECT_MAP.md`.
-
-### À éviter pour l'instant
-
--
--
--

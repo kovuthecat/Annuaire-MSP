@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Contrôle mécanique : le brief suit-il les décisions ?
-// (docs/decisions/2026-09-23-brief-tenu-par-les-decisions.md)
+// Contrôle mécanique : le brief et les règles du projet suivent-ils les décisions ?
+// (docs/decisions/2026-09-23-brief-tenu-par-les-decisions.md ;
+//  docs/decisions/2026-10-08-regles-de-projet-validees.md pour la ligne `Règles :`)
 //
 // POURQUOI CE FICHIER EXISTE
 // La décision veut une règle mécanique, sans jugement : toute décision qui annonce un changement de
@@ -11,6 +12,9 @@
 // commit qui a ajouté la décision, et l'éventuel commit de rattrapage qui porte la ligne), jamais
 // seulement des dates — sauf dans le seul cas où la décision ne porte aucune ligne `Brief :` (décision
 // antérieure à la règle, ou omission), où aucune preuve d'application n'est même annoncée.
+// MÊME MÉCANIQUE POUR LES RÈGLES : la ligne `Règles : inchangées | <règle> : <changement>` du fichier de
+// détail vise CLAUDE.md (§ Règles spécifiques), rattrapage `Regles-appliquees: <chemin>` postérieur.
+// Pas de ligne `Règles :` → ignorée (décisions d'avant la règle), contrairement à `Brief :`.
 // `verificateur-plan` n'a ni Bash ni git : il ne peut que reporter une sortie calculée ailleurs.
 //
 // USAGE
@@ -19,7 +23,7 @@
 //
 // SORTIE, et rien d'autre : une ligne `ÉCART <chemin> — <raison>` par décision en écart, puis une
 // dernière ligne — `RAS — <n> décision(s) vérifiée(s)`, `<k> écart(s) sur <n> décision(s)`, ou
-// `SANS OBJET — pas de PROJECT_BRIEF.md`. Code de sortie : 0 (RAS ou sans objet), 1 (au moins un
+// `SANS OBJET — pas de PROJECT_BRIEF.md` (ni CLAUDE.md). Code de sortie : 0 (RAS ou sans objet), 1 (au moins un
 // écart), 2 (pas un dépôt git, ou git en échec — message d'une ligne sur stderr).
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -60,8 +64,9 @@ try {
   erreur('pas un dépôt git');
 }
 
-const cheminBrief = join(RACINE, 'PROJECT_BRIEF.md');
-if (!existsSync(cheminBrief)) {
+const aBrief = existsSync(join(RACINE, 'PROJECT_BRIEF.md'));
+const aRegles = existsSync(join(RACINE, 'CLAUDE.md'));
+if (!aBrief && !aRegles) {
   console.log('SANS OBJET — pas de PROJECT_BRIEF.md');
   process.exit(0);
 }
@@ -99,14 +104,14 @@ function fichiersCommit(sha) {
   return lignes(gitOuVide(['show', '--name-only', '--format=', sha]));
 }
 
-/** Vrai si un commit plus récent (postérieur) que `apres` porte `Brief-applique: <chemin>` dans son
- * message — jamais un commit plus ancien, sinon la ligne pourrait précéder la décision qu'elle dit
- * appliquer. */
-function aBriefApplique(chemin, apres) {
+/** Vrai si un commit plus récent (postérieur) que `apres` porte `<marqueur>: <chemin>` dans son
+ * message (`Brief-applique` ou `Regles-appliquees`) — jamais un commit plus ancien, sinon la ligne
+ * pourrait précéder la décision qu'elle dit appliquer. */
+function aRattrapage(marqueur, chemin, apres) {
   const shas = lignes(gitOuVide(['log', '--format=%H'])); // du plus récent au plus ancien
   const idx = shas.indexOf(apres);
   const plusRecents = idx === -1 ? [] : shas.slice(0, idx);
-  const cible = `Brief-applique: ${chemin}`;
+  const cible = `${marqueur}: ${chemin}`;
   for (const sha of plusRecents) {
     const msg = gitOuVide(['log', '-1', '--format=%B', sha]);
     if (msg.split('\n').some((l) => l.trim() === cible)) return true;
@@ -116,35 +121,50 @@ function aBriefApplique(chemin, apres) {
 
 const ecarts = [];
 
+/** Vérifie une ligne annonçant un changement : le fichier cible est dans le commit d'ajout de la
+ * décision, ou un commit postérieur porte le marqueur de rattrapage. Rend l'écart, ou null. */
+function verifierLigne(chemin, ligne, cfg) {
+  const valeur = ligne.replace(cfg.motif, '').trim();
+  if (normaliser(valeur).startsWith('inchange')) return null;
+  const idx = valeur.indexOf(':');
+  const sujet = idx === -1 ? valeur : valeur.slice(0, idx).trim();
+  const sha = commitAjout(chemin);
+  if (sha && fichiersCommit(sha).includes(cfg.cible)) return null;
+  if (sha && aRattrapage(cfg.marqueur, chemin, sha)) return null;
+  const shaAffiche = sha ? sha.slice(0, 7) : 'inconnu';
+  return `ÉCART ${chemin} — ${cfg.etiquette} : ${sujet} annoncé, ${cfg.cible} absent du commit ${shaAffiche} et aucun ${cfg.marqueur}`;
+}
+
+const BRIEF = { motif: /^Brief\s*:\s*/, cible: 'PROJECT_BRIEF.md', marqueur: 'Brief-applique', etiquette: 'Brief' };
+const REGLES = { motif: /^R[èe]gles\s*:\s*/, cible: 'CLAUDE.md', marqueur: 'Regles-appliquees', etiquette: 'Règles' };
+
 for (const chemin of decisions) {
   const contenu = readFileSync(join(RACINE, chemin), 'utf8');
-  const ligneBrief = contenu.split('\n').find((l) => /^Brief\s*:/.test(l));
+  const lignesFichier = contenu.split('\n');
 
-  if (!ligneBrief) {
-    const dAjout = dateCommitAjout(chemin);
-    const dBrief = dateDernierCommit('PROJECT_BRIEF.md');
-    if (dAjout && dBrief && dAjout > dBrief) {
-      ecarts.push(
-        `ÉCART ${chemin} — pas de ligne Brief :, décision postérieure au dernier commit du brief (${dateCourte(dBrief)})`,
-      );
+  if (aBrief) {
+    const ligneBrief = lignesFichier.find((l) => /^Brief\s*:/.test(l));
+    if (!ligneBrief) {
+      const dAjout = dateCommitAjout(chemin);
+      const dBrief = dateDernierCommit('PROJECT_BRIEF.md');
+      if (dAjout && dBrief && dAjout > dBrief) {
+        ecarts.push(
+          `ÉCART ${chemin} — pas de ligne Brief :, décision postérieure au dernier commit du brief (${dateCourte(dBrief)})`,
+        );
+      }
+    } else {
+      const e = verifierLigne(chemin, ligneBrief, BRIEF);
+      if (e) ecarts.push(e);
     }
-    continue;
   }
 
-  const valeur = ligneBrief.replace(/^Brief\s*:\s*/, '').trim();
-  if (normaliser(valeur).startsWith('inchange')) continue;
-
-  const idxDeuxPoints = valeur.indexOf(':');
-  const section = idxDeuxPoints === -1 ? valeur : valeur.slice(0, idxDeuxPoints).trim();
-
-  const sha = commitAjout(chemin);
-  if (sha && fichiersCommit(sha).includes('PROJECT_BRIEF.md')) continue;
-  if (sha && aBriefApplique(chemin, sha)) continue;
-
-  const shaAffiche = sha ? sha.slice(0, 7) : 'inconnu';
-  ecarts.push(
-    `ÉCART ${chemin} — Brief : ${section} annoncé, PROJECT_BRIEF.md absent du commit ${shaAffiche} et aucun Brief-applique`,
-  );
+  if (aRegles) {
+    const ligneRegles = lignesFichier.find((l) => /^R[èe]gles\s*:/.test(l));
+    if (ligneRegles) {
+      const e = verifierLigne(chemin, ligneRegles, REGLES);
+      if (e) ecarts.push(e);
+    }
+  }
 }
 
 for (const l of ecarts) console.log(l);
