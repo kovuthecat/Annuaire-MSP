@@ -382,7 +382,7 @@ const EFFORTS_LANCABLES = ['low', 'medium', 'high', 'xhigh'];
 // jamais une valeur que l'orchestrateur transforme à la main (docs/decisions/2026-09-22-…, table
 // modèle → effort reprise de `references/remediation.md` l. 11-15, désormais portée ici). ──────────
 const MODELES_VALIDES = ['Sonnet', 'Opus', 'Haiku'];
-const EFFORT_DU_MODELE = { Opus: 'high', Sonnet: 'medium', Haiku: 'low' };
+const EFFORT_DU_MODELE = { Opus: 'high', Sonnet: 'medium', Haiku: 'medium' };
 
 /** `{ subagent_type, model }` prêt à recopier dans un appel `Agent(...)`, ou `null` si le modèle est
  * hors Sonnet|Opus|Haiku — jamais un `subagent_type` inventé. */

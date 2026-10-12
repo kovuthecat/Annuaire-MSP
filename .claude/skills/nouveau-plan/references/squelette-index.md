@@ -30,7 +30,7 @@ Preuve N0 : requise
 ## Sessions
 | Session | Tâches | Titre | Modèle | Effort | Env. | Dépend de | Zone modifiée | Statut | Message de commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [S1](S1.md) | T1-T3 | … | Haiku | low | — | — | `<fichiers réellement modifiés>` | [ ] | `<type(scope): message>` (vague parallèle) ou `—` |
+| [S1](S1.md) | T1-T3 | … | Haiku | medium | — | — | `<fichiers réellement modifiés>` | [ ] | `<type(scope): message>` (vague parallèle) ou `—` |
 | [S2](S2.md) | T5 | … | Sonnet | high | — | S1 | `<répertoire ou fichiers, jamais une généralité>` | [ ] | — |
 
 <!-- Statut : [ ] à faire · [x] fait, revue sans bloquant · [x]! fait, revue à bloquant non trié -->

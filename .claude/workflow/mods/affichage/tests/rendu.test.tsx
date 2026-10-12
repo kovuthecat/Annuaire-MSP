@@ -1,10 +1,8 @@
 import { describe, expect, mock, test } from 'claude-code/testing'
 
-import { SEUIL_REPLI } from '../hooks/fichiers'
 import { P15_ACTION, P15_ETAT } from './fixtures-plan'
 
 const norm = (p: string) => p.split(String.fromCharCode(92)).join('/')
-const NUL = String.fromCharCode(0)
 const RACINE = '/proj'
 const SURFACES = ['desktop', 'mobile'] as const
 
@@ -112,35 +110,6 @@ const monter = ($: any, surface: (typeof SURFACES)[number], id: string) =>
 
 const textes = async (ui: any) => (await ui.findAll({ type: 'Text' })).map((t: any) => String(t.text))
 
-describe('panneau limites', () => {
-  for (const surface of SURFACES) {
-    test(`${surface} : sans limites, message d'attente`, async ($, on) => {
-      monde(on)
-      await demarrer($)
-      const ui = await monter($, surface, 'limites')
-      expect(await textes(ui)).toEqual(['limites connues après la première réponse'])
-    })
-
-    test(`${surface} : avec limites, barre, pourcentage et reset`, async ($, on) => {
-      monde(on)
-      await demarrer($)
-      await $.session.measure({
-        context: { window: 200000, percent: 10 },
-        rateLimits: [
-          { kind: 'seven_day', percentUsed: 40, resetsAt: '2099-01-01T00:00:00Z' },
-          { kind: 'five_hour', percentUsed: 20.6 },
-        ],
-        changed: ['rateLimits', 'context'],
-      })
-      const ui = await monter($, surface, 'limites')
-      const lignes = await textes(ui)
-      expect(lignes).toHaveLength(2)
-      expect(lignes[0]).toBe('5 h  ██░░░░░░░░  21 %')
-      expect(lignes[1]).toMatch(/^7 j {2}████░░░░░░ {2}40 % {2}↺ /)
-    })
-  }
-})
-
 describe('bandeau au-dessus du prompt', () => {
   // Le bandeau dessine : son texte bout a bout, et les Text en gras a part.
   const bandeau = async ($: any, surface: (typeof SURFACES)[number] = 'desktop', hasSurvey = false) => {
@@ -242,83 +211,6 @@ describe('bandeau au-dessus du prompt', () => {
   })
 })
 
-describe('panneau fichiers', () => {
-  const STATUS = [' M src/a.ts', '?? src/b.ts', 'R  nouveau.ts', 'ancien.ts'].map((x) => x + NUL).join('')
-
-  for (const surface of SURFACES) {
-    test(`${surface} : etat git groupe par dossier, ● + ↑`, async ($, on) => {
-      monde(on, { status: STATUS, nonPousses: ['src/a.ts', 'docs/c.md'].map((x) => x + NUL).join('') })
-      await demarrer($)
-      const ui = await monter($, surface, 'fichiers')
-      const lignes = await textes(ui)
-      expect(lignes).toContain('3 fichiers · ● modifié  + nouveau  ↑ non poussé'.replace('3', '4'))
-      expect(lignes).toContain('  ● a.ts')
-      expect(lignes).toContain('  + b.ts')
-      expect(lignes).toContain('  ↑ c.md')
-      expect(lignes).toContain('  ● nouveau.ts  ← ancien.ts')
-      expect(lignes).not.toContain("pas d'amont")
-    })
-
-    test(`${surface} : sans amont, une ligne « pas d'amont » en tete et aucun ↑`, async ($, on) => {
-      monde(on, { status: STATUS, amont: false })
-      await demarrer($)
-      const lignes = await textes(await monter($, surface, 'fichiers'))
-      expect(lignes[0]).toBe("pas d'amont")
-      expect(lignes.some((l) => l.trim().startsWith('↑'))).toBe(false)
-    })
-
-    test(`${surface} : au-dela de ${SEUIL_REPLI} fichiers le dossier est replie, un appui le deplie`, async ($, on) => {
-      const beaucoup = Array.from({ length: SEUIL_REPLI + 1 }, (_, i) => `?? gros/f${i}.ts${NUL}`).join('')
-      monde(on, { status: beaucoup + ` M petit/p.ts${NUL}` })
-      await demarrer($)
-      const ui = await monter($, surface, 'fichiers')
-      let lignes = await textes(ui)
-      expect(lignes).toContain('  ● p.ts')
-      expect(lignes.some((l) => l.trim().startsWith('+ f'))).toBe(false)
-      const bouton = await ui.find({ type: 'Button', key: 'dossier:gros' })
-      expect(bouton?.text).toBe(`▸ gros/ (${SEUIL_REPLI + 1})`)
-      await ui.press({ key: 'dossier:gros' })
-      lignes = await textes(ui)
-      expect(lignes.filter((l) => l.trim().startsWith('+ f'))).toHaveLength(SEUIL_REPLI + 1)
-      expect((await ui.find({ type: 'Button', key: 'dossier:gros' }))?.text).toBe(`▾ gros/ (${SEUIL_REPLI + 1})`)
-    })
-
-    test(`${surface} : rien a committer`, async ($, on) => {
-      monde(on)
-      await demarrer($)
-      expect(await textes(await monter($, surface, 'fichiers'))).toContain('Rien à committer ni à pousser.')
-    })
-  }
-
-  test('hors depot git : panneau jamais ouvert', async ($, on) => {
-    const s = monde(on, { depot: false })
-    await demarrer($)
-    await attendre($)
-    expect(s.panneaux).not.toContain('fichiers')
-  })
-
-  test('rafraichi apres un outil qui ecrit (Edit, Bash...), pas apres une lecture', async ($, on) => {
-    const s = monde(on, { status: ` M a.ts${NUL}` })
-    await demarrer($)
-    const avant = s.commandes.filter((c) => c[1] === 'status').length
-    await $.tool.call({ tool: 'Read', file_path: '/proj/a.ts' } as any)
-    expect(s.commandes.filter((c) => c[1] === 'status').length).toBe(avant)
-    await $.tool.call({ tool: 'Edit', file_path: '/proj/a.ts', old_string: 'a', new_string: 'b' } as any)
-    await $.tool.call({ tool: 'Bash', command: 'git commit -m x' } as any)
-    expect(s.commandes.filter((c) => c[1] === 'status').length).toBe(avant + 2)
-  })
-
-  test('commande /panneau : rouvre les deux panneaux', async ($, on) => {
-    const s = monde(on)
-    await demarrer($)
-    await attendre($)
-    s.panneaux.length = 0
-    const r: any = await $.command.run({ command: 'panneau', args: '' } as any)
-    expect(s.panneaux).toEqual(['limites', 'fichiers'])
-    expect(String(r.text)).toContain('limites, fichiers')
-  })
-})
-
 describe('panneau plan', () => {
   // P1 est le plan par defaut de monde() ; ses sorties sont celles, reelles, de P15 (voir fixtures-plan.ts).
   const SCRIPTS = { P1: P15_ACTION, 'P1:etat': P15_ETAT }
@@ -399,13 +291,33 @@ describe('panneau plan', () => {
     expect(s.panneaux).not.toContain('plan')
   })
 
-  test('commande /panneau : rouvre aussi le panneau plan', async ($, on) => {
+  test('commande /panneau : rouvre le panneau plan, et lui seul', async ($, on) => {
     const s = monde(on, AVEC_PLAN(false))
     await demarrer($)
     await attendre($)
     s.panneaux.length = 0
     const r: any = await $.command.run({ command: 'panneau', args: '' } as any)
-    expect(s.panneaux).toEqual(['limites', 'fichiers', 'plan'])
-    expect(String(r.text)).toContain('limites, fichiers, plan')
+    expect(s.panneaux).toEqual(['plan'])
+    expect(String(r.text)).toBe('Panneau plan ouvert.')
+  })
+})
+
+describe('panneaux retires', () => {
+  test("ni limites ni fichiers ne s'ouvrent, meme dans un depot git avec un plan", async ($, on) => {
+    const s = monde(on, { fichiers: ['plugin/bin/prochaine-action.mjs'], scripts: { P1: P15_ACTION, 'P1:etat': P15_ETAT } })
+    await demarrer($)
+    await attendre($)
+    expect(s.panneaux).toEqual(['plan'])
+    expect(s.commandes.some((c) => c[0] === 'git')).toBe(false)
+  })
+
+  test("commande /panneau sans plan : le dit, n'ouvre rien", async ($, on) => {
+    const s = monde(on)
+    await demarrer($)
+    await attendre($)
+    s.panneaux.length = 0
+    const r: any = await $.command.run({ command: 'panneau', args: '' } as any)
+    expect(s.panneaux).toEqual([])
+    expect(String(r.text)).toBe('Pas de plan en cours.')
   })
 })

@@ -348,7 +348,7 @@ export function revuesManquantes(cwd, depuis, debut = null) {
 
 /** Famille de modèle (`opus`, `sonnet`, `haiku`, `fable`) depuis un identifiant ou un libellé.
  *
- *  Le hook reçoit un identifiant complet (`claude-sonnet-5`), le plan écrit un libellé (`Sonnet`) :
+ *  Le hook reçoit un identifiant complet (`claude-sonnet-5-5`), le plan écrit un libellé (`Sonnet`) :
  *  seule la famille est comparable, et c'est la seule chose que la grille §2 distingue. `null` sur
  *  tout ce qui n'est reconnu — un modèle inconnu ne doit jamais produire de faux signal. */
 export function familleModele(valeur) {

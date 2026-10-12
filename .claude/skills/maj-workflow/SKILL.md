@@ -97,6 +97,21 @@ sur `git push`, `n0.mjs`…). Informatif, jamais bloquant : la rapporter à l'ut
 
 Jamais d'ajout silencieux : `settings.json` appartient au projet.
 
+## Étape 3c — Ligne `SETTINGS  modelSettings en retard`
+
+Une ligne `SETTINGS  modelSettings en retard sur le gabarit — manque : …` signale des clés de
+`modelSettings` du gabarit absentes de `.claude/settings.json` (modèles d'une génération qui a
+changé). Sans ces clés, le modèle concerné tourne à l'`effortLevel` racine : Opus compris, donc plus
+bas que prévu par la grille. Informatif, jamais bloquant : la rapporter et poser une **question à
+options** (`WORKFLOW.md` §9c), en disant ce que la ligne change :
+
+1. **Recopier** le bloc `modelSettings` du gabarit dans `.claude/settings.json`, en retirant les clés
+   qui ne correspondent plus à aucun modèle, en un commit `chore(settings): modelSettings aligné sur
+   le gabarit`.
+2. **Laisser** en l'état.
+
+Jamais d'écriture silencieuse : `settings.json` appartient au projet.
+
 ## Étape 4 — Synchroniser
 
 ```bash

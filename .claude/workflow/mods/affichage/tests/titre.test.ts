@@ -47,11 +47,38 @@ describe('titre : hooks', () => {
     expect(r.sessionTitle).toBe('EBM-MSPv2 - P7 - S3')
   })
 
-  test('même contexte au prompt suivant → titre non reposé (titre manuel préservé)', async ($, on) => {
+  test('même contexte au prompt suivant, titre intact → titre non reposé', async ($, on) => {
     monde(on)
     await ($ as any).classic.UserPromptSubmit({ prompt: 'Ouvre plans/P7/S3.md' })
-    const r: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'reprends plans/P7/S3.md' })
+    const r: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'reprends plans/P7/S3.md', session_title: 'EBM-MSPv2 - P7 - S3' })
     expect(r.sessionTitle).toBe(undefined)
+  })
+
+  test('titre écrasé par Desktop juste après la pose → réaffirmé une fois, puis titre manuel préservé', async ($, on) => {
+    monde(on)
+    await ($ as any).classic.UserPromptSubmit({ prompt: '/cadrer une idée' })
+    const r: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'oui', session_title: 'Motif risque cardiovasculaire' })
+    expect(r.sessionTitle).toBe('EBM-MSPv2 - Cadrer')
+    const ensuite: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'ok', session_title: 'Mon titre à moi' })
+    expect(ensuite.sessionTitle).toBe(undefined)
+  })
+
+  test('prompt de sous-agent ou message injecté citant plans/P<n>/S<k>.md → orchestrateur non renommé', async ($, on) => {
+    monde(on)
+    await ($ as any).classic.UserPromptSubmit({ prompt: '/orchestrer-plan P12' })
+    const agent: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'Ouvre plans/P12/S1.md', agent_id: 'a1', session_title: 'EBM-MSPv2 - P12 - orchestrateur' })
+    expect(agent.sessionTitle).toBe(undefined)
+    const retour: any = await ($ as any).classic.UserPromptSubmit({ prompt: 'P12/S1 faite, bilan dans plans/P12/S1.md', source: 'system', session_title: 'EBM-MSPv2 - P12 - orchestrateur' })
+    expect(retour.sessionTitle).toBe(undefined)
+  })
+
+  test('/clear puis même contexte → nouvelle conversation renommée', async ($, on) => {
+    monde(on)
+    on('session.end', () => ({ sessionId: 'x' }))
+    await ($ as any).classic.UserPromptSubmit({ prompt: '/orchestrer-plan P3' })
+    await ($ as any).session.end({ reason: 'clear' })
+    const r: any = await ($ as any).classic.UserPromptSubmit({ prompt: '/orchestrer-plan P3', session_title: 'Orchestrer plan P3' })
+    expect(r.sessionTitle).toBe('EBM-MSPv2 - P3 - orchestrateur')
   })
 
   test('skill appelé sur le fil principal → titre au prompt suivant ; dans un sous-agent → rien', async ($, on) => {

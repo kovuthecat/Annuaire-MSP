@@ -3,9 +3,7 @@ import {
   composerBandeau,
   fenetreBandeau,
   formaterReset,
-  lignesLimites,
   lireEtatPlan,
-  MESSAGE_LIMITES_VIDE,
   planDepuisPrompt,
   planEstOuvert,
   plansParNumero,
@@ -95,24 +93,6 @@ describe('composerBandeau', () => {
 
   test('vague et session sans plan : jamais affichees seules', () => {
     expect(texte({ vague: '2', sessions: 'S5', fenetres: [], maintenant: MAINTENANT, decalage: PARIS })).toBe('')
-  })
-})
-
-describe('lignesLimites (panneau)', () => {
-  test("liste vide : message d'attente", () => {
-    expect(lignesLimites([], MAINTENANT, PARIS)).toEqual([MESSAGE_LIMITES_VIDE])
-  })
-
-  test('une ligne par fenetre : barre, pourcentage, reset', () => {
-    const lignes = lignesLimites(
-      [
-        { kind: 'five_hour', percentUsed: 50, resetsAt: '2026-10-07T17:40:00Z' },
-        { kind: 'seven_day', percentUsed: 100 },
-      ],
-      MAINTENANT,
-      PARIS,
-    )
-    expect(lignes).toEqual(['5 h  █████░░░░░  50 %  ↺ 18:40', '7 j  ██████████  100 %'])
   })
 })
 

@@ -41,7 +41,7 @@ Le prompt nomme toujours ses chemins en entier, jamais « le plan » ou « la d�
 planifié : le `S<k>.md` est la passation, `État` / `Déjà tenté` / `À faire` tiennent en une ligne
 chacune. Pastille possible (Desktop) : elle vient **en plus**, même prompt, avec la ligne « À régler
 AVANT de lancer » (`WORKFLOW.md` §3). Relance vers `/orchestrer-plan` : cette ligne porte
-**`Sonnet · medium`**, jamais l'effort ambiant de la conversation — l'orchestrateur reste économe
+**`Haiku · medium`**, jamais l'effort ambiant de la conversation — l'orchestrateur reste économe
 (régime Pro).
 
 Quatre règles pour qu'il serve à quelque chose :

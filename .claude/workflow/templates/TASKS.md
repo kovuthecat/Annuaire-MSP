@@ -28,4 +28,4 @@ Ce fichier ne décrit que le futur.
 ## Tâches
 
 - [ ] T-001 — <titre> · modèle: Sonnet, effort: medium
-- [ ] T-002 — <titre> · modèle: Haiku, effort: low
+- [ ] T-002 — <titre> · modèle: Haiku, effort: medium

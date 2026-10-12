@@ -5,11 +5,9 @@ description: Déroule un plan entier, vague après vague, sans rendre la main en
 
 # Orchestrer un plan
 
-L'orchestrateur tourne en **Sonnet · medium**. Si tu tournes en Opus, dis-le à l'utilisateur au
-premier tour : il paie Opus pour exécuter un script.
-
-Sonnet, jamais Haiku (`WORKFLOW.md` §3) pour l'orchestrateur lui-même — contrainte inchangée. Chaque
-session tourne, elle, à l'effort de sa ligne d'index : le champ `agent` rendu par le script
+L'orchestrateur tourne en **Haiku · medium** (`WORKFLOW.md` §3). Si tu tournes en Opus ou en
+Sonnet, dis-le à l'utilisateur au premier tour : il paie un modèle plus cher pour exécuter un script.
+Chaque session tourne, elle, à l'effort de sa ligne d'index : le champ `agent` rendu par le script
 (`subagent_type`, `model`) le porte en frontmatter (Étape 1), recopié tel quel, sans geste humain à
 régler avant de lancer.
 Deux gestes en boucle : **lancer des sessions**, **collecter des verdicts**. L'état se calcule par un
@@ -34,7 +32,8 @@ pas une question posée à l'utilisateur tant que l'abandon n'a pas été tenté
 ## Interdits — la raison d'être de cette skill
 
 - **Ne jamais ouvrir un `S<k>.md`**, sans exception — un message de commit sous verrou vient
-  d'`index.md` (Étape 1). L'`index.md` et `git log` suffisent.
+  d'`index.md` (Étape 1). L'`index.md` et `git log` suffisent. Le rapport `S<k>.echec.md` n'est
+  pas un `S<k>.md` : sa section `## Issues` se lit (Étape 3, options d'une question).
 - **Ne jamais lire un diff ni une sortie de build.** Déléguer à `resumeur-git` (`run_in_background: false`) ;
   un code de sortie n'est pas une sortie.
 - **Ne jamais corriger soi-même, ni reprendre une session en échec.** `fork` vers l'agent en échec
@@ -231,7 +230,10 @@ session dont une dépendance (directe ou transitive) est celle qui bloque, même
 Options jamais inventées ici : `options.source` de l'action (`etape6`, `budget-epuise`, `budget-opus`,
 `effort-invalide`, `session-hors-vague`, `nature-inconnue`, `filtre`, `rebase`, `arbre-sale`,
 `reprise-manuelle`, `wave-lock`, `revue-incomplete`, `dependance-revue`) et la section `## Issues` d'un rapport
-d'enquête (`references/remediation.md`) les fournissent. Les lignes de `## Issues` **sont** les
+d'enquête (`references/remediation.md`) les fournissent. Une `question` sur une session en échec
+(`budget-epuise`, `budget-opus`, `nature-inconnue`…) : lire ses options **avant** d'écrire la
+question, par `sed -n '/^## Issues/,/^## /p' plans/P<n>/S<k>.echec.md` — section absente ou vide →
+relayer le motif seul et le dire. Les lignes de `## Issues` **sont** les
 options : recopiées sans rien changer, ni la forme ni l'ordre ; un ancien rapport d'une autre forme
 se recopie tel quel aussi. Source `arbre-sale`,
 options fixes : `1. Committer ces fichiers toi-même, puis relancer — débloque la vague · 2. Les mettre

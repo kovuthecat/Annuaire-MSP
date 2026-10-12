@@ -2,7 +2,7 @@
 name: purge-contexte
 description: Ramener les fichiers de contexte sous leur plafond de lignes en archivant sans perdre d'information. À dérouler quand un hook signale un dépassement, ou avant de reprendre un projet dormant.
 model: haiku
-effort: low
+effort: medium
 ---
 
 # Purge du contexte
@@ -18,7 +18,7 @@ déplacer, jamais effacer.
 Plafonds : source unique = `.claude/workflow/hooks/plafonds.json` (lu aussi par les
 hooks) — ne jamais recopier les valeurs ici, elles dérivent et finissent par diverger.
 
-Le frontmatter bascule sur **Haiku, effort `low`** pour ce tour — c'est du déplacement mécanique,
+Le frontmatter bascule sur **Haiku, effort `medium`** pour ce tour — c'est du déplacement mécanique,
 sans pause pour validation humaine, donc le tour couvre toute la skill.
 Traiter **un fichier à la fois**, dans l'ordre où les dépassements sont signalés.
 

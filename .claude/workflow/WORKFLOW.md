@@ -1,6 +1,6 @@
 # WORKFLOW.md — Modèles, effort, plans, validation, garde-fous
 
-Source unique : répartition du travail, format des plans, niveaux de validation ; les autres fichiers y renvoient. Modèles actuels : Fable 5.1 · Opus 5.5 · Sonnet 5 · Haiku 4.5. Squelettes de plan : skill `/nouveau-plan`, pas ici.
+Source unique : répartition du travail, format des plans, niveaux de validation ; les autres fichiers y renvoient. Modèles actuels : Fable 5.1 · Opus 5.5 · Sonnet 5.5 · Haiku 5.5. Squelettes de plan : skill `/nouveau-plan`, pas ici.
 
 ## 1. Principe directeur
 ### Glossaire — mots à double sens
@@ -48,7 +48,7 @@ Départage : Sonnet si jugement/risque/gros volume ; Haiku si mécanique, 1-2 fi
 
 Échelle (`model-config`) : `low · medium · high · xhigh · max`. `low` mécanique ; `medium` **défaut** ; `high` raisonnement soutenu ; `xhigh` agentique complexe/cadrage neuf, réservé ; `max` au-delà, jamais par défaut, via `/effort max` en session seulement.
 
-Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + effort + environnement**, réglés **avant de lancer**. **L'effort suit le modèle** (table `modelSettings` du gabarit : Opus `high`, Sonnet `medium`, Haiku `low`) ; `/effort` en session déroge, à consigner au bandeau. ⚠️ `modelSettings.<modèle>.effortLevel` prime la clé racine, quel que soit le fichier — un `/effort` écrit en settings **utilisateur** battrait sinon l'`effortLevel` du projet partout, en silence.
+Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + effort + environnement**, réglés **avant de lancer**. **L'effort suit le modèle** (table `modelSettings` du gabarit : Opus `high`, Sonnet `medium`, Haiku `medium`) ; `/effort` en session déroge, à consigner au bandeau. ⚠️ `modelSettings.<modèle>.effortLevel` prime la clé racine, quel que soit le fichier — un `/effort` écrit en settings **utilisateur** battrait sinon l'`effortLevel` du projet partout, en silence.
 
 **Rappel systématique** — domicile : une pastille démarre avec les réglages **ambiants**, jamais ceux du plan ; toute skill qui rend la main pour lancer une session écrit donc, juste avant :
 
@@ -58,7 +58,7 @@ Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + 
 
 `xhigh` permanent est le poste de dépense le plus silencieux du workflow.
 
-**Effort d'orchestration.** `effort` en frontmatter d'**agent nommé** est documenté et honoré — il prime l'effort de session, pas la variable d'environnement (`model-config` § *Set the effort level*, `sub-agents` § *Frontmatter reference*) ; `critique-plan` s'en sert. Une session de plan se lance désormais sur l'agent `session-<effort>` composé depuis la colonne Effort de l'index (`plugin/agents/session-low.md` … `session-xhigh.md`) : c'est son frontmatter qui porte l'effort, jamais l'outil `Agent`, qui règle toujours le modèle. Précédence : frontmatter de l'agent nommé, sinon niveau de session ; **seule** la variable d'environnement `CLAUDE_CODE_EFFORT_LEVEL` bat le frontmatter (`model-config` § *Set the effort level*) — c'est la seule façon de rendre le mécanisme inopérant sans erreur. `max` ne se règle pas depuis un index : il n'existe pas d'agent `session-max`, et le moteur refuse la valeur en renvoyant ici. L'orchestrateur tourne sur **Sonnet**, jamais Haiku ; bascule conditionnée à une éval comparée, jamais exécutée à ce jour (P6/T19 abandonnée, bac à sable absent).
+**Effort d'orchestration.** `effort` en frontmatter d'**agent nommé** est documenté et honoré — il prime l'effort de session, pas la variable d'environnement (`model-config` § *Set the effort level*, `sub-agents` § *Frontmatter reference*) ; `critique-plan` s'en sert. Une session de plan se lance désormais sur l'agent `session-<effort>` composé depuis la colonne Effort de l'index (`plugin/agents/session-low.md` … `session-xhigh.md`) : c'est son frontmatter qui porte l'effort, jamais l'outil `Agent`, qui règle toujours le modèle. Précédence : frontmatter de l'agent nommé, sinon niveau de session ; **seule** la variable d'environnement `CLAUDE_CODE_EFFORT_LEVEL` bat le frontmatter (`model-config` § *Set the effort level*) — c'est la seule façon de rendre le mécanisme inopérant sans erreur. `max` ne se règle pas depuis un index : il n'existe pas d'agent `session-max`, et le moteur refuse la valeur en renvoyant ici. L'orchestrateur tourne sur **Haiku · medium** (Haiku 5.5) : banc `tests/evals-orchestrateur/` du 2026-10-12, 18/20 contre 20/20 pour Sonnet, écarts de forme seule, 14× moins cher (`docs/analyses/2026-10-12-orchestrateur-haiku-5-5.md` du dépôt source). Retour à Sonnet au premier geste inventé — action attribuée au script qu'il n'a pas rendue, option ajoutée — consigné en incident (§9b).
 
 ## 3b. Coût et cache
 
@@ -71,7 +71,7 @@ Défaut : `.claude/settings.json` du projet. Chaque `S<k>.md` porte **modèle + 
 | Effort, `thinking` | ✓ | selon modèle | ✗ |
 | Messages, images | ✓ | ✓ | ✗ |
 
-Seuls outils et modèle forcent une reconstruction complète (aucune échappatoire). Minimum cacheable : 512 (Opus 5), 1 024 (Sonnet 5), **4 096 (Haiku 4.5)**. Une entrée ne remonte que 20 positions. Conséquences : régler modèle **et** effort avant de lancer (§3) évite de repayer le préfixe ; `/compact` juste avant un changement **délibéré**, jamais avant une escalade (le résumé perdrait les impasses qui la justifient) ; chaque sous-agent part à froid, payé plein tarif — d'où le socle court. **Lancer une vague en décalé** : le cache ne se lit qu'après le streaming de la première réponse — sur 4 sessions, la part partagée passe d'environ 5,0× à 1,55× le prix d'entrée.
+Seuls outils et modèle forcent une reconstruction complète (aucune échappatoire). Minimum cacheable : 512 tokens sur Opus 5.5, Sonnet 5.5 et Haiku 5.5 (contre 4 096 sur Haiku 4.5 — plus de falaise sur Haiku). Une entrée ne remonte que 20 positions. Conséquences : régler modèle **et** effort avant de lancer (§3) évite de repayer le préfixe ; `/compact` juste avant un changement **délibéré**, jamais avant une escalade (le résumé perdrait les impasses qui la justifient) ; chaque sous-agent part à froid, payé plein tarif — d'où le socle court. **Lancer une vague en décalé** : le cache ne se lit qu'après le streaming de la première réponse — sur 4 sessions, la part partagée passe d'environ 5,0× à 1,55× le prix d'entrée.
 
 **Quota Pro** : vagues séquentielles par défaut (déjà la règle §4b) — le parallèle concentre la dépense dans la même fenêtre de quota, à réserver aux zones vraiment disjointes.
 

@@ -142,11 +142,16 @@ function construirePlan(source) {
 // ── Contrôle de dérive du bloc hooks de settings.json ───────────────────────
 // settings.json n'est PAS géré par le manifeste ci-dessus (permissions et effortLevel
 // appartiennent au projet, jamais réécrits) — mais son bloc `hooks` doit rester aligné sur
-// templates/project-settings.json du payload, et son `permissions.allow` doit contenir le socle
-// du gabarit (entrées hors `Bash(npm ` / `Bash(npx `, exemple de stack JavaScript) : seules les
-// entrées manquantes sont signalées, les ajouts propres au projet ne sont jamais comparés. Une évolution des hooks a déjà demandé une
-// édition manuelle dans 6 projets ; un oubli laisse des hooks silencieusement absents. Ce
-// contrôle est purement informatif : jamais bloquant, jamais d'écriture.
+// templates/project-settings.json du payload. Quatre contrôles, tous informatifs :
+//  1. hooks : le bloc doit rester identique à celui du gabarit ;
+//  2. outputStyle : la clé doit exister si le gabarit en propose un ;
+//  3. permissions.allow : doit contenir le socle du gabarit (entrées hors `Bash(npm ` / `Bash(npx `,
+//     exemple de stack JavaScript) — seules les entrées manquantes sont signalées, les ajouts
+//     propres au projet ne sont jamais comparés ;
+//  4. modelSettings : les clés du gabarit doivent toutes exister — présence seule, jamais les valeurs.
+// Une évolution des hooks a déjà demandé une édition manuelle dans 6 projets ; un oubli laisse des
+// hooks silencieusement absents. Ce contrôle est purement informatif : jamais bloquant, jamais
+// d'écriture.
 function normaliserHooks(objet) {
   // Tri récursif des clés pour que la comparaison JSON.stringify ignore l'ordre.
   if (Array.isArray(objet)) return objet.map(normaliserHooks);
@@ -198,6 +203,16 @@ function controlerDeriveSettings(source, projet) {
   const manquants = socle.filter((e) => !allowProjet.includes(e));
   if (manquants.length > 0) {
     lignes.push(`  SETTINGS  allow en retard sur le gabarit — manque : ${manquants.join(', ')}`);
+  }
+
+  // `modelSettings` : sans la clé d'un modèle, ce modèle tourne à l'`effortLevel` racine (Opus compris).
+  // Présence des clés seule : un projet qui règle un modèle autrement, exprès, n'est pas signalé.
+  const clesModele = Object.keys(settingsSource.modelSettings ?? {});
+  const modelesProjet = settingsProjet.modelSettings && typeof settingsProjet.modelSettings === 'object'
+    ? settingsProjet.modelSettings : {};
+  const clesManquantes = clesModele.filter((k) => !(k in modelesProjet));
+  if (clesManquantes.length > 0) {
+    lignes.push(`  SETTINGS  modelSettings en retard sur le gabarit — manque : ${clesManquantes.join(', ')}`);
   }
 
   return lignes.length > 0 ? lignes.join('\n') : null;

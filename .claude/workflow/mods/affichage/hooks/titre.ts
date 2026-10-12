@@ -51,6 +51,13 @@ export function contexteDepuisSkill(projet: string, skill: string, args = ''): C
   return libelle ? { cle: `skill:${nom}`, titre: `${projet} - ${libelle}` } : undefined
 }
 
+// Un prompt dont le texte peut nommer la session : celui de la personne, pas un message injecté
+// (compte rendu d'un sous-agent, notification de tâche) qui cite plans/P<n>/S<k>.md et renommait
+// l'orchestrateur « P<n> - S<k> ». `source` absent : champ en cours de déploiement, prompt lu.
+export function promptDeLaPersonne(source: string | undefined): boolean {
+  return source !== 'system' && source !== 'poll_event'
+}
+
 // Le contexte qu'un prompt établit, ou `undefined` s'il n'en dit rien (la session garde son titre).
 export function contexteDepuisPrompt(projet: string, prompt: string): Contexte | undefined {
   const orch = RE_ORCHESTRER.exec(prompt)

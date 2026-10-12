@@ -39,7 +39,7 @@ export function formaterReset(resetsAt: string | undefined, maintenant: number, 
 export const arrondi = (pourcent: number) => Math.round(pourcent)
 
 // Une fenetre du bandeau : libelle (en gras a l'ecran) et valeur. Le reset ne sert que pour 5 h : celui
-// de 7 j tombe toujours au meme moment de la semaine, il est dans le panneau « limites ».
+// de 7 j tombe toujours au meme moment de la semaine.
 export function fenetreBandeau(f: Fenetre, maintenant: number, decalage: Decalage): FenetreBandeau | undefined {
   const libelle = libelleFenetre(f.kind)
   if (libelle === undefined) return undefined
@@ -75,24 +75,6 @@ export function composerBandeau(e: EntreeBandeau): Bandeau {
 export function texteBandeau(b: Bandeau): string {
   const limites = b.fenetres.map((f) => `${f.libelle} ${f.valeur}`).join(' · ')
   return [b.plan ?? '', limites].filter(Boolean).join(' │ ')
-}
-
-// Barre texte de 10 cases : `██░░░░░░░░`.
-export function barre(pourcent: number, largeur = 10): string {
-  const plein = Math.max(0, Math.min(largeur, Math.round((pourcent / 100) * largeur)))
-  return '█'.repeat(plein) + '░'.repeat(largeur - plein)
-}
-
-export const MESSAGE_LIMITES_VIDE = 'limites connues après la première réponse'
-
-// Lignes du panneau « limites » : une par fenetre connue ; message d'attente si aucune.
-export function lignesLimites(fenetres: readonly Fenetre[], maintenant: number, decalage: Decalage): string[] {
-  const connues = fenetresConnues(fenetres)
-  if (connues.length === 0) return [MESSAGE_LIMITES_VIDE]
-  return connues.map((f) => {
-    const reset = formaterReset(f.resetsAt, maintenant, decalage)
-    return `${libelleFenetre(f.kind)}  ${barre(f.percentUsed)}  ${arrondi(f.percentUsed)} %${reset === undefined ? '' : `  ↺ ${reset}`}`
-  })
 }
 
 // ---- Plan en cours ---------------------------------------------------------------------------------
